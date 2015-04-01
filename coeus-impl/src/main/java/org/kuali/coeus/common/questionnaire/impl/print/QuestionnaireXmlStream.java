@@ -18,6 +18,7 @@
  */
 package org.kuali.coeus.common.questionnaire.impl.print;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,23 +29,29 @@ import org.kuali.coeus.common.framework.person.KcPerson;
 import org.kuali.coeus.common.framework.person.KcPersonService;
 import org.kuali.coeus.common.framework.print.PrintingException;
 import org.kuali.coeus.common.framework.print.stream.xml.XmlStream;
-import org.kuali.coeus.sys.framework.model.KcPersistableBusinessObjectBase;
-import org.kuali.kra.coi.CoiDisclosure;
-import org.kuali.kra.iacuc.IacucProtocol;
-import org.kuali.kra.irb.Protocol;
-import org.kuali.kra.printing.schema.*;
-import org.kuali.kra.printing.schema.QuestionnaireDocument.Questionnaire;
-import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
-import org.kuali.coeus.propdev.impl.person.ProposalPerson;
-import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireConstants;
-import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireQuestion;
-import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireService;
-import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireUsage;
+import org.kuali.coeus.common.impl.custom.arg.ArgValueLookupValuesFinder;
 import org.kuali.coeus.common.questionnaire.framework.answer.Answer;
 import org.kuali.coeus.common.questionnaire.framework.answer.AnswerHeader;
 import org.kuali.coeus.common.questionnaire.framework.answer.ModuleQuestionnaireBean;
 import org.kuali.coeus.common.questionnaire.framework.answer.QuestionnaireAnswerService;
+import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireConstants;
+import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireQuestion;
+import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireService;
+import org.kuali.coeus.common.questionnaire.framework.core.QuestionnaireUsage;
+import org.kuali.coeus.common.questionnaire.framework.question.QuestionType;
+import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
+import org.kuali.coeus.propdev.impl.person.ProposalPerson;
+import org.kuali.coeus.sys.framework.model.KcPersistableBusinessObjectBase;
+import org.kuali.kra.coi.CoiDisclosure;
+import org.kuali.kra.iacuc.IacucProtocol;
+import org.kuali.kra.infrastructure.Constants;
+import org.kuali.kra.irb.Protocol;
+import org.kuali.kra.irb.questionnaire.ProtocolModuleQuestionnaireBean;
+import org.kuali.kra.printing.schema.*;
+import org.kuali.kra.printing.schema.QuestionnaireDocument.Questionnaire;
+import org.kuali.kra.protocol.ProtocolBase;
 import org.kuali.rice.core.api.datetime.DateTimeService;
+import org.kuali.rice.core.api.util.KeyValue;
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kew.routeheader.service.RouteHeaderService;
 import org.kuali.rice.kns.document.MaintenanceDocumentBase;
@@ -208,7 +215,12 @@ public class QuestionnaireXmlStream implements XmlStream {
             }
             questionnaireType.setQuestionnaireName(questionnaire.getName());
             questionnaireType.setQuestionnaireDesc(questionnaire.getDescription());
-            setQuestionInfoData(questionnaire, moduleQuestionnaireBean,questionnaireType,questionnaireCompletionFlag, printableBusinessObject);
+            if (printableBusinessObject != null) {
+                setQuestionInfoDataIU(questionnaire, moduleQuestionnaireBean,questionnaireType,questionnaireCompletionFlag, printableBusinessObject);
+            }
+            else {
+                setQuestionInfoData(questionnaire, moduleQuestionnaireBean, questionnaireType, questionnaireCompletionFlag, printableBusinessObject);
+            }
             setUserOption(params,questionnaireType);
             setAnswerInfo(printableBusinessObject,moduleQuestionnaireBean,questionnaireType);
             if(moduleQuestionnaireBean!=null && moduleQuestionnaireBean.getModuleItemCode() != null) {
@@ -245,6 +257,9 @@ public class QuestionnaireXmlStream implements XmlStream {
             }
             protocolInfo.setTitle(protocolInfoBean.getTitle());
             protocolInfo.setInvestigator(personInfo);
+            if(CollectionUtils.isNotEmpty(protocolInfoBean.getProtocolSubmissions()) && protocolInfoBean.getProtocolSubmission().getProtocolSubmissionType() != null) {
+                protocolInfo.setSubmissionType(protocolInfoBean.getProtocolSubmission().getProtocolSubmissionType().getDescription());
+            }
         }
     }
     /**
@@ -473,12 +488,18 @@ public class QuestionnaireXmlStream implements XmlStream {
 
     private String getProtocolSubItemCode(Protocol protocol) {
         // For now check renewal/amendment.  will add 'Protocol Submission' when it is cleared
-            String subModuleCode = "0";
-            if (protocol.isAmendment() || protocol.isRenewal()) {
+        String subModuleCode = "0";
+        if (protocol.isAmendment()) {
+            subModuleCode = "4";
+        }
+        else if (protocol.isRenewal()) {
+            subModuleCode = "3";
+            if (protocol.isRenewalWithAmendment()) {
                 subModuleCode = "1";
             }
-            return subModuleCode;
         }
+        return subModuleCode;
+    }
     
     private String getIacucProtocolSubItemCode(IacucProtocol protocol) {
         // For now check renewal/amendment.  will add 'Protocol Submission' when it is cleared
@@ -671,6 +692,7 @@ public class QuestionnaireXmlStream implements XmlStream {
                 }
                 if (questionnaireQuestion.getQuestion() != null) {
                     questionInfo.setQuestion(questionnaireQuestion.getQuestion().getQuestion());
+                    questionInfo.setQuestionId(questionnaireQuestion.getQuestion().getQuestionSeqId());
                     if(!questionnaireQuestion.getParentQuestionNumber().equals(0)){
                         questionInfo.setParentQuestionNumber(questionnaireQuestion.getParentQuestionNumber());
                     }
@@ -698,12 +720,12 @@ public class QuestionnaireXmlStream implements XmlStream {
                                         if (answerName != null) {
                                             if (answerName.trim().equalsIgnoreCase("Y")) {
                                                 answerDescription = "Yes";
-                                                if (updateQuestionDescription) {
-                                                  questionInfo.setQuestion(questionnaireQuestion.getQuestion().getAffirmativeStatementConversion());
+                                                if (updateQuestionDescription && StringUtils.isNotBlank(questionnaireQuestion.getQuestion().getAffirmativeStatementConversion())) {
+                                                    questionInfo.setQuestion(questionnaireQuestion.getQuestion().getAffirmativeStatementConversion());
                                                 }
                                             } else if (answerName.trim().equalsIgnoreCase("N")) {
                                                 answerDescription = "No";
-                                                if (updateQuestionDescription) {
+                                                if (updateQuestionDescription && StringUtils.isNotBlank(questionnaireQuestion.getQuestion().getNegativeStatementConversion())) {
                                                     questionInfo.setQuestion(questionnaireQuestion.getQuestion().getNegativeStatementConversion());
                                                 }
                                             } else if (answerName.trim().equalsIgnoreCase("X")) {
@@ -741,7 +763,223 @@ public class QuestionnaireXmlStream implements XmlStream {
                     }
         }
                 }
-    
+
+    private void setQuestionInfoDataIU(org.kuali.coeus.common.questionnaire.framework.core.Questionnaire questionnaire,
+                                       ModuleQuestionnaireBean moduleQuestionnaireBean, Questionnaire questionnaireType, boolean questionnaireCompletionFlag,
+                                       KcPersistableBusinessObjectBase printableBusinessObject) throws PrintingException {
+        AnswerHeader printHeader = null;
+        if (moduleQuestionnaireBean != null) {
+            // We only want to get back answer headers actually saved to this document
+            moduleQuestionnaireBean.setFinalDoc(true);
+            List<AnswerHeader> answerHeaders = questionnaireAnswerService.getQuestionnaireAnswer(moduleQuestionnaireBean);
+            Collection<AnswerHeader> parentProtocolHeaders = null;
+            if (StringUtils.equals(moduleQuestionnaireBean.getModuleItemCode(), CoeusModule.IRB_MODULE_CODE)) {
+                ProtocolBase protocol = (ProtocolBase) printableBusinessObject;
+                if (!protocol.isNew()) {
+                    // Add in Amendment/Renewal module code
+                    if (moduleQuestionnaireBean.getModuleSubItemCode().equals("1") || moduleQuestionnaireBean.getModuleSubItemCode().equals("4")) {
+                        String oldSubItemCode = moduleQuestionnaireBean.getModuleSubItemCode();
+                        moduleQuestionnaireBean.setModuleSubItemCode("0");
+                        answerHeaders.addAll(questionnaireAnswerService.getQuestionnaireAnswer(moduleQuestionnaireBean));
+                        moduleQuestionnaireBean.setModuleSubItemCode(oldSubItemCode);
+                    }
+                    // Pull in answers from parent Protocol for read-only questionnaires
+                    Map<String, String> parentHeaderFields = new HashMap<String, String>();
+                    parentHeaderFields.put("protocolNumber", moduleQuestionnaireBean.getModuleItemKey().substring(0, 10));
+                    parentHeaderFields.put("active", "Y");
+                    Protocol parentProtocol = getBusinessObjectService().findByPrimaryKey(Protocol.class, parentHeaderFields);
+                    if (parentProtocol != null) {
+                        ModuleQuestionnaireBean parentProtocolQuestionnaireModule = new ProtocolModuleQuestionnaireBean(parentProtocol);
+                        parentProtocolQuestionnaireModule.setFinalDoc(true);
+                        parentProtocolHeaders = questionnaireAnswerService.getQuestionnaireAnswer(parentProtocolQuestionnaireModule);
+                    }
+                }
+            }
+            for (AnswerHeader header : answerHeaders) {
+                if (header.getQuestionnaire() != null && StringUtils.equals(header.getQuestionnaire().getQuestionnaireSeqId(),questionnaire.getQuestionnaireSeqId())) {
+                    printHeader = header; break;
+                }
+            }
+            if (printHeader == null && parentProtocolHeaders != null) {
+                for (AnswerHeader parentHeader : parentProtocolHeaders) {
+                    if (parentHeader.getQuestionnaire() != null && StringUtils.equals(parentHeader.getQuestionnaire().getQuestionnaireSeqId(),questionnaire.getQuestionnaireSeqId())) {
+                        printHeader = parentHeader; break;
+                    }
+                }
+            }
+            if (printHeader != null && !printHeader.getAnswers().isEmpty()) {
+                QuestionsType questionsType = questionnaireType.addNewQuestions();
+                Map<Integer, QuestionInfoType> questionNumberPrintMap = new HashMap<Integer, QuestionInfoType>();
+                QuestionnaireQuestion currentQuestion = null;
+                // This all assumes that answer headers are sorted in the same order they are displayed-- if that's not true, then we'll need another approach
+                for (int i=0; i < printHeader.getAnswers().size(); i++) {
+                    Answer answer = printHeader.getAnswers().get(i);
+                    if (answer.getMatchedChild().equals("Y")) {
+                        if (currentQuestion == null || !answer.getQuestionNumber().equals(currentQuestion.getQuestionNumber())) {
+                            currentQuestion = addNewQuestion(answer, questionNumberPrintMap, questionsType);
+                        }
+                        QuestionInfoType printQuestion = questionNumberPrintMap.get(currentQuestion.getQuestionNumber());
+                        String nextAnswer = translateAnswerForPrint(answer, answer.getQuestion().getQuestionType());
+                        if (printableBusinessObject instanceof ProposalPerson) {
+                            if (StringUtils.equals(nextAnswer, "Yes") && StringUtils.isNotBlank(answer.getQuestion().getAffirmativeStatementConversion())) {
+                                printQuestion.setQuestion(answer.getQuestion().getAffirmativeStatementConversion());
+                            }
+                            if (StringUtils.equals(nextAnswer, "No") && StringUtils.isNotBlank(answer.getQuestion().getNegativeStatementConversion())) {
+                                printQuestion.setQuestion(answer.getQuestion().getNegativeStatementConversion());
+                            }
+                        }
+
+                        AnswerInfoType printAnswer = printQuestion.addNewAnswerInfo();
+                        printAnswer.setAnswerNumber(answer.getAnswerNumber());
+                        printAnswer.setQuestionNumber(answer.getQuestionNumber());
+                        if (printQuestion.getQuestionTypeCode() == Constants.QUESTION_RESPONSE_TYPE_MULTIPLE_CHOICE) {
+                            String[] prompts = answer.getQuestion().getMultipleChoicePrompts();
+                            if (answer.getQuestion().isRadioButton()) {
+                                for (int j=0; j < prompts.length; j++) {
+                                    printAnswer.setAnswerNumber(j + 1);
+                                    printAnswer.setQuestionNumber(answer.getQuestionNumber());
+                                    printAnswer.setSelected(false);
+                                    if (StringUtils.equals(prompts[j], nextAnswer) || (StringUtils.endsWith(prompts[j], ":") && StringUtils.startsWith(nextAnswer, prompts[j]))) {
+                                        printAnswer.setSelected(true);
+                                        printAnswer.setAnswer(nextAnswer);
+                                    }
+                                    else {
+                                        printAnswer.setAnswer(prompts[j]);
+                                    }
+                                    if (j != prompts.length - 1) {
+                                        printAnswer = printQuestion.addNewAnswerInfo();
+                                    }
+                                }
+                            }
+                            else {
+                                if (StringUtils.isNotBlank(nextAnswer)) {
+                                    printAnswer.setAnswer(nextAnswer);
+                                    printAnswer.setSelected(true);
+                                }
+                                else {
+                                    printAnswer.setAnswer(prompts[answer.getAnswerNumber()-1]);
+                                    printAnswer.setSelected(false);
+                                }
+                            }
+                        }
+                        else if (printQuestion.getQuestionTypeCode() == Constants.QUESTION_RESPONSE_TYPE_YES_NO) {
+                            setYNQAnswers(printQuestion, printAnswer, new String[] { "Yes", "No" }, nextAnswer);
+                        }
+                        else if (printQuestion.getQuestionTypeCode() == Constants.QUESTION_RESPONSE_TYPE_YES_NO_NA) {
+                            setYNQAnswers(printQuestion, printAnswer, new String[] { "Yes", "No", "None" }, nextAnswer);
+                        }
+                        else if (printQuestion.getQuestionTypeCode() == Constants.QUESTION_RESPONSE_TYPE_LOOKUP) {
+                            if (StringUtils.isNotBlank(answer.getQuestion().getLookupClass()) && answer.getQuestion().getLookupClass().equals("org.kuali.kra.bo.ArgValueLookup")) {
+                                handleArgValueLookupQuestion(printQuestion, printAnswer, answer, nextAnswer);
+                            }
+                        }
+                        else {
+                            if (StringUtils.isNotBlank(nextAnswer)) {
+                                printAnswer.setAnswer(nextAnswer);
+                                printAnswer.setSelected(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleArgValueLookupQuestion(QuestionInfoType printQuestion, AnswerInfoType printAnswer, Answer answer, String nextAnswer) {
+        if (StringUtils.isNotBlank(answer.getQuestion().getLookupReturn())) {
+            ArgValueLookupValuesFinder argValueLookup = new ArgValueLookupValuesFinder();
+            argValueLookup.setArgName(answer.getQuestion().getLookupReturn());
+            List<KeyValue> keyValues = argValueLookup.getKeyValues();
+            int startingIndex = 0;
+            String[] argValueOptions = new String[keyValues.size()];
+            if (keyValues != null && keyValues.size() > 0) {
+                if (keyValues.get(0).getValue().equals("select") && StringUtils.isBlank(keyValues.get(0).getKey())) {
+                    startingIndex = 1;
+                    argValueOptions = new String[keyValues.size() - 1];
+                }
+                for (int j = startingIndex; j < keyValues.size(); j++) {
+                    KeyValue keyValue = keyValues.get(j);
+                    if (StringUtils.equals(keyValue.getKey(), nextAnswer)) {
+                        nextAnswer = keyValue.getValue();
+                    }
+                    argValueOptions[j - startingIndex] = keyValue.getValue();
+                }
+                setYNQAnswers(printQuestion, printAnswer, argValueOptions, nextAnswer);
+            }
+        }
+    }
+
+    private void setYNQAnswers(QuestionInfoType printQuestion, AnswerInfoType printAnswer, String[] answerOptions, String answer) {
+        for (int i = 0; i < answerOptions.length; i++) {
+            printAnswer.setAnswerNumber(i + 1);
+            printAnswer.setQuestionNumber(printQuestion.getQuestionNumber());
+            printAnswer.setAnswer(answerOptions[i]);
+            if (StringUtils.equals(answer, answerOptions[i])) {
+                printAnswer.setSelected(true);
+            }
+            else {
+                printAnswer.setSelected(false);
+            }
+
+            if (i != answerOptions.length - 1) {
+                printAnswer = printQuestion.addNewAnswerInfo();
+            }
+        }
+    }
+
+    private QuestionnaireQuestion addNewQuestion(Answer answer, Map<Integer, QuestionInfoType> questionNumberPrintMap, QuestionsType questionsType) {
+        QuestionnaireQuestion newQuestionnaireQuestion = answer.getQuestionnaireQuestion();
+        QuestionInfoType newQuestion = null;
+        if (newQuestionnaireQuestion.getParentQuestionNumber() == 0) {
+            newQuestion = questionsType.addNewQuestionInfo();
+        }
+        else {
+            newQuestion = questionNumberPrintMap.get(newQuestionnaireQuestion.getParentQuestionNumber()).addNewQuestionInfo();
+            newQuestion.setParentQuestionNumber(newQuestionnaireQuestion.getParentQuestionNumber());
+        }
+
+        // IU Customization: UITSRA-3535
+        newQuestion.setQuestionTypeCode(answer.getQuestion().getQuestionTypeId());
+        newQuestion.setQuestion(answer.getQuestion().getQuestion());
+        newQuestion.setQuestionId(answer.getQuestion().getQuestionSeqId());
+        newQuestion.setQuestionNumber(answer.getQuestionNumber());
+        questionNumberPrintMap.put(newQuestionnaireQuestion.getQuestionNumber(), newQuestion);
+        return newQuestionnaireQuestion;
+    }
+
+    private String translateAnswerForPrint(Answer answer, QuestionType questionType) {
+        if (StringUtils.isBlank(answer.getAnswer())) {
+            return null;
+        }
+        // Translate for pdf formatting
+        if (questionType.getId().equals(Constants.QUESTION_RESPONSE_TYPE_TEXT)) {
+            String newText = answer.getAnswer();
+            newText = newText.replaceAll("≥", ">=");
+            newText = newText.replaceAll("≤", "<=");
+            return newText;
+        }
+        // Translate Y/N answers to words for printing
+        if (questionType.getId() == Constants.QUESTION_RESPONSE_TYPE_YES_NO || questionType.getId() == Constants.QUESTION_RESPONSE_TYPE_YES_NO_NA) {
+            if (answer.getAnswer().trim().equalsIgnoreCase("Y")) {
+                return "Yes";
+            } else if (answer.getAnswer().trim().equalsIgnoreCase("N")) {
+                return "No";
+            } else if (answer.getAnswer().trim().equalsIgnoreCase("X")) {
+                return "None";
+            }
+        }
+        // Translate user ID to user's full name
+        if (questionType.getId() == Constants.QUESTION_RESPONSE_TYPE_LOOKUP && answer.getQuestion().getLookupClass().equals("org.kuali.kra.bo.KcPerson")
+                && answer.getQuestion().getLookupReturn().equals("personId")) {
+            KcPerson kcPerson = kcPersonService.getKcPersonByPersonId(answer.getAnswer());
+            if(kcPerson != null && StringUtils.isNotBlank(kcPerson.getFullName())) {
+                return kcPerson.getFullName();
+            }
+        }
+
+        return answer.getAnswer();
+    }
+
     /**
      * 
      * This method for setting the question and answers corresponding to the questionnaire.
