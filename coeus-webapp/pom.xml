@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.kuali.coeus</groupId>
         <artifactId>coeus</artifactId>
-        <version>1508.4-SNAPSHOT</version>
+        <version>1508.4</version>
     </parent>
     <artifactId>coeus-webapp</artifactId>
     <packaging>war</packaging>
@@ -88,6 +88,11 @@
 	    	<groupId>org.jasig.cas.client</groupId>
 	    	<artifactId>cas-client-core</artifactId>
     	</dependency>
+        <dependency>
+            <groupId>edu.iu.es.esi</groupId>
+            <artifactId>casfilter</artifactId>
+            <version>1.17</version>
+        </dependency>
     </dependencies>
 
 
@@ -220,6 +225,12 @@
                         </resource>
                         <resource>
                         	<directory>${jsfrontend.web.sources}</directory>
+                        </resource>
+                        <resource>
+                            <directory>src/main/resources</directory>
+                            <includes>
+                                <include>**/context.xml</include>
+                            </includes>
                         </resource>
                     </webResources>
                 </configuration>

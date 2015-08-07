@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.kuali.coeus</groupId>
         <artifactId>coeus</artifactId>
-        <version>1508.4-SNAPSHOT</version>
+        <version>1508.4</version>
     </parent>
     <artifactId>coeus-impl</artifactId>
     <packaging>jar</packaging>
@@ -224,7 +224,6 @@
                             <schemaDirectory>${printing.schema.dir}</schemaDirectory>
                             <sourceGenerationDirectory>${printing.xmlbeans.gen.src}</sourceGenerationDirectory>
                             <classGenerationDirectory>${printing.xmlbeans.gen.cls}</classGenerationDirectory>
-                            <staleFile>${printing.xmlbeans.gen.mrk}</staleFile>
                         </configuration>
                     </execution>
                 </executions>

@@ -1,0 +1,34 @@
+<config>
+    <param name="version">5.1</param>
+    <param name="application.host">https://onestart.iu.edu</param>
+
+    <param name="rice.ksb.unfilteredServiceRegistry.serviceUrl">https://uisapp2.iu.edu/ksb-${rice.environment}/remoting/soap/ksb/v2_0/serviceRegistry</param>
+    
+    <param name="rice.server.url">https://uisapp2.iu.edu/kr-${rice.environment}</param>
+    <param name="rice.ksb.registry.serviceUrl">https://uisapp2.iu.edu/ksb-${rice.environment}/remoting/soap/ksb/v2_0/serviceRegistry</param>
+    
+    <param name="rice.krms.additionalSpringFiles">classpath:edu/iu/uis/rice/resources/IUKrmsOverrideSpringBeans.xml,classpath:org/kuali/kra/custom/CustomKrmsSpringBeans.xml</param>
+    
+    <param name="rice.portal.allowed.regex">^(${application.url}|${rice.server.url})(/.*|)</param>
+    
+    <param name="oneStart.portal.mode">true</param>
+    <param name="oneStart.portal.url">https://onestart.iu.edu/my2-prd/portal/154374</param>
+
+    <param name="externalizable.help.url">http://researchadmin.iu.edu/EO/AppHelp/KC/</param>
+
+    <!-- IU CAS Config -->
+    <param name="cas.url">https://cas.iu.edu/cas</param>    
+    
+    <param name="log4j.settings.path">/opt/j2ee/settings/${app.code}/${environment}/log4j.properties</param> 
+    <param name="log4j.settings.reloadInterval">5</param>
+    
+    <param name="threadPool.size">10</param>
+    
+    <param name="attachment.dir.location">/opt/work/${app.code}/${environment}/</param>
+    <param name="attachments.directory">${attachment.dir.location}/kc-attachments</param>
+    <param name="attachments.pending.directory">${attachments.directory}/pending</param>
+    
+    <param name="print.logging.directory">/opt/work/kc/prd/</param>
+	<param name="print.logging.enable">true</param>
+	<param name="custom.xsl.dir">https://es-prod-doc.uits.indiana.edu/dav/ERA/KC/Custom</param>
+</config>

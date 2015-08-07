@@ -1,0 +1,1681 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<portal xmlns="https://onestart.iu.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://onestart.iu.edu xmlportlet.xsd">
+
+    <variable name="base" value="https://test.uisapp2.iu.edu/kc-stg/" test="$[__portal_environment__] = 'TST'" />
+    <variable name="base" value="https://onestart.iu.edu/kc-prd/" test="$[__portal_environment__] = 'PRD'" />
+    <variable name="riceBase" value="https://test.uisapp2.iu.edu/kr-stg/" test="$[__portal_environment__] = 'TST'" />
+    <variable name="riceBase" value="https://onestart.iu.edu/kr-prd/" test="$[__portal_environment__] = 'PRD'" />
+
+    <!-- Variables for re-using Urls to KC -->
+	<variable name="kr" value="${base}kr/"/>
+	<variable name="riceKr" value="${riceBase}kr/"/>
+	<variable name="kew" value="${base}kew/"/>
+	<variable name="riceKew" value="${riceBase}kew/"/>
+	<variable name="kewds" value="${kew}DocumentSearch.do?"/>
+	<variable name="dtn" value="&amp;docTypeName="/>
+	<variable name="dtfn" value="&amp;docTypeFullName="/>
+	<variable name="dfk" value="&amp;docFormKey=88888888"/>
+	<variable name="rl" value="&amp;returnLocation="/>
+	<!-- <variable name="defrl" value="${rl}${base}close.jsp&amp;hideReturnLink=true"/> -->
+	<variable name="defrl" value="${rl}${base}portal.do&amp;hideReturnLink=true"/>
+	<variable name="mc" value="methodToCall="/>
+	<variable name="boc" value="&amp;businessObjectClassName="/>
+	<variable name="cmd" value="&amp;command="/>
+       
+	<menu name="myMenu">
+		<menu-item content-page-number="1" title="Maintenance" />
+		<menu-item content-page-number="2" title="System Admin" />
+	</menu>
+
+	<content-page content-page-number="1" menu-name="myMenu" padding="true">
+		<table width="100%">
+			<row>
+				<cell width="95%">
+					<align value="right">
+						<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="expandAllMaintenanceForm">
+							<hidden name="showProposals" value="on" override-value="on" type="session" />
+                            <hidden name="showAwards" value="on" override-value="on" type="session" />
+                            <hidden name="showNegotiations" value="on" override-value="on" type="session" />
+                            <hidden name="showCompliance" value="on" override-value="on" type="session" />
+							<hidden name="showShared" value="on" override-value="on" type="session" />
+							<hidden name="showMiscellaneous" value="on" override-value="on" type="session" />
+							<image name="submitButton" button-name="expandall" submit="ajax" id="expandAllMaintenance" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="pa" image-id="paImage" action="show" />
+                                <show-hide-id id="aw" image-id="awImage" action="show" />
+                                <show-hide-id id="ne" image-id="neImage" action="show" />
+                                <show-hide-id id="co" image-id="coImage" action="show" />
+								<show-hide-id id="sh" image-id="shImage" action="show" />
+								<show-hide-id id="misc" image-id="miscImage" action="show"/>
+							</image>
+						</form>
+					</align>
+				</cell>
+				<cell width="5%">
+					<align value="left">
+						<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="collapseAllMaintenanceForm">
+							<hidden name="showProposals" value="off" override-value="off" type="session" />
+                            <hidden name="showAwards" value="off" override-value="off" type="session" />
+                            <hidden name="showNegotiations" value="off" override-value="off" type="session" />
+                            <hidden name="showCompliance" value="off" override-value="off" type="session" />
+							<hidden name="showShared" value="off" override-value="off" type="session" />
+							<hidden name="showMisc" value="on" override-value="on" type="session" />
+							<image name="submitButton" button-name="collapseall" submit="ajax" id="collapseAllMaintenance" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="pa" image-id="paImage" action="hide" />
+								<show-hide-id id="aw" image-id="awImage" action="hide" />
+								<show-hide-id id="ne" image-id="neImage" action="hide" />
+								<show-hide-id id="co" image-id="coImage" action="hide" />
+                                <show-hide-id id="sh" image-id="shImage" action="hide" />
+								<show-hide-id id="misc" image-id="miscImage" action="hide" />
+							</image>
+						</form>
+					</align>
+				</cell>
+			</row>
+		</table>
+		<newline />
+        <!-- PROPOSALSTART -->
+		<align value="center">
+			<variable name="displayPA" value="true" test="$[showProposals] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProposals] = 'on'" />
+			<variable name="displayPA" value="false" test="$[showProposals] = 'off'" />
+
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showProposalsForm">
+				<if test="$[showProposals] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProposals] = 'on'">
+					<hidden name="showProposals" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="paImage" div-id="pa" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pa" />
+						</image>
+						Proposals
+					</heading>
+				</if>
+				<if test="$[showProposals] = 'off'">
+					<hidden name="showProposals" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="paImage" div-id="pa" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pa" />
+						</image>
+						Proposals
+					</heading>
+				</if>
+			</form>
+			<div id="pa" display="${displayPA}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.AbstractType${dfk}${defrl}" title="Abstract Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.PropPerDocType${dfk}${defrl}" title="Person Document Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.BudgetCategory${dfk}${defrl}" title="Budget Categories" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.PersonEditableField${dfk}${defrl}" title="Person Table Editable Columns" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.BudgetStatus${dfk}${defrl}" title="Budget Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.ProposalColumnsToAlter${dfk}${defrl}" title="Proposal Dev Editable Columns" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.MailType${dfk}${defrl}" title="Mail Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.ProposalState${dfk}${defrl}" title="Proposal Development Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.CostElement${dfk}${defrl}" title="Object Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateClass${dfk}${defrl}" title="Rate Class" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DeadlineType${dfk}${defrl}" title="Deadline Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateType${dfk}${defrl}" title="Rate Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateClassBaseExclusion${dfk}${defrl}" title="Rate Type Exclusion" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateClassBaseInclusion${dfk}${defrl}" title="Rate Type Inclusion" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+					<cell width="50%">
+							
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}edu.iu.uits.kra.proposaldevelopment.bo.ProposalRevisionType${dfk}${defrl}" title="Revision Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.DegreeType${dfk}${defrl}" title="Degree Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.ipreview.IntellectualPropertyReviewActivityType${dfk}${defrl}" title="IP Review Activity Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.s2s.bo.S2sSubmissionType${dfk}${defrl}" title="S2S Submission Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.ipreview.IntellectualPropertyReviewRequirementType${dfk}${defrl}" title="IP Review Requirement Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.S2sRevisionType${dfk}${defrl}" title="S2S Revision Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.ipreview.IntellectualPropertyReviewResultType${dfk}${defrl}" title="IP Review Result Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.calculator.ValidCalcType${dfk}${defrl}" title="Valid Calculation Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.personnel.JobCode${dfk}${defrl}" title="Job Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.ValidCeRateType${dfk}${defrl}" title="Valid Cost Element Rate Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.MailBy${dfk}${defrl}" title="Mail By" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.ProposalStatus${dfk}${defrl}" title="Institutional Proposal Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.NarrativeStatus${dfk}${defrl}" title="Narrative Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.proposallog.ProposalLogStatus${dfk}${defrl}" title="Proposal Log Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.NarrativeType${dfk}${defrl}" title="Narrative Types" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.proposallog.ProposalLogType${dfk}${defrl}" title="Proposal Log Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.personnel.TbnPerson${dfk}${defrl}" title="To Be Named Person" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+        <!-- PROPOSALEND -->
+		<newline />
+        <!-- AWARDSTART -->
+        <align value="center">
+			<variable name="displayAW" value="true" test="$[showAwards] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAwards] = 'on'" />
+			<variable name="displayAW" value="false" test="$[showAwards] = 'off'" />
+            
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showAwardsForm">
+				<if test="$[showAwards] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAwards] = 'on'">
+					<hidden name="showAwards" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="awImage" div-id="aw" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="aw" />
+						</image>
+						Awards
+					</heading>
+				</if>
+				<if test="$[showAwards] = 'off'">
+					<hidden name="showAwards" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="awImage" div-id="aw" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="aw" />
+						</image>
+						Awards
+					</heading>
+				</if>
+			</form>
+			<div id="aw" display="${displayAW}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.AccountType${dfk}${defrl}" title="Account Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.notesandattachments.attachments.AwardAttachmentType${dfk}${defrl}" title="Attachment Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.AwardStatus${dfk}${defrl}" title="Award Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.AwardType${dfk}${defrl}" title="Award Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.AwardBasisOfPayment${dfk}${defrl}" title="Basis of Payment" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.ValidAwardBasisPayment${dfk}${defrl}" title="Valid Award Basis of Payment" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.ValidClassReportFrequency${dfk}${defrl}" title="Valid Class Report Frequency" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.ValidFrequencyBase${dfk}${defrl}" title="Valid Frequency Base" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.ValidBasisMethodPayment${dfk}${defrl}" title="Valid Basis and Method of Payment" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.ContactType${dfk}${defrl}" title="Contact Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+                    <row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.external.award.FinancialIndirectCostRecoveryTypeCode${dfk}${defrl}" title="Financial Indirect Cost Recovery Type Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.external.budget.FinancialObjectCodeMapping${dfk}${defrl}" title="Financial Object Code Mapping" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.Frequency${dfk}${defrl}" title="Frequency" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.FrequencyBase${dfk}${defrl}" title="Frequency Base" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+                        <cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.AwardMethodOfPayment${dfk}${defrl}" title="Method of Payment" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.Distribution${dfk}${defrl}" title="OSP File Copy" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.Report${dfk}${defrl}" title="Report" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.ReportClass${dfk}${defrl}" title="Report Class" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.ReportStatus${dfk}${defrl}" title="Report Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.AwardTemplate${dfk}${defrl}" title="Sponsor Template" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SponsorTerm${dfk}${defrl}" title="Sponsor Terms" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.timeandmoney.transactions.AwardTransactionType${dfk}${defrl}" title="
+								" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+                </table>
+			</div>
+		</align>
+        <!-- AWARDEND -->
+        <newline />
+        <!-- NEGOTIATIONSTART -->
+        <align value="center">
+			<variable name="displayNE" value="true" test="$[showNegotiations] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showNegotiations] = 'on'" />
+			<variable name="displayNE" value="false" test="$[showNegotiations] = 'off'" />
+            
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showNegotationsForm">
+				<if test="$[showNegotiations] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showNegotiations] = 'on'">
+					<hidden name="showNegotiations" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="neImage" div-id="ne" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ne" />
+						</image>
+						Negotiations
+					</heading>
+				</if>
+				<if test="$[showNegotiations] = 'off'">
+					<hidden name="showNegotiations" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="neImage" div-id="ne" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ne" />
+						</image>
+						Negotiations
+					</heading>
+				</if>
+			</form>
+			<div id="ne" display="${displayNE}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.negotiations.bo.NegotiationActivityType${dfk}${defrl}" title="Negotiation Activity Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.negotiations.bo.NegotiationAgreementType${dfk}${defrl}" title="Negotiation Agreement Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.negotiations.bo.NegotiationAssociationType${dfk}${defrl}" title="Negotiation Association Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.negotiations.bo.NegotiationLocation${dfk}${defrl}" title="Negotiation Location" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.negotiations.bo.NegotiationStatus${dfk}${defrl}" title="Negotiation Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+        <!-- NEGOTIATIONEND -->
+		<newline />
+		<!-- COMPLIANCESTART -->
+        <align value="center">
+			<variable name="displayCO" value="true" test="$[showCompliance] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showCompliance] = 'on'" />
+			<variable name="displayCO" value="false" test="$[showCompliance] = 'off'" />
+            
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showComplianceForm">
+				<if test="$[showCompliance] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showCompliance] = 'on'">
+					<hidden name="showCompliance" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="coImage" div-id="co" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="co" />
+						</image>
+						Compliance
+					</heading>
+				</if>
+				<if test="$[showCompliance] = 'off'">
+					<hidden name="showCompliance" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="coImage" div-id="co" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="co" />
+						</image>
+						Compliance
+					</heading>
+				</if>
+			</form>
+			<div id="co" display="${displayCO}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.AffiliationType${dfk}${defrl}" title="Affiliation Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.noteattachment.ProtocolAttachmentTypeGroup${dfk}${defrl}" title="Protocol Attachment Type Group" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${base}batchCorrespondenceDetail.do?init=true" title="Batch Correspondence" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.meeting.ProtocolContingency${dfk}${defrl}" title="Protocol Contingency" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.bo.CommitteeDecisionMotionType${dfk}${defrl}" title="Committee Decision Motion Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ValidProtocolActionAction${dfk}${defrl}" title="Protocol Follow-up Action" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.bo.CommitteeMembershipType${dfk}${defrl}" title="Committee Membership Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.personnel.ProtocolPersonRole${dfk}${defrl}" title="Protocol Person Role" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.bo.CommitteeType${dfk}${defrl}" title="Committee Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.protocol.location.ProtocolOrganizationType${dfk}${defrl}" title="Protocol Organization Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+                    <row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.correspondence.ValidProtoActionCoresp${dfk}${defrl}" title="Correspondence Generated" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ProtocolReviewType${dfk}${defrl}" title="Protocol Review Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${base}protocolCorrespondenceTemplate.do?init=true" title="Correspondence Template" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ProtocolReviewerType${dfk}${defrl}" title="Protocol Reviewer Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+                        <cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.correspondence.ProtocolCorrespondenceType${dfk}${defrl}" title="Correspondence Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.onlinereview.ProtocolOnlineReviewStatus${dfk}${defrl}" title="Protocol Online Review Status Codes" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.correspondence.CorrespondentType${dfk}${defrl}" title="Correspondent Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.onlinereview.ProtocolOnlineReviewDeterminationRecommendation${dfk}${defrl}" title="Protocol Online Review Determination Recommendation Codes" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.ExemptionType${dfk}${defrl}" title="Exemption Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.ProtocolStatus${dfk}${defrl}" title="Protocol Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ExemptStudiesCheckListItem${dfk}${defrl}" title="Exempt Studies Checklist" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.protocol.ProtocolType${dfk}${defrl}" title="Protocol Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ExpeditedReviewCheckListItem${dfk}${defrl}" title="Expedited Review Checklist" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.protocol.reference.ProtocolReferenceType${dfk}${defrl}" title="Reference Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.FundingSourceType${dfk}${defrl}" title="Funding Source Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.RiskLevel${dfk}${defrl}" title="Risk Level" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.bo.MembershipRole${dfk}${defrl}" title="Membership Role" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.meeting.ScheduleActItemType${dfk}${defrl}" title="Scheduled Other Action Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.meeting.MinuteEntryType${dfk}${defrl}" title="Minute Entry Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.committee.bo.ScheduleStatus${dfk}${defrl}" title="Schedule Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.OrganizationCorrespondent${dfk}${defrl}" title="Organization Correspondent" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ProtocolSubmissionStatus${dfk}${defrl}" title="Submission Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.protocol.participant.ParticipantType${dfk}${defrl}" title="Participant Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ProtocolSubmissionType${dfk}${defrl}" title="Submission Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${base}protocolNotificationTemplate.do?init=true" title="Protocol Action Notification Template" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ProtocolSubmissionQualifierType${dfk}${defrl}" title="Submission Qualifier Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.ProtocolActionType${dfk}${defrl}" title="Protocol Action Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.UnitCorrespondent${dfk}${defrl}" title="Unit Correspondent" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.noteattachment.ProtocolAttachmentGroup${dfk}${defrl}" title="Protocol Attachment Group" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ValidProtoSubRevType${dfk}${defrl}" title="Valid Protocol Submission Review Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.noteattachment.ProtocolAttachmentStatus${dfk}${defrl}" title="Protocol Attachment Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.actions.submit.ValidProtoSubTypeQual${dfk}${defrl}" title="Valid Protocol Submission Type Qualifier" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.irb.noteattachment.ProtocolAttachmentType${dfk}${defrl}" title="Protocol Attachment Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+							</align>
+						</cell>
+					</row>
+                </table>
+			</div>
+		</align>
+        <!-- COMPLIANCEEND -->
+        <newline />
+        <!-- SHAREDSTART -->
+		<align value="center">
+			<variable name="displaySH" value="true" test="$[showShared] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showShared] = 'on'" />
+			<variable name="displaySH" value="false" test="$[showShared] = 'off'" />
+
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showSharedForm">
+				<if test="$[showShared] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showShared] = 'on'">
+					<hidden name="showShared" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="shImage" div-id="sh" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="sh" />
+						</image>
+						Shared
+					</heading>
+				</if>
+				<if test="$[showShared] = 'off'">
+					<hidden name="showShared" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="shImage" div-id="sh" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="sh" />
+						</image>
+						Shared
+					</heading>
+				</if>
+			</form>
+			<div id="sh" display="${displaySH}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.ActivityType${dfk}${defrl}" title="Activity Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.CostElement${dfk}${defrl}" title="Object Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.personnel.AppointmentType${dfk}${defrl}" title="Appointment Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Organization${dfk}${defrl}" title="Organization" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.ArgValueLookup${dfk}${defrl}" title="Argument Value Lookup" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.OrganizationTypeList${dfk}${defrl}" title="Organization Type List" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.BudgetCategory${dfk}${defrl}" title="Budget Category" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.PropPerDocType${dfk}${defrl}" title="Person Document Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.BudgetCategoryMapping${dfk}${defrl}" title="Budget Category Mapping" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.ProposalType${dfk}${defrl}" title="Proposal Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.BudgetCategoryMap${dfk}${defrl}" title="Budget Category Maps" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateClass${dfk}${defrl}" title="Rate Class" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.BudgetCategoryType${dfk}${defrl}" title="Budget Category Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateClassType${dfk}${defrl}" title="Rate Class Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.core.BudgetCategoryType${dfk}${defrl}" title="Budget Category Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.RateType${dfk}${defrl}" title="Rate Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.CommentType${dfk}${defrl}" title="Comment Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.questionnaire.question.Question${dfk}${defrl}" title="Question" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.CostShareType${dfk}${defrl}" title="Cost Sharing Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.questionnaire.Questionnaire${dfk}${defrl}" title="Questionnaire" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.CustomAttribute${dfk}${defrl}" title="Custom Attribute" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.questionnaire.question.QuestionCategory${dfk}${defrl}" title="Question Category" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.CustomAttributeDocument${dfk}${defrl}" title="Custom Attribute Document" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.questionnaire.question.QuestionType${dfk}${defrl}" title="Question Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.commitments.FandaRateType${dfk}${defrl}" title="F&amp;A Rate Types" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SpecialReviewApprovalType${dfk}${defrl}" title="Special Review Approval Status" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.InstituteLaRate${dfk}${defrl}" title="Institute La Rate" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SpecialReviewType${dfk}${defrl}" title="Special Review Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.InstituteRate${dfk}${defrl}" title="Institute Rate" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.ValidSpecialReviewApproval${dfk}${defrl}" title="Valid Special Review Approval" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.InvestigatorCreditType${dfk}${defrl}" title="Investigator Credit Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.calculator.ValidCalcType${dfk}${defrl}" title="Valid Calculation Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.ScienceKeyword${dfk}${defrl}" title="Keywords" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.personnel.ValidCeJobCode${dfk}${defrl}" title="Valid Cost Element Job Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Rolodex${dfk}${defrl}" title="Non-employee Lookup" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.budget.rates.ValidCeRateType${dfk}${defrl}" title="Valid Cost Element Rate Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.NoticeOfOpportunity${dfk}${defrl}" title="Notice of Opportunity" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.UnitAdministrator${dfk}${defrl}" title="Unit Administrator" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.notification.bo.NotificationType${dfk}${defrl}" title="Notifications" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Ynq${dfk}${defrl}" title="Yes/No Questions" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.common.notification.bo.NotificationModuleRole${dfk}${defrl}" title="Notification Module Role" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Watermark${dfk}${defrl}" title="Watermark" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.NsfCode${dfk}${defrl}" title="NSF Science Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+        <!-- SHAREDEND -->
+		<newline />
+        <!-- MISCSTART -->
+		<align value="center">
+			<variable name="displayMS" value="true" test="$[showMisc] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showMisc] = 'on'" />
+			<variable name="displayMS" value="false" test="$[showMisc] = 'off'" />
+
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showMiscForm">
+				<if test="$[showMisc] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showMisc] = 'on'">
+					<hidden name="showMisc" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="miscImage" div-id="misc" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="misc" />
+						</image>
+						Miscellaneous
+					</heading>
+				</if>
+				<if test="$[showMisc] = 'off'">
+					<hidden name="showMisc" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="miscImage" div-id="misc" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="misc" />
+						</image>
+						Miscellaneous
+					</heading>
+				</if>
+			</form>
+			<div id="misc" display="${displayMS}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.CFDA${dfk}${defrl}" title="Cfda" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SponsorFormTemplate${dfk}${defrl}" title="Sponsor Form Templates" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.paymentreports.closeout.CloseoutReportType${dfk}${defrl}" title="Closeout Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${base}sponsorHierarchy.do" title="Sponsor Hierarchy" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.country.CountryBo${dfk}${defrl}" title="Country" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SponsorType${dfk}${defrl}" title="Sponsor Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.krad.document.authorization.PessimisticLock${dfk}${defrl}" title="Current Locks" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SchoolCode${dfk}${defrl}" title="School Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.CoeusModule${dfk}${defrl}" title="Module Names" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Sponsor${dfk}${defrl}" title="Sponsor" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.ContactType${dfk}${defrl}" title="Sponsor Contact Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.UnitAdministratorType${dfk}${defrl}" title="Unit Administrator Type" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.state.StateBo${dfk}${defrl}" title="State" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Unit${dfk}${defrl}" title="Unit" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.SponsorForms${dfk}${defrl}" title="Sponsor Forms" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${base}unitHierarchy.do" title="Unit Hierarchy" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.ValidRates${dfk}${defrl}" title="Valid Rates" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<link url="${base}backdoorlogin.jsp" title="Backdoor Login"/>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+        <!-- MISCEND -->
+		<newline />
+
+    </content-page>
+
+	<content-page content-page-number="2" menu-name="myMenu" padding="true">
+		<table width="100%">
+			<row>
+				<cell width="95%">
+					<align value="right">
+						<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="expandAllUnitForm">
+							<hidden name="showSystem" value="on" override-value="on" type="session" />
+							<hidden name="showConfiguration" value="on" override-value="on" type="session" />
+							<hidden name="showIdentity" value="on" override-value="on" type="session" />
+							<image name="submitButton" button-name="expandall" submit="ajax" id="expandAllUnitPreferences" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="sys" image-id="sysImage" action="show" />
+								<show-hide-id id="conf" image-id="confImage" action="show" />
+								<show-hide-id id="idt" image-id="idtImage" action="show" />
+							</image>
+						</form>
+					</align>
+				</cell>
+				<cell width="5%">
+					<align value="left">
+						<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="collapseAllUnitForm">
+							<hidden name="showSystem" value="off" override-value="off" type="session" />
+							<hidden name="showConfiguration" value="off" override-value="off" type="session" />
+							<hidden name="showIdentity" value="off" override-value="off" type="session" />
+							<image name="submitButton" button-name="collapseall" submit="ajax" id="collapseAllUnitPreferences" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="sys" image-id="sysImage" action="hide" />
+								<show-hide-id id="conf" image-id="confImage" action="hide" />
+								<show-hide-id id="idt" image-id="idtImage" action="hide" />
+							</image>
+						</form>
+					</align>
+				</cell>
+			</row>
+		</table>
+		<newline />
+		<align value="center">
+			<variable name="displaySys" value="true" test="$[showSystem] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showSystem] = 'on'" />
+			<variable name="displaySys" value="false" test="$[showSystem] = 'off'" />
+
+			<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="showSystemForm">
+				<if test="$[showSystem] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showSystem] = 'on'">
+					<hidden name="showSystem" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="sysImage" div-id="sys" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="sys" />
+						</image>
+						System &amp; Configuration
+					</heading>
+				</if>
+				<if test="$[showSystem] = 'off'">
+					<hidden name="showSystem" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="sysImage" div-id="sys" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="sys" />
+						</image>
+						System &amp; Configuration
+					</heading>
+				</if>
+			</form>
+			<div id="sys" display="${displaySys}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							System
+						</header>
+						<header width="50%">
+							Configuration
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.MessageOfTheDay${dfk}${defrl}" title="Messages Of The Day" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.coreservice.impl.parameter.ParameterBo${dfk}${defrl}" title="Parameter" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.KcPersonExtendedAttributes${dfk}${defrl}" title="Person Extended Attributes" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.coreservice.impl.component.ComponentBo${dfk}${defrl}" title="Parameter Component" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKew}RuleQuickLinks.do?${mc}start${dfk}${defrl}" title="Document Configuration Hierarchy" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.coreservice.impl.parameter.ParameterTypeBo${dfk}${defrl}" title="Parameter Type" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<space/>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.coreservice.impl.namespace.NamespaceBo${dfk}${defrl}" title="Namespace" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<space/>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.krad.document.authorization.PessimisticLock${dfk}${defrl}" title="Pessimistic Lock" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<space/>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${base}ksb/ConfigViewer.do" title="Configuration Viewer" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+		<align value="center">
+			<variable name="displayIdt" value="true" test="$[showIdentity] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showIdentity] = 'on'" />
+			<variable name="displayIdt" value="false" test="$[showIdentity] = 'off'" />
+
+			<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="showIdentityForm">
+				<if test="$[showIdentity] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showIdentity] = 'on'">
+					<hidden name="showIdentity" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="idtImage" div-id="idt" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="idt" />
+						</image>
+						Identity
+					</heading>
+				</if>
+				<if test="$[showIdentity] = 'off'">
+					<hidden name="showIdentity" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="idtImage" div-id="idt" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="idt" />
+						</image>
+						Identity
+					</heading>
+				</if>
+			</form>
+			<div id="idt" display="${displayIdt}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							Identity
+						</header>
+						<header width="28%">
+							Locations
+						</header>
+						<header width="28%">
+							Reference
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kim.api.identity.Person${dfk}${defrl}" title="Person" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kns.bo.Campus${dfk}${defrl}" title="Campus" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Address Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.address.EntityAddressTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.group.GroupBo${dfk}${defrl}" title="Group" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.country.CountryBo${dfk}${defrl}" title="Country" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Affiliation Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.affiliation.EntityAffiliationTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.role.RoleBo${dfk}${defrl}" title="Role" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.county.CountyBo${dfk}${defrl}" title="County" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Campus Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.campus.CampusBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.permission.UberPermissionBo${dfk}${defrl}" title="Permission" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.postalcode.PostalCodeBo${dfk}${defrl}" title="Postal Code" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Citizenship Status" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.citizenship.EntityCitizenshipStatusBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								<link url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.responsibility.UberResponsibilityBo${dfk}${defrl}" title="Responsibility" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.location.impl.state.StateBo${dfk}${defrl}" title="State" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Email Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.email.EntityEmailTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Employment Status" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.employment.EntityEmploymentStatusBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Employment Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.employment.EntityEmploymentTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Entity Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.EntityTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="External Identifier Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.external.EntityExternalIdentifierTypeBo${dfk}${defrl}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Name Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.name.EntityNameTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Phone Type" url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.identity.phone.EntityPhoneTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<space/>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<space/>
+							</align>
+						</cell>
+						<cell width="28%">
+							<align value="left">
+								<link title="Role/Group/Permission/Responsibility Type" url="${riceKr}lookup.do?${mc}start${boc}org.kuali.rice.kim.impl.type.KimTypeBo${dfk}${defrl}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+	</content-page>
+
+</portal>

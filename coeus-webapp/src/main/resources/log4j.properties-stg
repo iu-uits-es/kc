@@ -1,0 +1,46 @@
+log4j.rootLogger=WARN, KcFile, ErrFile
+
+#log4j.appender.StdOut=org.apache.log4j.ConsoleAppender
+#log4j.appender.StdOut.layout=org.apache.log4j.PatternLayout
+#log4j.appender.StdOut.layout.ConversionPattern=%d [%t] D:%X{docID} U:%X{user} [%X{clientIp}]  %-5p %c :: %m%n
+#log4j.appender.StdOut.Threshold=TRACE
+
+log4j.logger.org.kuali.kra=INFO
+log4j.logger.org.kuali.rice=INFO
+
+log4j.logger.org.kuali.kra.protocol.ProtocolActionBase=ERROR, FatalMail
+log4j.logger.edu.iu.uits.kra.irb.noteattachment.IUProtocolAttachmentFileDataNotNullRuleImpl=ERROR, FatalMail
+log4j.logger.edu.iu.uits.kra.negotiations.rules.IUNegotiationAttachmentFileDataNotNullRuleImpl=ERROR, FatalMail
+
+log4j.appender.KcFile=org.apache.log4j.RollingFileAppender
+log4j.appender.KcFile.File=/opt/j2ee/logs/kc/stg/kc.log
+log4j.appender.KcFile.Threshold=TRACE
+log4j.appender.KcFile.layout=org.apache.log4j.PatternLayout
+log4j.appender.KcFile.layout.ConversionPattern=%d [%t] D:%X{docID} U:%X{user} [%X{clientIp}]  %-5p %c :: %m%n
+log4j.appender.KcFile.MaxFileSize=50000KB
+log4j.appender.KcFile.MaxBackupIndex=5
+
+log4j.appender.ErrFile=org.apache.log4j.RollingFileAppender
+log4j.appender.ErrFile.File=/opt/j2ee/logs/kc/stg/kcerr.log
+log4j.appender.ErrFile.Threshold=ERROR
+log4j.appender.ErrFile.layout=org.apache.log4j.PatternLayout
+log4j.appender.ErrFile.layout.ConversionPattern=%d [%t] D:%X{docID} U:%X{user} [%X{clientIp}]  %-5p %c :: %m%n
+log4j.appender.ErrFile.MaxFileSize=20000KB
+log4j.appender.ErrFile.MaxBackupIndex=5
+log4j.logger.edu.iu.uits.kra.external.ProtocolRenewalReminderBatchJob=INFO
+log4j.logger.edu.iu.uits.kra.committee.service.impl.IUCommitteeBatchCorrespondenceServiceImpl=INFO
+
+#UITSRA-3958 - Temporary logging config
+log4j.appender.FatalMail=org.apache.log4j.net.SMTPAppender
+log4j.appender.FatalMail.SMTPHost=mail-relay.iu.edu
+log4j.appender.FatalMail.SMTPProtocol=smtps
+log4j.appender.FatalMail.Threshold=ERROR
+log4j.appender.FatalMail.SMTPUsername=
+log4j.appender.FatalMail.SMTPPassword=
+log4j.appender.FatalMail.From=kciu-core-l@indiana.edu
+log4j.appender.FatalMail.To=rojlarge@iu.edu
+log4j.appender.FatalMail.Subject=Fatal Error Occurred
+log4j.appender.FatalMail.BufferSize=1
+#log4j.appender.FatalMail.EvaluatorClass=DefaultEvaluator
+log4j.appender.FatalMail.layout=org.apache.log4j.PatternLayout
+log4j.appender.FatalMail.layout.ConversionPattern=%d [%t] D:%X{docID} U:%X{user} [%X{clientIp}]  %-5p %c :: %m%n
