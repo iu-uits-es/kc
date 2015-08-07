@@ -1,0 +1,30 @@
+<config>
+    <param name="version">5.1 - Grants Training</param>
+    <param name="application.host">https://test.uisapp2.iu.edu</param>
+    
+    <param name="rice.ksb.unfilteredServiceRegistry.serviceUrl">https://test.uisapp2.iu.edu/kr-${rice.environment}/remoting/soap/ksb/v2_0/serviceRegistry</param>
+    <param name="rice.ksb.filteredServiceRegistry.exclusions">localhost</param>
+    
+    <param name="rice.server.url">https://test.uisapp2.iu.edu/kr-${rice.environment}</param>
+    <param name="rice.ksb.registry.serviceUrl">https://test.uisapp2.iu.edu/ksb-${rice.environment}/remoting/soap/ksb/v2_0/serviceRegistry</param>
+    
+    <param name="rice.krms.additionalSpringFiles">classpath:edu/iu/uis/rice/resources/IUKrmsOverrideSpringBeans.xml,classpath:org/kuali/kra/custom/CustomKrmsSpringBeans.xml</param>
+    
+    <param name="rice.portal.allowed.regex">^(${application.url}|${rice.server.url})(/.*|)</param>
+        
+    <param name="oneStart.portal.mode">true</param>
+    <param name="oneStart.portal.url">https://test.uisapp2.iu.edu/my2-unt/portal/2064</param>
+
+    <param name="externalizable.help.url">http://researchadmin.iu.edu/EO/AppHelp/KCtest/</param>
+
+    <!-- IU CAS Config -->
+    <param name="cas.url">https://cas-reg.uits.iu.edu/cas</param>
+    
+    <param name="enhanced.identity.service.active">false</param>
+    
+    <param name="log4j.settings.path">/opt/j2ee/settings/${app.code}/${environment}/log4j.properties</param> 
+    <param name="log4j.settings.reloadInterval">5</param> 
+
+    <param name="fin.system.integration.service.url">${application.host}/kfs-${rice.environment}/remoting/</param>
+    <param name="custom.xsl.dir">https://es-test-doc.uits.indiana.edu/dav/ERA/KC/Custom</param>
+</config>

@@ -1,0 +1,68 @@
+<config>
+<!-- KC Client DB -->
+    <!-- KC Client DB -->
+    <param name="datasource.url">@kc.url@</param>
+    <param name="datasource.username">@kc.username@</param>
+    <param name="datasource.password">@kc.password@</param>
+    <param name="datasource.ojb.platform">Oracle9i</param>
+    <param name="datasource.platform">org.kuali.rice.core.framework.persistence.platform.OraclePlatform</param>
+    <param name="datasource.driver.name">oracle.jdbc.driver.OracleDriver</param>        
+    <param name="datasource.pool.validationQuery">select 1 from dual</param>
+    <param name="datasource.pool.maxWait">30000</param>
+    <param name="datasource.pool.minSize">5</param>
+    <param name="datasource.pool.maxSize">100</param>    
+    <param name="datasource.pool.size">5</param>
+    <param name="datasource.connectionTimeout">30000</param>
+
+     <!-- Rice Server DB -->
+	<!-- Should be different from the KC client db and confirmed by the rice team -->
+	<param name="server.datasource.url">@kr.url@</param> 
+	<param name="server.datasource.username">@kr.username@</param>
+	<param name="server.datasource.password">@kr.password@</param>
+	<param name="server.datasource.ojb.platform">${datasource.ojb.platform}</param>
+	<param name="server.datasource.platform">${datasource.platform}</param>
+	<param name="server.datasource.driver.name">${datasource.driver.name}</param>
+	<param name="server.datasource.pool.validationQuery">${datasource.pool.validationQuery}</param>
+	<param name="server.datasource.pool.maxWait">${datasource.pool.maxWait}</param>
+	<param name="server.datasource.pool.minSize">${datasource.pool.minSize}</param>
+	<param name="server.datasource.pool.maxSize">${datasource.pool.maxSize}</param>
+	<param name="server.datasource.connectionTimeout">${datasource.connectionTimeout}</param>
+
+    
+    <param name="security.dir">/opt/j2ee/security/${app.code}/${environment}</param>
+    
+    <param name="keystore.file">${security.dir}/@rice.keystore.file@</param>
+    <param name="keystore.alias">@rice.keystore.alias@</param>
+    <param name="keystore.password">@rice.keystore.password@</param>
+   
+
+<!-- S2S Configuration -->
+    <param name="s2s.keystore.location">${security.dir}/@gg.keystore.file@</param>
+    <param name="s2s.keystore.password">@gg.keystore.password@</param>
+    <param name="s2s.truststore.location">${security.dir}/cacerts</param>
+    <param name="s2s.truststore.password">@gg.truststore.password@</param>
+    <param name="grants.gov.s2s.host">@gg.ws.host@</param>
+    <param name="grants.gov.s2s.port">ApplicantIntegrationSoapPort</param>
+    
+<!-- Research.Gov Configuration -->
+    <param name="research.gov.keystore.location">${security.dir}/@gg.keystore.file@</param>
+    <param name="research.gov.keystore.password">@gg.keystore.password@</param>
+    <param name="research.gov.truststore.location">${security.dir}/cacerts</param>
+    <param name="research.gov.truststore.password">@gg.truststore.password@</param>
+    <param name="research.gov.s2s.host">@rg.ws.host@</param>
+    <param name="research.gov.s2s.port">ApplicantIntegrationSoapPort</param>
+    
+<!-- FIS Configuration start -->                  
+    <param name="fis.cg.server.datasource.username">@fis.username@</param>
+    <param name="fis.cg.server.datasource.password">@fis.password@</param>
+    <param name="fis.cg.server.datasource.driverClassName">oracle.jdbc.driver.OracleDriver</param>
+	<param name="fis.cg.server.datasource.url">@fis.url@</param>
+<!-- FIS Configuration End -->
+
+ 	<param name="HRSService.username">@hrs.username@</param>
+ 	<param name="HRSService.password">@hrs.password@</param>
+    
+    <param name="mail.smtp.username">@mail.username@</param>
+	<param name="mail.smtp.password">@mail.password@</param>
+    
+</config>

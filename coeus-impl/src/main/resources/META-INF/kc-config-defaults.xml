@@ -125,7 +125,8 @@
 	<param name="attachment.dir.location">/opt/ears/</param>
 
 	<!-- Kuali parameters -->
-	<param name="encryption.key">7IC64w6kAAAA</param>
+	<!-- Don't encrypt XML -->
+	<!-- <param name="encryption.key">7IC64w6kAAAA</param> -->
 	<param name="print.xml.directory">${java.io.tmpdir}/</param>
 	<param name="print.logging.enable">false</param>
 

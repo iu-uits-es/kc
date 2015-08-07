@@ -1,0 +1,1357 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<portal xmlns="https://onestart.iu.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://onestart.iu.edu xmlportlet.xsd">
+	<variable name="base" value="https://test.uisapp2.iu.edu/kc-stg/" test="$[__portal_environment__] = 'TST'" />
+	<variable name="base" value="https://onestart.iu.edu/kc-prd/" test="$[__portal_environment__] = 'PRD'" />
+    <variable name="rice" value="https://test.uisapp2.iu.edu/kr-stg/" test="$[__portal_environment__] = 'TST'" />
+    <variable name="rice" value="https://onestart.iu.edu/kr-prd/" test="$[__portal_environment__] = 'PRD'" />
+    
+	<!-- Variables for re-using Urls to KC -->
+    <variable name="kr" value="${base}kr/"/>
+	<variable name="kew" value="${base}kew/"/>
+	<variable name="riceKew" value="${rice}kew/"/>
+	<variable name="kewds" value="${kew}DocumentSearch.do?"/>
+	<variable name="riceKewds" value="${riceKew}DocumentSearch.do?"/>
+	<variable name="dtn" value="&amp;docTypeName="/>
+	<variable name="dtfn" value="docTypeFullName="/>
+	<variable name="dfk" value="&amp;docFormKey=88888888"/>
+	<variable name="pstc" value="&amp;proposalStateTypeCode="/>
+	<variable name="rl" value="&amp;returnLocation="/>
+	<variable name="defrl" value="${rl}${base}portal.do&amp;hideReturnLink=true"/>
+	<variable name="ipdefrl" value="${rl}${base}institutionalProposalCreate.do&amp;hideReturnLink=true"/>
+	<variable name="riceDefrl" value="${rl}${rice}portal.do&amp;hideReturnLink=true"/>
+	<variable name="mc" value="methodToCall="/>
+	<variable name="boc" value="&amp;businessObjectClassName="/>
+	<variable name="cmd" value="&amp;command="/>
+	
+	<!-- Variables for icons -->
+	<variable name="iconBasePath" value="http://researchadmin.iu.edu/EO/AppHelp/KC/Images/OneStart/icon-"/>
+	<variable name="iconExt" value=".png"/>
+	<variable name="iconBlurExt" value="02.png"/>
+	
+	<!-- ORA eLearning -->
+	<variable name="oracms" value="https://www.indiana.edu/~oracms"/>
+    
+	<menu name="myMenu">
+		<menu-item content-page-number="1" title="Researchers" />
+		<menu-item content-page-number="2" title="Unit/Department" />
+		<menu-item content-page-number="3" title="Central Admin" />
+	</menu>
+    
+	<content-page content-page-number="1" menu-name="myMenu" padding="true">
+		<table width="100%">
+			<row>
+				<cell width="95%">
+					<align value="right">
+						<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="expandAllResearchersForm">
+							<hidden name="showProposals" value="on" override-value="on" type="session" />
+							<hidden name="showTraining" value="on" override-value="on" type="session" />
+							<hidden name="showProtocol" value="on" override-value="on" type="session" />
+							<hidden name="showAdditionalFeatures" value="on" override-value="on" type="session" />
+							<image name="submitButton" button-name="expandall" submit="ajax" id="expandAllResearchers" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="pa" image-id="paImage" action="show" />
+								<show-hide-id id="tr" image-id="trImage" action="show" />
+								<show-hide-id id="pr" image-id="prImage" action="show" />
+								<show-hide-id id="af" image-id="afImage" action="show" />
+							</image>
+						</form>
+					</align>
+				</cell>
+				<cell width="5%">
+					<align value="left">
+						<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="collapseAllResearchersForm">
+							<hidden name="showProposals" value="off" override-value="off" type="session" />
+							<hidden name="showTraining" value="off" override-value="off" type="session" />
+							<hidden name="showProtocol" value="off" override-value="off" type="session" />
+							<hidden name="showAdditionalFeatures" value="off" override-value="off" type="session" />
+							<image name="submitButton" button-name="collapseall" submit="ajax" id="collapseAllResearchers" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="pa" image-id="paImage" action="hide" />
+								<show-hide-id id="tr" image-id="trImage" action="hide" />
+								<show-hide-id id="pr" image-id="prImage" action="hide" />
+								<show-hide-id id="af" image-id="afImage" action="hide" />
+							</image>
+						</form>
+					</align>
+				</cell>
+			</row>
+		</table>
+		<newline />
+		<align value="center">
+			<variable name="displayPA" value="true" test="$[showProposals] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProposals] = 'on'" />
+			<variable name="displayPA" value="false" test="$[showProposals] = 'off'" />
+            
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showProposalsForm">
+				<if test="$[showProposals] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProposals] = 'on'">
+					<hidden name="showProposals" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="paImage" div-id="pa" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pa" />
+						</image>
+						Proposals &amp; Budgets
+					</heading>
+				</if>
+				<if test="$[showProposals] = 'off'">
+					<hidden name="showProposals" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="paImage" div-id="pa" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pa" />
+						</image>
+						Proposals
+					</heading>
+				</if>
+			</form>
+			<div id="pa" display="${displayPA}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Create a Proposal
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}proposalDevelopmentProposal.do?${mc}docHandler${cmd}initiate${dtn}ProposalDevelopmentDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="4"  vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" 
+                                image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="4" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Proposals in Progress
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${pstc}1${dfk}${defrl}" 
+								image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Proposals EnRoute
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${pstc}2${dfk}${defrl}" 
+								image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Find Budgets
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${riceKewds}${dtfn}BudgetDocument${dfk}${defrl}" 
+								image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+		
+		<!-- Institutional Proposal -->
+        <align value="center">
+			<variable name="displayTR" value="true" test="$[showTraining] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showTraining] = 'on'" />
+			<variable name="displayTR" value="false" test="$[showTraining] = 'off'" />
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showTrainingForm">
+				<if test="$[showTraining] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showTraining] = 'on'">
+					<hidden name="showTraining" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="trImage" div-id="tr" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="tr" />
+						</image>
+						Institutional Proposal &amp; Award
+					</heading>
+				</if>
+				<if test="$[showTraining] = 'off'">
+					<hidden name="showTraining" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="trImage" div-id="tr" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="tr" />
+						</image>
+						Institutional Proposal &amp; Award
+					</heading>
+				</if>
+			</form>
+			<div id="tr" display="${displayTR}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Institutional Proposal
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.home.InstitutionalProposal${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Awards
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.Award${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+
+	<!-- Protocol -->
+	<align value="center">
+			<variable name="displayPR" value="true" test="$[showProtocol] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProtocol] = 'on'" />
+			<variable name="displayPR" value="false" test="$[showProtocol] = 'off'" />
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showProtocolForm">
+				<if test="$[showProtocol] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProtocol] = 'on'">
+					<hidden name="showProtocol" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="prImage" div-id="pr" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pr" />
+						</image>
+						Protocols
+					</heading>
+				</if>
+				<if test="$[showProtocol] = 'off'">
+					<hidden name="showProtocol" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="prImage" div-id="pr" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pr" />
+						</image>
+						Protocols
+					</heading>
+				</if>
+			</form>
+			<div id="pr" display="${displayPR}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								IRB Protocol
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}protocolProtocol.do?${mc}docHandler${cmd}initiate${dtn}ProtocolDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.irb.Protocol${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+
+		<align value="center">
+			<variable name="displayAF" value="true" test="$[showAdditionalFeatures] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdditionalFeatures] = 'on'" />
+			<variable name="displayAF" value="false" test="$[showAdditionalFeatures] = 'off'" />
+            
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showAdditionalFeaturesForm">
+				<if test="$[showAdditionalFeatures] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdditionalFeatures] = 'on'">
+					<hidden name="showAdditionalFeatures" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="afImage" div-id="af" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="af" />
+						</image>
+						Additional Features
+					</heading>
+				</if>
+				<if test="$[showAdditionalFeatures] = 'off'">
+					<hidden name="showAdditionalFeatures" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="afImage" div-id="af" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="af" />
+						</image>
+						Additional Features
+					</heading>
+				</if>
+			</form>
+			<div id="af" display="${displayAF}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.krad.document.authorization.PessimisticLock${dfk}${defrl}"
+                                title="Document Lock"
+                                window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.s2s.bo.S2sOpportunity${dfk}${defrl}"
+                                title="Grants.gov Opportunity Lookup"
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKew}Preferences.do"
+                                title="Workflow Preferences"
+                                window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+						<cell width="50%">
+							<space/>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+	</content-page>
+    
+	<content-page content-page-number="2" menu-name="myMenu" padding="true">
+		<table width="100%">
+			<row>
+				<cell width="95%">
+					<align value="right">
+						<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="expandAllUnitForm">
+							<hidden name="showUnit0" value="on" override-value="on" type="session" />
+							<hidden name="showUnit1" value="on" override-value="on" type="session" />
+							<hidden name="showProtocol2" value="on" override-value="on" type="session" />
+							<hidden name="showUnit2" value="on" override-value="on" type="session" />
+							<image name="submitButton" button-name="expandall" submit="ajax" id="expandAllUnitPreferences" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="un0" image-id="un0Image" action="show" />
+								<show-hide-id id="un1" image-id="un1Image" action="show" />
+								<show-hide-id id="pr2" image-id="pr2Image" action="show" />
+								<show-hide-id id="un2" image-id="un2Image" action="show" />
+							</image>
+						</form>
+					</align>
+				</cell>
+				<cell width="5%">
+					<align value="left">
+						<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="collapseAllUnitForm">
+							<hidden name="showUnit0" value="off" override-value="off" type="session" />
+							<hidden name="showUnit1" value="off" override-value="off" type="session" />
+							<hidden name="showProtocol2" value="off" override-value="off" type="session" />
+							<hidden name="showUnit2" value="off" override-value="off" type="session" />
+							<image name="submitButton" button-name="collapseall" submit="ajax" id="collapseAllUnitPreferences" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="un0" image-id="un0Image" action="hide" />
+								<show-hide-id id="un1" image-id="un1Image" action="hide" />
+								<show-hide-id id="pr2" image-id="pr2Image" action="hide" />
+								<show-hide-id id="un2" image-id="un2Image" action="hide" />
+							</image>
+						</form>
+					</align>
+				</cell>
+			</row>
+		</table>
+		<newline />
+		<align value="center">
+			<variable name="displayUN0" value="true" test="$[showUnit0] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showUnit0] = 'on'" />
+			<variable name="displayUN0" value="false" test="$[showUnit0] = 'off'" />
+            
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showUnit0Form">
+				<if test="$[showUnit0] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showUnit0] = 'on'">
+					<hidden name="showUnit0" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="un0Image" div-id="un0" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="un0" />
+						</image>
+						Proposals &amp; Budgets
+					</heading>
+				</if>
+				<if test="$[showUnit0] = 'off'">
+					<hidden name="showUnit0" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="un0Image" div-id="un0" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="un0" />
+						</image>
+						Proposals
+					</heading>
+				</if>
+			</form>
+			<div id="un0" display="${displayUN0}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Create a Proposal
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}proposalDevelopmentProposal.do?${mc}docHandler${cmd}initiate${dtn}ProposalDevelopmentDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="4"  vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" 
+                                image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="4" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Proposals in Progress
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${pstc}1${dfk}${defrl}" 
+								image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Proposals EnRoute
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${pstc}2${dfk}${defrl}" 
+								image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Find Budgets
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${riceKewds}${dtfn}BudgetDocument${dfk}${defrl}" 
+								image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+		<!-- GENERAL TRAINING -->
+        <align value="center">
+			<variable name="displayUN1" value="true" test="$[showUnit1] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showUnit1] = 'on'" />
+			<variable name="displayUN1" value="false" test="$[showUnit1] = 'off'" />
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showUnit1Form">
+				<if test="$[showUnit1] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showUnit1] = 'on'">
+					<hidden name="showUnit1" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="un1Image" div-id="un1" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="un1" />
+						</image>
+						Institutional Proposal &amp; Award
+					</heading>
+				</if>
+				<if test="$[showUnit1] = 'off'">
+					<hidden name="showUnit1" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="un1Image" div-id="un1" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="un1" />
+						</image>
+						Institutional Proposal &amp; Award
+					</heading>
+				</if>
+			</form>
+			<div id="un1" display="${displayUN1}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Institutional Proposal
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.home.InstitutionalProposal${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Awards
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.Award${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+
+	<!-- Protocol -->
+	<align value="center">
+			<variable name="displayPR2" value="true" test="$[showProtocol2] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProtocol2] = 'on'" />
+			<variable name="displayPR2" value="false" test="$[showProtocol2] = 'off'" />
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showProtocolForm">
+				<if test="$[showProtocol2] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showProtocol2] = 'on'">
+					<hidden name="showProtocol2" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="pr2Image" div-id="pr2" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pr2" />
+						</image>
+						Protocols
+					</heading>
+				</if>
+				<if test="$[showProtocol2] = 'off'">
+					<hidden name="showProtocol2" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="pr2Image" div-id="pr2" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="pr2" />
+						</image>
+						Protocols
+					</heading>
+				</if>
+			</form>
+			<div id="pr2" display="${displayPR}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								IRB Protocol
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}protocolProtocol.do?${mc}docHandler${cmd}initiate${dtn}ProtocolDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.irb.Protocol${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+
+        <!-- /GENERAL TRAINING -->
+		<align value="center">
+			<variable name="displayUN2" value="true" test="$[showUnit2] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showUnit2] = 'on'" />
+			<variable name="displayUN2" value="false" test="$[showUnit2] = 'off'" />
+            
+			<form action="preference" content-page-number-success="2" content-page-number-failure="2" id="showUnit2Form">
+				<if test="$[showUnit2] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showUnit2] = 'on'">
+					<hidden name="showUnit2" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="un2Image" div-id="un2" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="un2" />
+						</image>
+						Additional Features
+					</heading>
+				</if>
+				<if test="$[showUnit2] = 'off'">
+					<hidden name="showUnit2" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="un2Image" div-id="un2" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="un2" />
+						</image>
+						Additional Features
+					</heading>
+				</if>
+			</form>
+			<div id="un2" display="${displayUN2}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="50%">
+							<space />
+						</header>
+						<header width="50%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.krad.document.authorization.PessimisticLock${dfk}${defrl}" 
+                                title="Document Lock" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.s2s.bo.S2sOpportunity${dfk}${defrl}" 
+                                title="Grants.gov Opportunity Lookup" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKew}Preferences.do"
+                                title="Workflow Preferences"
+                                window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+						<cell width="50%">
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+	</content-page>
+    
+	<content-page content-page-number="3" menu-name="myMenu" padding="true">
+		<table width="100%">
+			<row>
+				<cell width="95%">
+					<align value="right">
+						<form action="preference" content-page-number-success="3" content-page-number-failure="3" id="expandAllAdminForm">
+							<hidden name="showAdmin1" value="on" override-value="on" type="session" />
+							<hidden name="showAdmin2" value="on" override-value="on" type="session" />
+							<hidden name="showCompliance" value="on" override-value="on" type="session" />
+                            <hidden name="showAdmin3" value="on" override-value="on" type="session" />
+							<image name="submitButton" button-name="expandall" submit="ajax" id="expandAllAdmin" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="ad1" image-id="ad1Image" action="show" />
+								<show-hide-id id="ad2" image-id="ad2Image" action="show" />
+								<show-hide-id id="co" image-id="coImage" action="show" />
+                                <show-hide-id id="ad3" image-id="ad3Image" action="show" />
+							</image>
+						</form>
+					</align>
+				</cell>
+				<cell width="5%">
+					<align value="left">
+						<form action="preference" content-page-number-success="3" content-page-number-failure="3" id="collapseAllAdminForm">
+							<hidden name="showAdmin1" value="off" override-value="off" type="session" />
+							<hidden name="showAdmin2" value="off" override-value="off" type="session" />
+							<hidden name="showCompliance" value="off" override-value="off" type="session" />
+                            <hidden name="showAdmin3" value="off" override-value="off" type="session" />
+							<image name="submitButton" button-name="collapseall" submit="ajax" id="collapseAllAdmin" div-display-only="true" show-hide-type="arrow">
+								<show-hide-id id="ad1" image-id="ad1Image" action="hide" />
+								<show-hide-id id="ad2" image-id="ad2Image" action="hide" />
+								<show-hide-id id="co" image-id="coImage" action="hide" />
+                                <show-hide-id id="ad3" image-id="ad3Image" action="hide" />
+							</image>
+						</form>
+					</align>
+				</cell>
+			</row>
+		</table>
+		<newline />
+		<align value="center">
+			<variable name="displayAD1" value="true" test="$[showAdmin1] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdmin1] = 'on'" />
+			<variable name="displayAD1" value="false" test="$[showAdmin1] = 'off'" />
+			<form action="preference" content-page-number-success="3" content-page-number-failure="3" id="showAdmin1Form">
+				<if test="$[showAdmin1] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdmin1] = 'on'">
+					<hidden name="showAdmin1" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="ad1Image" div-id="ad1" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ad1" />
+						</image>
+						Pre-Award
+					</heading>
+				</if>
+				<if test="$[showAdmin1] = 'off'">
+					<hidden name="showAdmin1" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="ad1Image" div-id="ad1" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ad1" />
+						</image>
+						Pre-Award
+					</heading>
+				</if>
+			</form>
+			<div id="ad1" display="${displayAD1}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Proposal Development
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}proposalDevelopmentProposal.do?${mc}docHandler${cmd}initiate${dtn}ProposalDevelopmentDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.proposaldevelopment.bo.DevelopmentProposal${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="4" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="4" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Proposal Log
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/maintenance.do?${mc}start${boc}org.kuali.kra.institutionalproposal.proposallog.ProposalLog"
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.proposallog.ProposalLog${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Institutional Proposal
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.proposallog.ProposalLog&amp;docFormKey=88888888&amp;includeCustomActionUrls=true${ipdefrl}&amp;showMaintenanceLinks=true&amp;refreshCaller=cancel"
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.institutionalproposal.home.InstitutionalProposal${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+                    <row>
+						<cell width="28%">
+							<align value="left">
+								Negotiation
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}negotiationNegotiation.do?${mc}docHandler${cmd}initiate${dtn}NegotiationDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.negotiations.bo.Negotiation${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+        <!-- AWARDTEST -->
+        <align value="center">
+			<variable name="displayAD3" value="true" test="$[showAdmin3] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdmin3] = 'on'" />
+			<variable name="displayAD3" value="false" test="$[showAdmin3] = 'off'" />
+			<form action="preference" content-page-number-success="3" content-page-number-failure="3" id="showAdmin3Form">
+				<if test="$[showAdmin3] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdmin3] = 'on'">
+					<hidden name="showAdmin3" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="ad3Image" div-id="ad3" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ad3" />
+						</image>
+						Post-Award
+					</heading>
+				</if>
+				<if test="$[showAdmin3] = 'off'">
+					<hidden name="showAdmin3" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="ad3Image" div-id="ad3" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ad3" />
+						</image>
+						Post-Award
+					</heading>
+				</if>
+			</form>
+			<div id="ad3" display="${displayAD3}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								Awards
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+                                <link url="${base}awardHome.do?${mc}docHandler${cmd}initiate${dtn}AwardDocument"
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.award.home.Award${dfk}${defrl}" 
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+                        <cell width="18%">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+        <!-- /AWARDTEST -->
+
+	<!-- Compliance -->
+	<align value="center">
+			<variable name="displayCO" value="true" test="$[showCompliance] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showCompliance] = 'on'" />
+			<variable name="displayCO" value="false" test="$[showCompliance] = 'off'" />
+			<form action="preference" content-page-number-success="1" content-page-number-failure="1" id="showComplianceForm">
+				<if test="$[showCompliance] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showCompliance] = 'on'">
+					<hidden name="showCompliance" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="coImage" div-id="co" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="co" />
+						</image>
+						Compliance
+					</heading>
+				</if>
+				<if test="$[showCompliance] = 'off'">
+					<hidden name="showCompliance" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="coImage" div-id="co" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="co" />
+						</image>
+						Compliance
+					</heading>
+				</if>
+			</form>
+			<div id="co" display="${displayCO}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="18%">
+							<align value="center">
+								Create
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Search
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								Guides
+							</align>
+						</header>
+						<header width="18%">
+							<align value="center">
+								eLearning Videos
+							</align>
+						</header>
+					</row>
+					<row>
+						<cell width="28%">
+							<align value="left">
+								IRB Committee
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}committeeCommittee.do?${mc}docHandler${cmd}initiate${dtn}CommitteeDocument" 
+                                image="${iconBasePath}create${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.committee.bo.Committee${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+                                       <cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}documentation${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="18%" rowspan="2" vertical-align="middle">
+							<align value="center">
+								<link url="${oracms}" image="${iconBasePath}video${iconExt}" window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+                                       </row>
+                                       <row>
+						<cell width="28%">
+							<align value="left">
+								IRB Schedules
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<image location="${iconBasePath}create${iconBlurExt}" width="25" height="25"/>
+							</align>
+						</cell>
+						<cell width="18%">
+							<align value="center">
+								<link url="${base}kr/lookup.do?${mc}start${boc}org.kuali.kra.committee.bo.CommitteeSchedule${dfk}${defrl}"
+                                image="${iconBasePath}search${iconExt}" window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+		<newline />
+<!-- End Compliance -->
+
+		<align value="center">
+			<variable name="displayAD2" value="true" test="$[showAdmin2] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdmin2] = 'on'" />
+			<variable name="displayAD2" value="false" test="$[showAdmin2] = 'off'" />
+			<form action="preference" content-page-number-success="3" content-page-number-failure="3" id="showAdmin2">
+				<if test="$[showAdmin2] = '__p0rt2l_3xpr3ss10n_n0t_f06nd__' or $[showAdmin2] = 'on'">
+					<hidden name="showAdmin2" value="off" override-value="off" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-exp.png" submit="ajax" id="ad2Image" div-id="ad2" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ad2" />
+						</image>
+						Additional Features
+					</heading>
+				</if>
+				<if test="$[showAdmin2] = 'off'">
+					<hidden name="showAdmin2" value="on" override-value="on" type="session" />
+					<heading version="2">
+						<image name="submitButton" location="${__context_path__}/images/arrow-col.png" submit="ajax" id="ad2Image" div-id="ad2" div-display-only="true" width="16" height="16" align="absmiddle" show-hide-type="arrow">
+							<show-hide-id id="ad2" />
+						</image>
+						Additional Features
+					</heading>
+				</if>
+			</form>
+			<div id="ad2" display="${displayAD2}" initialize-xml="true">
+				<table width="95%" borders="true">
+					<row>
+						<header width="28%">
+							<space />
+						</header>
+						<header width="28%">
+							<space />
+						</header>
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.rice.krad.document.authorization.PessimisticLock${dfk}${defrl}" 
+                                title="Document Lock" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Rolodex${dfk}${defrl}"
+                                title="Non-Employee Lookup" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>						
+					</row>
+					<row>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.s2s.bo.S2sOpportunity${dfk}${defrl}" 
+                                title="Grants.gov Opportunity Lookup" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.Sponsor${dfk}${defrl}" 
+                                title="Sponsor Lookup" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+					</row>
+					<row>			
+						<cell width="50%">
+							<align value="left">
+								<link url="${kr}lookup.do?${mc}start${boc}org.kuali.kra.bo.ScienceKeyword${dfk}${defrl}" 
+                                title="Keyword Lookup" 
+                                window-width="1400" window-height="700" />
+							</align>
+						</cell>
+						<cell width="50%">
+							<align value="left">
+								<link url="${riceKew}Preferences.do"
+                                title="Workflow Preferences"
+                                window-width="1400" window-height="700"/>
+							</align>
+						</cell>
+					</row>
+				</table>
+			</div>
+		</align>
+	</content-page>
+</portal>

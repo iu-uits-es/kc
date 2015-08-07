@@ -41,7 +41,7 @@
 
     <bean id="ksbConfigurer" class="org.kuali.rice.ksb.messaging.config.KSBConfigurer">
         <property name="registryDataSource" ref="riceDataSource" />
-        <property name="messageDataSource" ref="riceDataSource" />
+        <property name="messageDataSource" ref="dataSource" />
         <property name="nonTransactionalMessageDataSource" ref="nonTransactionalDataSource" />
         <property name="bamDataSource" ref="riceDataSource" />
     </bean>

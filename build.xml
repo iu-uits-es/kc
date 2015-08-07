@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="package-java-oltp" name="KC_IU_ENHANCEMENT">
+
+    <target name="package-java-oltp" description="print project name">
+        <echo message="KC_IU_ENHANCEMENT"/>
+        <move file="java-oltp.war" tofile="${environment.build.directory}/java-oltp.war" />
+    </target>
+
+    <target name="prepare-project" description="copy in app and env settings">
+        <echo message="Copying in build environment and application code" />
+        <replace file="coeus-webapp/src/main/resources/META-INF/kc-config-custom.xml" token="@APP@" value="${application.code}" />
+        <replace file="coeus-webapp/src/main/resources/META-INF/kc-config-custom.xml" token="@ENV@" value="${build.environment}" />
+    </target>
+
+    <target name="package-settings-oltp" description="zip up log4j settings and put in appropriate folder">
+        <echo message="Zipping log4j.properties for ${application.code}-${build.environment}" />
+        <copy file="coeus-webapp/src/main/resources/log4j.properties-${build.environment}" tofile="coeus-webapp/src/main/resources/log4j.properties" overwrite="true" />
+
+        <!-- This is a hack to get kc2 logs out of kc.log files, since there isn't a great way to do this in our current build process -->
+        <replace file="coeus-webapp/src/main/resources/log4j.properties" token="/opt/j2ee/logs/kc/${build.environment}/kc" value="/opt/j2ee/logs/${application.code}/${build.environment}/kc" />
+
+        <copy file="external-config/settings/${application.code}-settings-${build.environment}.xml" tofile="coeus-webapp/src/main/resources/kc-settings.xml" overwrite="true" />
+        <zip destfile="${environment.build.directory}/settings-oltp.zip" basedir="coeus-webapp/src/main/resources" includes="log4j.properties,kc-settings.xml" update="true" />
+    </target>
+
+    <target name="package-security-oltp" description="replace placeholders in security settings, zip, and output to appropriate folder">
+        <applySecurityFilter />
+        <echo message="Zipping security files for ${application.code}-${build.environment}" />
+        <zip destfile="${environment.build.directory}/security-oltp.zip" basedir="external-config/security" update="true" />
+    </target>
+
+    <macrodef name="applySecurityFilter">
+        <sequential>
+            <echo message="Processing application-security.properties for ${application.code}" />
+            <replace file="external-config/security/kc-security.xml" replacefilterfile="${environment.build.directory}/../application-security.properties" />
+            <echo message="Processing application-security.properties for ${application.code}-${build.environment}" />
+            <replace file="external-config/security/kc-security.xml" replacefilterfile="${environment.build.directory}/application-security.properties" />
+        </sequential>
+    </macrodef>
+</project>
