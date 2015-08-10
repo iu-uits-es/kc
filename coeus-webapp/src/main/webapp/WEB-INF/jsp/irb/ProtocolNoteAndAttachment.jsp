@@ -20,6 +20,15 @@
 
 <c:set var="readOnly" value="${!KualiForm.notesAttachmentsHelper.modifyAttachments}" scope="request" />
 
+<script type="text/javascript" src="scripts/jquery/jquery.js"></script>
+
+<!--
+"ATTP", "Attachment Type"
+"DESC", "Description"
+"LAUP", "Last Updated"
+"UPBY", "Last Updated By"
+-->
+
 <script type="text/javascript">
     var $j = jQuery.noConflict();
     
