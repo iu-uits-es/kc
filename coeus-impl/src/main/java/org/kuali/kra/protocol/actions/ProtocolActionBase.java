@@ -23,17 +23,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.kuali.coeus.common.committee.impl.bo.CommitteeMembershipBase;
 import org.kuali.coeus.common.committee.impl.service.CommitteeServiceBase;
 import org.kuali.coeus.common.notification.impl.bo.KcNotification;
+import org.kuali.coeus.common.questionnaire.framework.answer.AnswerHeader;
 import org.kuali.coeus.sys.framework.service.KcServiceLocator;
 import org.kuali.kra.SkipVersioning;
 import org.kuali.kra.protocol.ProtocolAssociateBase;
 import org.kuali.kra.protocol.ProtocolBase;
+import org.kuali.kra.protocol.actions.notify.ProtocolActionAttachment;
 import org.kuali.kra.protocol.actions.print.QuestionnairePrintOption;
 import org.kuali.kra.protocol.actions.submit.ProtocolSubmissionBase;
 import org.kuali.kra.protocol.correspondence.ProtocolCorrespondence;
 import org.kuali.kra.protocol.questionnaire.ProtocolSubmissionQuestionnaireHelper;
-import org.kuali.coeus.common.questionnaire.framework.answer.AnswerHeader;
 import org.kuali.rice.krad.service.BusinessObjectService;
 import org.kuali.rice.krad.util.GlobalVariables;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -52,6 +54,7 @@ public abstract class ProtocolActionBase extends ProtocolAssociateBase {
     protected static final String PROTOCOL_NUMBER_FIELD_KEY = "protocolNumber";
     protected static final String COMMENT_PREFIX_RENEWAL = "Renewal-";
     protected static final String COMMENT_PREFIX_AMMENDMENT = "Amendment-";
+    protected static final String COMMENT_PREFIX_FYI = "FYI-";
 
     //not thread safe cannot be static  
     private transient SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
@@ -104,6 +107,8 @@ public abstract class ProtocolActionBase extends ProtocolAssociateBase {
     private transient CommitteeServiceBase committeeService;
 
     private transient QuestionnairePrintOption questionnairePrintOption;
+
+    private transient ProtocolActionAttachment newFyiHistoryAttachment;
 
     public ProtocolActionBase() {
     }
@@ -465,7 +470,7 @@ public abstract class ProtocolActionBase extends ProtocolAssociateBase {
         Map<String, String> fieldValues = new HashMap<String, String>();
         fieldValues.put("moduleItemCode", getCoeusModule());
         fieldValues.put("moduleItemKey", moduleItemKey);
-        if (!moduleItemKey.contains("A") && !moduleItemKey.contains("R") && !getProtocol().isAmendment() && !getProtocol().isRenewal()) {
+        if (!moduleItemKey.contains("A") && !moduleItemKey.contains("R") && !moduleItemKey.contains("F") && getProtocol().isNew()) {
             fieldValues.put("moduleSubItemCode", moduleSubItemCode);
         }
         fieldValues.put("moduleSubItemKey", moduleSubItemKey);
@@ -475,8 +480,10 @@ public abstract class ProtocolActionBase extends ProtocolAssociateBase {
     
     protected String getAmendmentRenewalNumber(String comment) {
         String retVal="";
-        if (comment.startsWith("Amendment-")) {
+        if (comment.startsWith(COMMENT_PREFIX_AMMENDMENT)) {
             retVal = "A" + comment.substring(10, 13);
+        } else if (comments.startsWith(COMMENT_PREFIX_FYI)) {
+            retVal = "F" + comment.substring(4,7);
         } else {
             retVal = "R" + comment.substring(8, 11);
                      
@@ -587,6 +594,18 @@ public abstract class ProtocolActionBase extends ProtocolAssociateBase {
         } else {
             return null;
         }
+    }
+
+    public ProtocolActionAttachment getNewFyiHistoryAttachment() {
+        return newFyiHistoryAttachment;
+    }
+
+    public void setNewFyiHistoryAttachment(ProtocolActionAttachment newFyiHistoryAttachment) {
+        this.newFyiHistoryAttachment = newFyiHistoryAttachment;
+    }
+
+    public boolean isFyiHistoryAction() {
+        return comments != null && comments.matches("FYI-\\d\\d\\d: Created");
     }
     
 }
