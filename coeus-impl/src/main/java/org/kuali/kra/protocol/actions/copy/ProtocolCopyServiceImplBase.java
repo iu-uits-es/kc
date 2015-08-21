@@ -159,7 +159,7 @@ public abstract class ProtocolCopyServiceImplBase<GenericProtocolDocument extend
         copyRequiredProperties(srcDoc, newDoc);
         copyAdditionalProperties(srcDoc, newDoc);
         copyProtocolLists(srcDoc, newDoc);
-        if (isAmendmentRenewal && !srcDoc.getProtocol().isAmendment() && !srcDoc.getProtocol().isAmendment()) {
+        if (isAmendmentRenewal && !srcDoc.getProtocol().isAmendment()) {
             removeDeletedAttachment(newDoc.getProtocol());
             
         }

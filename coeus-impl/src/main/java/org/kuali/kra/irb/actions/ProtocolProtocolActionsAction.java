@@ -27,20 +27,16 @@ import org.apache.struts.action.ActionMapping;
 import org.kuali.coeus.common.committee.impl.meeting.CommitteeScheduleMinuteBase;
 import org.kuali.coeus.common.committee.impl.meeting.MinuteEntryType;
 import org.kuali.coeus.common.framework.attachment.AttachmentFile;
-import org.kuali.coeus.common.framework.print.AbstractPrint;
-import org.kuali.coeus.common.framework.print.Printable;
-import org.kuali.coeus.common.framework.print.PrintableAttachment;
-import org.kuali.coeus.common.framework.print.PrintingException;
-import org.kuali.coeus.common.framework.print.util.PrintingUtils;
-import org.kuali.coeus.common.framework.print.watermark.WatermarkConstants;
-import org.kuali.coeus.common.framework.print.watermark.WatermarkService;
-import org.kuali.coeus.common.notification.impl.bo.NotificationType;
-import org.kuali.coeus.common.notification.impl.service.KcNotificationService;
 import org.kuali.coeus.common.framework.auth.task.ApplicationTask;
 import org.kuali.coeus.common.framework.auth.task.TaskAuthorizationService;
-import org.kuali.coeus.sys.framework.validation.AuditHelper;
+import org.kuali.coeus.common.framework.print.*;
+import org.kuali.coeus.common.framework.print.util.PrintingUtils;
+import org.kuali.coeus.common.framework.print.watermark.WatermarkConstants;
+import org.kuali.coeus.common.notification.impl.bo.NotificationType;
+import org.kuali.coeus.common.notification.impl.service.KcNotificationService;
 import org.kuali.coeus.sys.framework.controller.StrutsConfirmation;
 import org.kuali.coeus.sys.framework.service.KcServiceLocator;
+import org.kuali.coeus.sys.framework.validation.AuditHelper;
 import org.kuali.kra.committee.bo.Committee;
 import org.kuali.kra.committee.bo.CommitteeSchedule;
 import org.kuali.kra.committee.service.CommitteeService;
@@ -76,7 +72,6 @@ import org.kuali.kra.irb.actions.notification.ProtocolNotificationRequestBean;
 import org.kuali.kra.irb.actions.notifyirb.ProtocolNotifyIrbBean;
 import org.kuali.kra.irb.actions.print.ProtocolActionPrintEvent;
 import org.kuali.kra.irb.actions.print.ProtocolPrintType;
-import org.kuali.kra.irb.actions.print.ProtocolPrintingService;
 import org.kuali.kra.irb.actions.request.ProtocolRequestBean;
 import org.kuali.kra.irb.actions.reviewcomments.*;
 import org.kuali.kra.irb.actions.risklevel.*;
@@ -93,11 +88,13 @@ import org.kuali.kra.irb.onlinereview.ProtocolReviewAttachment;
 import org.kuali.kra.irb.questionnaire.print.IrbCorrespondencePrintingService;
 import org.kuali.kra.irb.summary.ProtocolSummary;
 import org.kuali.kra.meeting.CommitteeScheduleMinute;
-import org.kuali.coeus.common.framework.print.AttachmentDataSource;
 import org.kuali.kra.protocol.ProtocolBase;
+import org.kuali.kra.protocol.ProtocolFormBase;
 import org.kuali.kra.protocol.actions.ProtocolOnlineReviewCommentable;
+import org.kuali.kra.protocol.actions.ProtocolSubmissionDocBase;
 import org.kuali.kra.protocol.actions.notify.ProtocolActionAttachment;
 import org.kuali.kra.protocol.actions.print.ProtocolSummaryPrintOptions;
+import org.kuali.kra.protocol.actions.submit.ProtocolSubmissionBase;
 import org.kuali.kra.protocol.noteattachment.ProtocolAttachmentBase;
 import org.kuali.kra.protocol.noteattachment.ProtocolNotepadBase;
 import org.kuali.kra.protocol.summary.AttachmentSummary;
@@ -417,7 +414,53 @@ public class ProtocolProtocolActionsAction extends ProtocolAction implements Aud
         ProtocolForm protocolForm = (ProtocolForm) form;
         String forwardTo = getProtocolActionRequestService().notifyIrbProtocol(protocolForm);
         forward = mapping.findForward(forwardTo);
+        loadDocument(protocolForm);
+        protocolForm.getProtocolHelper().prepareView();
         return forward;
+    }
+
+    public ActionForward addSubmissionDoc(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+                                          HttpServletResponse response) throws Exception {
+        Protocol protocol = ((ProtocolForm) form).getActionHelper().getProtocol();
+        int actionIndex = getSelectedLine(request);
+        if (((ProtocolForm) form).getActionHelper().validFile(((org.kuali.kra.irb.actions.ProtocolAction)protocol.getProtocolActions().get(actionIndex)).getNewFyiHistoryAttachment(), "protocolNotifyIrbBean")) {
+            ProtocolSubmissionDoc fyiAttachment = null;
+            ProtocolActionAttachment newAttachment = ((org.kuali.kra.irb.actions.ProtocolAction)protocol.getProtocolActions().get(actionIndex)).getNewFyiHistoryAttachment();
+            Long submissionId = protocol.getProtocolActions().get(actionIndex).getSubmissionIdFk();
+            for(ProtocolSubmissionBase fyiSubmission : protocol.getProtocolSubmissions()) {
+                if(fyiSubmission.getSubmissionId().longValue() == submissionId.longValue()) {
+                    fyiAttachment = ProtocolSubmissionBuilder.createProtocolSubmissionDoc((ProtocolSubmission) fyiSubmission, newAttachment.getFile().getFileName(),
+                            newAttachment.getFile().getContentType(), newAttachment.getFile().getFileData(), newAttachment.getDescription());
+                    break;
+                }
+            }
+
+            if(fyiAttachment != null) {
+                getBusinessObjectService().save(fyiAttachment);
+                ((ProtocolForm) form).getActionHelper().getProtocolNotifyIrbBean().setNewActionAttachment(new ProtocolActionAttachment());
+            }
+        }
+        return mapping.findForward(Constants.MAPPING_BASIC);
+    }
+
+    // TODO: This method can be used as-is for both IRB and IACUC
+    public ActionForward deleteSubmissionDoc(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+                                             HttpServletResponse response) throws Exception {
+        ProtocolFormBase protocolForm = (ProtocolForm) form;
+        int actionIndex = getSelectedLine(request);
+        int attachmentIndex = getSelectedAttachment(request);
+        org.kuali.kra.protocol.actions.ProtocolActionBase protocolAction = protocolForm.getActionHelper().getProtocol().getProtocolActions().get(actionIndex);
+        ProtocolSubmissionDocBase attachment = protocolAction.getProtocolSubmissionDocs().get(attachmentIndex);
+
+        if (attachment == null) {
+            LOG.info("The attachment was not found for protocolAction: " + actionIndex + ", protocolSubmissionDoc: " + attachmentIndex);
+            // may want to tell the user the selection was invalid.
+            return mapping.findForward(Constants.MAPPING_BASIC);
+        }
+
+        getBusinessObjectService().delete(attachment);
+
+        return mapping.findForward(Constants.MAPPING_BASIC);
     }
 
     /**
