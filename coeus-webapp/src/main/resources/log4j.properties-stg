@@ -8,6 +8,8 @@ log4j.rootLogger=WARN, KcFile, ErrFile
 log4j.logger.org.kuali.kra=INFO
 log4j.logger.org.kuali.rice=INFO
 
+log4j.logger.bitronix.tm.twopc.Preparer=ERROR
+
 log4j.logger.org.kuali.kra.protocol.ProtocolActionBase=ERROR, FatalMail
 log4j.logger.edu.iu.uits.kra.irb.noteattachment.IUProtocolAttachmentFileDataNotNullRuleImpl=ERROR, FatalMail
 log4j.logger.edu.iu.uits.kra.negotiations.rules.IUNegotiationAttachmentFileDataNotNullRuleImpl=ERROR, FatalMail

@@ -38,6 +38,7 @@
         <property name="serverId" value="#{T(org.apache.commons.lang3.RandomStringUtils).randomAlphanumeric(20)}_TM_KC"/>
         <property name="logPart1Filename" value="/opt/j2ee/security/${app.code}/${environment}/btm1.tlog"/>
         <property name="logPart2Filename" value="/opt/j2ee/security/${app.code}/${environment}/btm2.tlog"/>
+        <property name="defaultTransactionTimeout" value="3600"/>
     </bean>
 
     <bean id="transactionManagerBitronix" class="bitronix.tm.TransactionManagerServices"
