@@ -24,7 +24,8 @@
     <parent>
         <groupId>org.kuali.coeus</groupId>
         <artifactId>coeus</artifactId>
-        <version>1508.4</version>
+
+        <version>1508.47</version>
     </parent>
     <artifactId>coeus-impl</artifactId>
     <packaging>jar</packaging>
@@ -206,6 +207,7 @@
                         <artifactId>xercesImpl</artifactId>
                         <version>${xercesImpl.version}</version>
                     </dependency>
+
                 </dependencies>
             </plugin>
 
@@ -315,6 +317,12 @@
         <dependency>
             <groupId>displaytag</groupId>
             <artifactId>displaytag</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.validator.version}</version>
         </dependency>
 
         <dependency>

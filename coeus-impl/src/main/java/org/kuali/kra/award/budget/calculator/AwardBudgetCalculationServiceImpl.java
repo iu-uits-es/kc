@@ -20,9 +20,13 @@ package org.kuali.kra.award.budget.calculator;
 
 import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
 import org.kuali.kra.award.budget.AwardBudgetExt;
+import org.kuali.kra.award.budget.AwardBudgetLineItemExt;
+import org.kuali.rice.core.api.criteria.QueryByCriteria;
 import org.kuali.coeus.common.budget.impl.calculator.BudgetCalculationServiceImpl;
 import org.kuali.coeus.common.budget.framework.core.category.BudgetCategoryType;
 import org.kuali.coeus.common.budget.framework.core.CostElement;
+import org.kuali.coeus.common.budget.framework.nonpersonnel.BudgetLineItem;
+import org.kuali.coeus.common.budget.framework.period.BudgetPeriod;
 import org.kuali.coeus.common.budget.framework.rate.RateType;
 
 import java.util.*;
@@ -96,9 +100,6 @@ public class AwardBudgetCalculationServiceImpl extends BudgetCalculationServiceI
                 prevBudget.getPersonnelCalculatedExpenseBudgetTotals()));
         budget.setNonPersonnelCalculatedExpenseBudgetTotals((SortedMap<RateType, ScaleTwoDecimal>) mergeMaps(budget.getNonPersonnelCalculatedExpenseBudgetTotals(),
                 prevBudget.getNonPersonnelCalculatedExpenseBudgetTotals()));
-        budget.setTotalDirectCost(budget.getTotalDirectCost().add(prevBudget.getTotalDirectCost()));
-        budget.setTotalIndirectCost(budget.getTotalIndirectCost().add(prevBudget.getTotalIndirectCost()));
-        budget.setTotalCost(budget.getTotalCost().add(prevBudget.getTotalCost())); 
     }
     
     /**
@@ -152,4 +153,18 @@ public class AwardBudgetCalculationServiceImpl extends BudgetCalculationServiceI
         }
         return result;
     }
+    
+    @Override
+	protected Collection<? extends BudgetLineItem> getLineItemsFromDatabase(
+			final BudgetPeriod budgetPeriod) {
+		final Map<String, Object> fieldValues = new HashMap<>();
+
+		fieldValues.put("budgetId", budgetPeriod.getBudgetId());
+		fieldValues.put("budgetPeriod", budgetPeriod.getBudgetPeriod());
+		
+
+		final Collection<? extends BudgetLineItem> deletedLineItems
+		    = this.getBusinessObjectService().findMatching(AwardBudgetLineItemExt.class, fieldValues);
+		return deletedLineItems;
+	}
 }

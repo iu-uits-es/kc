@@ -150,6 +150,7 @@ public class AwardAction extends BudgetParentActionBase {
     public static final String REFUSE_SYNC_ACTION = "refuseSyncAction";
 
     public static final String DISABLE_ATTACHMENT_REMOVAL = "disableAttachmentRemoval";
+    public static final String CURRENT_VERSION_BUDGETS = "currentVersionBudgets";
 
     private enum SuperUserAction {
         SUPER_USER_APPROVE, TAKE_SUPER_USER_ACTIONS
@@ -198,9 +199,9 @@ public class AwardAction extends BudgetParentActionBase {
     public ActionForward docHandler(ActionMapping mapping, ActionForm form
             , HttpServletRequest request, HttpServletResponse response) throws Exception {
         AwardForm awardForm = (AwardForm) form;
-        ActionForward forward;
+        ActionForward docHandlerForward = null;
         cleanUpUserSession();
-        forward = handleDocument(mapping, form, request, response, awardForm);
+        docHandlerForward = handleLoadingDocument(mapping, awardForm, request, response);
         
         AwardDocument awardDocument = (AwardDocument) awardForm.getDocument();
         //check to see if this document might be a part of an active award sync(if it is lock it)
@@ -218,9 +219,12 @@ public class AwardAction extends BudgetParentActionBase {
             handlePlaceHolderDocument(awardForm, awardDocument);
         }
 
-
-       
-        return forward;
+        ActionForward commandForward = handleDocHandlerForwards(mapping, awardForm, request, response);
+        if (commandForward != null) {
+        	return commandForward;
+        } else {
+        	return docHandlerForward;
+        }
     }
 
     private void handlePlaceHolderDocument(AwardForm form, AwardDocument awardDocument) {
@@ -1020,36 +1024,50 @@ public class AwardAction extends BudgetParentActionBase {
     public ActionForward budgets(ActionMapping mapping, ActionForm form
             , HttpServletRequest request, HttpServletResponse response) {
         AwardForm awardForm = (AwardForm) form;
+        String awardNumber = awardForm.getAwardDocument().getAward().getAwardNumber();
+        // OJB sometimes erroneously returns a Budget instead of a AwardBudExt. The following line will
+        // force OJB to load the AwardBudgetExt first making it return the right object in all subsequent
+        // retrievals.
+        getAwardService().findAwardsForAwardNumber(awardNumber).stream().forEach(award -> {award.refreshReferenceObject(CURRENT_VERSION_BUDGETS);});
         getAwardBudgetService().populateBudgetLimitSummary(awardForm.getBudgetLimitSummary(), awardForm.getAwardDocument().getAward());
         return mapping.findForward(Constants.MAPPING_AWARD_BUDGET_VERSIONS_PAGE);
     }
+    
+	ActionForward handleLoadingDocument(ActionMapping mapping, AwardForm awardForm, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-    ActionForward handleDocument(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-                                  HttpServletResponse response, AwardForm awardForm) throws Exception {
+		ActionForward forward = null;
 
-        ActionForward forward;
+		String command = awardForm.getCommand();
+		if (Constants.MAPPING_AWARD_ACTIONS_PAGE.equals(command)) {
+			loadDocument(awardForm);
+		} else if (Constants.MAPPING_AWARD_BUDGET_VERSIONS_PAGE.equals(command)) {
+			loadDocument(awardForm);
+		} else if (Constants.MAPPING_AWARD_HOME_PAGE.equals(command)) {
+			loadDocument(awardForm);
+		} else {
+			forward = super.docHandler(mapping, awardForm, request, response);
+		}
+
+		return forward;
+	}
+    
+    ActionForward handleDocHandlerForwards(ActionMapping mapping, AwardForm awardForm, HttpServletRequest request,
+                                  HttpServletResponse response) throws Exception {
+
+        ActionForward forward = null;
 
         String command = awardForm.getCommand();
-        if (KewApiConstants.ACTIONLIST_INLINE_COMMAND.equals(command)) {
-            loadDocumentInForm(request, awardForm);
-            ActionForward baseForward = mapping.findForward(Constants.MAPPING_COPY_PROPOSAL_PAGE);
-            forward = new ActionForward(buildForwardStringForActionListCommand(
-                    baseForward.getPath(),awardForm.getDocument().getDocumentNumber()));
-        } else if (Constants.MAPPING_AWARD_ACTIONS_PAGE.equals(command)) {
-            loadDocument(awardForm);
+        if (Constants.MAPPING_AWARD_ACTIONS_PAGE.equals(command)) {
             forward = awardActions(mapping, awardForm, request, response);
         } else if (Constants.MAPPING_AWARD_BUDGET_VERSIONS_PAGE.equals(command)) {
-            loadDocument(awardForm);
             forward = budgets(mapping,awardForm,request,response);
         } else if (Constants.MAPPING_AWARD_HOME_PAGE.equals(command)) {
-            loadDocument(awardForm);
             forward = home(mapping,awardForm,request,response);
-        } else {
-            forward = super.docHandler(mapping, form, request, response);
         }
         
         return forward;
-    }
+    }    
+    
     
     protected void loadDocument(KualiDocumentFormBase kualiForm) throws WorkflowException {
         super.loadDocument(kualiForm);

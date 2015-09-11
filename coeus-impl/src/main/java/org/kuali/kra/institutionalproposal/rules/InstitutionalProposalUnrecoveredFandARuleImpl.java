@@ -20,12 +20,15 @@ package org.kuali.kra.institutionalproposal.rules;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kuali.coeus.common.budget.framework.core.Budget;
+import org.kuali.coeus.sys.framework.service.KcServiceLocator;
 import org.kuali.kra.infrastructure.Constants;
 import org.kuali.kra.infrastructure.KeyConstants;
 import org.kuali.kra.institutionalproposal.IndirectcostRateType;
 import org.kuali.kra.institutionalproposal.home.InstitutionalProposalUnrecoveredFandA;
 import org.kuali.coeus.sys.framework.rule.KcTransactionalDocumentRuleBase;
 import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
+import org.kuali.rice.coreservice.framework.parameter.ParameterService;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +46,7 @@ public class InstitutionalProposalUnrecoveredFandARuleImpl extends KcTransaction
     private static final String COST_SHARE_PERCENTAGE_PROP = ".costSharePercentage";
     private static final String SOURCE_ACCOUNT_PROP = ".sourceAccount";
     private static final String INDIRECTCOST_RATE_TYPE_CODE = "indirectcostRateTypeCode";
+    private ParameterService parameterService;
 
     @Override
     public boolean processAddInstitutionalProposalUnrecoveredFandABusinessRules(
@@ -62,24 +66,16 @@ public class InstitutionalProposalUnrecoveredFandARuleImpl extends KcTransaction
      * This method processes common validations for business rules
      */
     public boolean processCommonValidations(InstitutionalProposalUnrecoveredFandA institutionalProposalUnrecoveredFandA, List<InstitutionalProposalUnrecoveredFandA> institutionalProposalUnrecoveredFandAs) {
-        boolean validFiscalYearRange = validateUnrecoveredFandAFiscalYearRange(institutionalProposalUnrecoveredFandA);
-        
-     // test if percentage is valid
-        boolean validPercentage = validatePercentage(institutionalProposalUnrecoveredFandA.getApplicableIndirectcostRate());
-        
-        // test if type is selected and valid
-        boolean validRateType = validateRateType(institutionalProposalUnrecoveredFandA.getIndirectcostRateTypeCode());
-        
-        // test if source account is valid
-        boolean validSourceAccount = validateSourceAccount(institutionalProposalUnrecoveredFandA.getSourceAccount());
-        
-        // test if amount is entered and valid
-        boolean validAmount = validateAmount(institutionalProposalUnrecoveredFandA.getAmount());
-        
-        // test if row is a duplicate
-        boolean validRows = checkNoDuplicates(institutionalProposalUnrecoveredFandA, institutionalProposalUnrecoveredFandAs);
- 
-        return validFiscalYearRange && validPercentage && validRateType && validSourceAccount && validAmount  && validRows;
+        if (isUnrecoveredFandAApplicable() && isUnrecoveredFandAEnforced()) {
+            boolean validFiscalYearRange = validateUnrecoveredFandAFiscalYearRange(institutionalProposalUnrecoveredFandA);
+            boolean validPercentage = validatePercentage(institutionalProposalUnrecoveredFandA.getApplicableIndirectcostRate());
+            boolean validRateType = validateRateType(institutionalProposalUnrecoveredFandA.getIndirectcostRateTypeCode());
+            boolean validSourceAccount = validateSourceAccount(institutionalProposalUnrecoveredFandA.getSourceAccount());
+            boolean validAmount = validateAmount(institutionalProposalUnrecoveredFandA.getAmount());
+            boolean validRows = checkNoDuplicates(institutionalProposalUnrecoveredFandA, institutionalProposalUnrecoveredFandAs);
+            return validFiscalYearRange && validPercentage && validRateType && validSourceAccount && validAmount && validRows;
+        }
+        return true;
     }
     
     /**
@@ -141,6 +137,25 @@ public class InstitutionalProposalUnrecoveredFandARuleImpl extends KcTransaction
             this.reportError(Constants.IP_UNRECOVERED_FNA_ACTION_PROPERTY_KEY + SOURCE_ACCOUNT_PROP, KeyConstants.ERROR_PROPOSAL_UFNA_SOURCE_ACCOUNT_REQUIRED);
         }
         return isValid;
+    }
+
+    public Boolean isUnrecoveredFandAEnforced() {
+        return getParameterService().getParameterValueAsBoolean(Budget.class, Constants.BUDGET_UNRECOVERED_F_AND_A_ENFORCEMENT_FLAG);
+    }
+
+    public Boolean isUnrecoveredFandAApplicable() {
+        return getParameterService().getParameterValueAsBoolean(Budget.class, Constants.BUDGET_UNRECOVERED_F_AND_A_APPLICABILITY_FLAG);
+    }
+
+    protected ParameterService getParameterService() {
+        if (parameterService == null) {
+            parameterService = KcServiceLocator.getService(ParameterService.class);
+        }
+        return parameterService;
+    }
+
+    protected void setParameterService(ParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
     private boolean validateAmount(ScaleTwoDecimal amount) {

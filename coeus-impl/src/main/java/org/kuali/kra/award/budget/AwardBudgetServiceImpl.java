@@ -39,7 +39,6 @@ import org.kuali.kra.award.document.AwardDocument;
 import org.kuali.kra.award.home.Award;
 import org.kuali.kra.award.home.AwardService;
 import org.kuali.kra.award.home.fundingproposal.AwardFundingProposal;
-import org.kuali.coeus.common.budget.framework.calculator.BudgetCalculationService;
 import org.kuali.coeus.common.budget.framework.query.QueryList;
 import org.kuali.coeus.common.budget.api.rate.RateClassType;
 import org.kuali.coeus.common.budget.framework.query.operator.And;
@@ -84,8 +83,9 @@ import java.util.*;
  * This class is to process all basic services required for AwardBudget
  */
 public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> implements AwardBudgetService {
-    private static final Log LOG = LogFactory.getLog(AwardBudgetServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(AwardBudgetServiceImpl.class);
     private final static String BUDGET_VERSION_ERROR_PREFIX = "document.parentDocument.budgetDocumentVersion";
+    private static final String INST_PROPOSAL_ID = "instProposalId";
     public static final String AWARD_BUDGET_STATUS_CODE = "awardBudgetStatusCode";
     public static final String BUDGET_VERSION_NUMBER = "budgetVersionNumber";
     public static final String BUDGET_ID = "budgetId";
@@ -117,7 +117,6 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
 
     private DocumentService documentService;
     private BudgetSummaryService budgetSummaryService;
-    private BudgetCalculationService budgetCalculationService;
     private AwardBudgetCalculationService awardBudgetCalculationService;
     private VersionHistoryService versionHistoryService;
     private AwardService awardService;
@@ -129,12 +128,8 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         processStatusChange(awardBudgetDocument, KeyConstants.AWARD_BUDGET_STATUS_POSTED);
         saveDocument(awardBudgetDocument);
     }
-    
-    /**
-     * Need to move this to AwardBudgetService service
-     */
-    
-    protected AwardBudgetDocument copyBudgetVersion(AwardBudgetDocument budgetDocument, boolean onlyOnePeriod) throws WorkflowException {
+
+    public AwardBudgetDocument copyBudgetVersion(AwardBudgetDocument budgetDocument, boolean onlyOnePeriod) throws WorkflowException {
         AwardDocument awardDocument = (AwardDocument)budgetDocument.getBudget().getBudgetParent().getDocument();
 		String parentDocumentNumber = awardDocument.getDocumentNumber();
         budgetDocument.toCopy();
@@ -147,6 +142,11 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         AwardBudgetExt copiedBudget = (AwardBudgetExt) copyBudgetVersion(budget,onlyOnePeriod);
         budgetDocument.getBudgets().add(copiedBudget);
         budgetDocument = (AwardBudgetDocument) documentService.saveDocument(budgetDocument);
+        
+        Map<String, Object> objectMap = new HashMap<>();
+        fixProperty(budget, "setBudgetId", Long.class, budgetDocument.getBudget().getBudgetId(), objectMap);
+        objectMap.clear();
+        
         budgetDocument = saveBudgetDocument(budgetDocument, false);
         AwardDocument savedAwardDocument = (AwardDocument)budgetDocument.getBudget().getBudgetParent().getDocument();
         savedAwardDocument.refreshBudgetDocumentVersions();
@@ -782,22 +782,26 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
     
     @Override
     public List<BudgetPeriod> findBudgetPeriodsFromLinkedProposal(String awardNumber) {
+    	return findBudgetPeriodsFromLinkedProposal(awardService.getActiveOrNewestAward(awardNumber));
+    }
+    
+    public List<BudgetPeriod> findBudgetPeriodsFromLinkedProposal(Award award) {
+    	Set<Long> budgetIdsAdded = new HashSet<>();
         List<BudgetPeriod> budgetPeriods = new ArrayList<>();
-        List<Award> awardVersions = findMatching(Award.class, AWARD_NUMBER, awardNumber);
-        for (Award award : awardVersions) {
-            List<AwardFundingProposal> fundingProposals = findMatching(AwardFundingProposal.class, AWARD_ID, award.getAwardId());
-            for (AwardFundingProposal fundingProposal : fundingProposals) {
-                if (fundingProposal.isActive()) {
-                    List<InstitutionalProposal> instProposals = 
-                        findMatching(InstitutionalProposal.class, PROPOSAL_NUMBER, fundingProposal.getProposal().getProposalNumber());
-                    for (InstitutionalProposal instProp : instProposals) {
-                        List<ProposalAdminDetails> proposalAdminDetails = findMatching(ProposalAdminDetails.class,
-                                "instProposalId", instProp.getProposalId());
-                        for (ProposalAdminDetails proposalAdminDetail : proposalAdminDetails) {
-                            String developmentProposalNumber = proposalAdminDetail.getDevProposalNumber();
-                            DevelopmentProposal proposalDevelopment = 
-                            		getDataObjectService().find(DevelopmentProposal.class, developmentProposalNumber);
-                            ProposalDevelopmentBudgetExt budget = proposalDevelopment.getFinalBudget();
+        for (AwardFundingProposal fundingProposal : award.getAllFundingProposals()) {
+            if (fundingProposal.isActive()) {
+                List<InstitutionalProposal> instProposals = 
+                    findMatching(InstitutionalProposal.class, PROPOSAL_NUMBER, fundingProposal.getProposal().getProposalNumber());
+                for (InstitutionalProposal instProp : instProposals) {
+                    List<ProposalAdminDetails> proposalAdminDetails = findMatching(ProposalAdminDetails.class,
+                            INST_PROPOSAL_ID, instProp.getProposalId());
+                    for (ProposalAdminDetails proposalAdminDetail : proposalAdminDetails) {
+                        String developmentProposalNumber = proposalAdminDetail.getDevProposalNumber();
+                        DevelopmentProposal proposalDevelopment = 
+                        		getDataObjectService().find(DevelopmentProposal.class, developmentProposalNumber);
+                        ProposalDevelopmentBudgetExt budget = proposalDevelopment.getFinalBudget();
+                        if (!budgetIdsAdded.contains(budget.getBudgetId())) { 
+                        	budgetIdsAdded.add(budget.getBudgetId());
                             //if this result set is being used by @see org.kuali.kra.lookup.BudgetPeriodLookupableHelperServiceImpl
                             //we need to populate these additional fields so always populate them.
                             for (BudgetPeriod budgetPeriod : budget.getBudgetPeriods()) {
@@ -946,26 +950,24 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         for (BudgetPeriod budgetPeriod : awardBudgetPeriods) {
             removeBudgetSummaryPeriodCalcAmounts(budgetPeriod);
         }
-        budgetCalculationService.calculateBudget(budget);
-        budgetCalculationService.calculateBudgetSummaryTotals(budget);
+        awardBudgetCalculationService.calculateBudget(budget);
+        awardBudgetCalculationService.calculateBudgetSummaryTotals(budget);
     }
     public void recalculateBudgetPeriod(Budget budget,BudgetPeriod budgetPeriod) {
         removeBudgetSummaryPeriodCalcAmounts(budgetPeriod);
-        budgetCalculationService.calculateBudgetPeriod(budget, budgetPeriod);
+        awardBudgetCalculationService.calculateBudgetPeriod(budget, budgetPeriod);
     }
 
     public void calculateBudgetOnSave(Budget budget) {
-        budgetCalculationService.calculateBudget(budget);
-        budgetCalculationService.calculateBudgetSummaryTotals(budget);
+    	awardBudgetCalculationService.calculateBudget(budget);
+    	awardBudgetCalculationService.calculateBudgetSummaryTotals(budget);
         List<BudgetPeriod> awardBudgetPeriods = budget.getBudgetPeriods();
         for (BudgetPeriod awardBudgetPeriod : awardBudgetPeriods) {
             AwardBudgetPeriodExt budgetPeriod = (AwardBudgetPeriodExt)awardBudgetPeriod;
             ScaleTwoDecimal periodFringeTotal = getPeriodFringeTotal(budgetPeriod, budget);
-            ScaleTwoDecimal prevPeriodFringeTotal = budgetPeriod.getPrevTotalFringeAmount();
             ScaleTwoDecimal totalFringeAmount = budgetPeriod.getTotalFringeAmount();
-            ScaleTwoDecimal fringeAmountDiff = totalFringeAmount.subtract(prevPeriodFringeTotal);
+            ScaleTwoDecimal fringeAmountDiff = totalFringeAmount.subtract(periodFringeTotal);
         	ScaleTwoDecimal totalDirect = budgetPeriod.getTotalDirectCost().add(fringeAmountDiff);
-        	budgetPeriod.setPrevTotalFringeAmount(totalFringeAmount);
 			if(!totalDirect.equals(budgetPeriod.getTotalDirectCost())){
 				budgetPeriod.setTotalDirectCost(totalDirect);
 			}
@@ -1183,14 +1185,6 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
 
     public void setAwardBudgetCalculationService(AwardBudgetCalculationService awardBudgetCalculationService) {
         this.awardBudgetCalculationService = awardBudgetCalculationService;
-    }
-
-    protected BudgetCalculationService getBudgetCalculationService() {
-        return budgetCalculationService;
-    }
-
-    public void setBudgetCalculationService(BudgetCalculationService budgetCalculationService) {
-        this.budgetCalculationService = budgetCalculationService;
     }
 
     protected AwardService getAwardService() {

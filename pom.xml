@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.kuali.coeus</groupId>
     <artifactId>coeus</artifactId>
-    <version>1508.4</version>
+    <version>1508.47</version>
     <packaging>pom</packaging>
     <name>Kuali Coeus</name>
     <description>
@@ -120,7 +120,7 @@
         <org.eclipse.persistence.version>2.6.0</org.eclipse.persistence.version>
         <pdfbox.version>1.8.6</pdfbox.version>
         <quartz.version>1.8.4</quartz.version>
-        <rice.version>2.5.3.1507.17-kckualico</rice.version>
+        <rice.version>2.5.3.1508.0010-kualico</rice.version>
         <schemaspy.version>1507.2</schemaspy.version>
         <servlet.version>3.0.1</servlet.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -129,7 +129,7 @@
         <spring-modules-ojb.version>0.8a</spring-modules-ojb.version>
         <struts.version>1.3.10</struts.version>
         <tomcat.version>7.0.63</tomcat.version>
-        <validation-api.version>1.0.0.GA</validation-api.version>
+        <validation-api.version>1.1.0.Final</validation-api.version>
         <velocity.version>1.7</velocity.version>
         <wss4j.version>1.6.18</wss4j.version>
         <xalan.version>2.7.2</xalan.version>
@@ -138,6 +138,7 @@
         <xmlbeans.version>2.6.0</xmlbeans.version>
         <xmlsec.version>1.5.6</xmlsec.version>
         <xstream.version>1.2.2</xstream.version>
+        <hibernate.validator.version>5.2.1.Final</hibernate.validator.version>
 
         <!-- plugin versions -->
         <cxf-codegen-plugin.version>${cxf.version}</cxf-codegen-plugin.version>
@@ -152,7 +153,7 @@
         <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
-        <maven-release-plugin.version>2.5.1</maven-release-plugin.version>
+        <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
         <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
         <maven-scm-provider-gitexe.version>1.9.4</maven-scm-provider-gitexe.version>
         <maven-site-plugin.version>3.4</maven-site-plugin.version>
@@ -196,7 +197,7 @@
 
         <enforcer.phase>validate</enforcer.phase>
 
-        <require.maven.version>3.0</require.maven.version>
+        <require.maven.version>3.3</require.maven.version>
 
         <project.encoding>UTF-8</project.encoding>
         <project.build.sourceEncoding>${project.encoding}</project.build.sourceEncoding>
@@ -2120,8 +2121,8 @@
                 <build.spring.profiles.active>grm</build.spring.profiles.active>
 
                 <rsmart.cx.token.auth.version>1507.1</rsmart.cx.token.auth.version>
-                <rsmart.hr.rest.version>1507.2</rsmart.hr.rest.version>
-                <kc-sql.version>1508.1</kc-sql.version>
+                <rsmart.hr.rest.version>1508.0004</rsmart.hr.rest.version>
+                <kc-sql.version>1508.0005</kc-sql.version>
 
                 <scm.connection>scm:git:git://github.com/kualico/kc.git</scm.connection>
                 <scm.developerConnection>scm:git:git@github.com:kualico/kc.git</scm.developerConnection>
@@ -2186,6 +2187,10 @@
                             <exclusion>
                                 <groupId>javax.ws.rs</groupId>
                                 <artifactId>jsr311-api</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.hibernate</groupId>
+                                <artifactId>hibernate-validator</artifactId>
                             </exclusion>
                         </exclusions>
                     </dependency>
@@ -2367,7 +2372,7 @@
         <connection>${scm.connection}</connection>
         <developerConnection>${scm.developerConnection}</developerConnection>
         <url>${scm.url}</url>
-      <tag>coeus-1505.41</tag>
+        <tag>coeus-1508.47</tag>
   </scm>
 
     <distributionManagement>

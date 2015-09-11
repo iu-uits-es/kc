@@ -24,6 +24,7 @@ import org.kuali.coeus.common.budget.api.rate.RateClassType;
 import org.kuali.coeus.common.budget.framework.calculator.*;
 import org.kuali.coeus.common.budget.framework.query.QueryList;
 import org.kuali.coeus.common.budget.framework.rate.BudgetRatesService;
+import org.kuali.coeus.common.budget.framework.rate.ValidCeRateType;
 import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
 import org.kuali.coeus.sys.framework.gv.GlobalVariableService;
 import org.kuali.coeus.common.budget.framework.query.operator.And;
@@ -149,19 +150,26 @@ public class BudgetCalculationServiceImpl implements BudgetCalculationService {
         final boolean isLineItemsEmpty = budgetPeriod.getBudgetLineItems().isEmpty();
         
         if(isLineItemsEmpty && !budgetLineItemDeleted){
-            final Map<String, Object> fieldValues = new HashMap<>();
-
-            fieldValues.put("budgetId", budgetPeriod.getBudgetId());
-            fieldValues.put("budgetPeriod", budgetPeriod.getBudgetPeriod());
-            
-
-            final Collection<BudgetLineItem> deletedLineItems
-                = this.dataObjectService.findMatching(BudgetLineItem.class, QueryByCriteria.Builder.andAttributes(fieldValues).build()).getResults();
+            final Collection<? extends BudgetLineItem> deletedLineItems = getLineItemsFromDatabase(budgetPeriod);
             return !deletedLineItems.isEmpty();
         }
             
         return true;
     }
+	
+    protected Collection<? extends BudgetLineItem> getLineItemsFromDatabase(
+			final BudgetPeriod budgetPeriod) {
+		final Map<String, Object> fieldValues = new HashMap<>();
+
+		fieldValues.put("budgetId", budgetPeriod.getBudgetId());
+		fieldValues.put("budgetPeriod", budgetPeriod.getBudgetPeriod());
+		
+
+		final Collection<? extends BudgetLineItem> deletedLineItems
+		    = this.dataObjectService.findMatching(BudgetLineItem.class, QueryByCriteria.Builder.andAttributes(fieldValues).build()).getResults();
+		return deletedLineItems;
+	}
+	
     protected void copyLineItemToPersonnelDetails(BudgetLineItem budgetLineItem, BudgetPersonnelDetails budgetPersonnelDetails) {
     	budgetPersonnelDetails.setBudget(budgetLineItem.getBudget());
         budgetPersonnelDetails.setBudgetId(budgetLineItem.getBudgetId());
@@ -855,8 +863,16 @@ public class BudgetCalculationServiceImpl implements BudgetCalculationService {
     }
     @Override
     public void applyToLaterPeriods(Budget budget, BudgetPeriod budgetPeriod, BudgetLineItem budgetLineItem) {
+
+        for (ValidCeRateType validCeRateType : budgetLineItem.getCostElementBO().getValidCeRateTypes()) {
+            validCeRateType.getRateType().getDescription();
+            validCeRateType.getRateClass().getCode();
+            validCeRateType.getCostElementBo().getDescription();
+        }
+
         BudgetPeriodCalculator periodCalculator = new BudgetPeriodCalculator();
         periodCalculator.applyToLaterPeriods(budget, budgetPeriod, budgetLineItem);
+
         List<String> errors = periodCalculator.getErrorMessages();
         if(!errors.isEmpty()){
             MessageMap errorMap = globalVariableService.getMessageMap();
