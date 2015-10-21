@@ -21,6 +21,7 @@ package org.kuali.kra.protocol.actions.amendrenew;
 import org.kuali.coeus.common.questionnaire.framework.answer.AnswerHeader;
 import org.kuali.coeus.common.questionnaire.framework.answer.ModuleQuestionnaireBean;
 import org.kuali.coeus.common.questionnaire.framework.answer.QuestionnaireAnswerService;
+import org.apache.commons.lang3.StringUtils;
 import org.kuali.kra.dao.KraLookupDao;
 import org.kuali.kra.protocol.ProtocolBase;
 import org.kuali.kra.protocol.ProtocolDocumentBase;
@@ -412,7 +413,16 @@ public abstract class ProtocolAmendRenewServiceImplBase implements ProtocolAmend
         return moduleTypeCodes;
     }
 
-
+    public String getAmendedOrRenewalProtocolNumber(String protocolNumber) {
+        if (protocolNumber.contains(AMEND_ID)) {
+            return StringUtils.substringBefore(protocolNumber, AMEND_ID);
+        } else if (protocolNumber.contains(RENEW_ID)) {
+            return StringUtils.substringBefore(protocolNumber, RENEW_ID);
+        } else {
+            return protocolNumber;
+        }
+    }
+    
     /**
      * Has the amendment completed, e.g. been approved, disapproved, etc?
      */

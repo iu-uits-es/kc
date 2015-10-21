@@ -65,6 +65,7 @@ import org.kuali.rice.krad.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -185,6 +186,9 @@ public abstract class ProtocolBase extends KcPersistableBusinessObjectBase imple
     private transient boolean lookupActionRequestProtocol;
     private transient boolean lookupProtocolPersonId;
     private transient boolean mergeAmendment;
+
+    private String createUser;
+    private Timestamp createTimestamp;
     
     public String getInitiatorLastUpdated() {
         return initiatorLastUpdated;
@@ -1194,15 +1198,18 @@ public abstract class ProtocolBase extends KcPersistableBusinessObjectBase imple
     @SuppressWarnings("unchecked")
     protected void mergeProtocolSubmission(ProtocolBase amendment) {
         List<ProtocolSubmissionBase> submissions = (List<ProtocolSubmissionBase>) deepCopy(amendment.getProtocolSubmissions());  
-        for (ProtocolSubmissionBase submission : submissions) {
+        setNewSubmissionReferences(submissions);
+    }
+    
+    protected void setNewSubmissionReferences(List<ProtocolSubmissionBase> submissions) {
+    	submissions.forEach(submission -> {
             submission.setProtocolNumber(this.getProtocolNumber());
             submission.setSubmissionId(null);
             submission.setSequenceNumber(sequenceNumber);
             submission.setProtocolId(this.getProtocolId());
             this.getProtocolSubmissions().add(submission);
-        }
+        });
     }
-    
     
     protected abstract void mergeProtocolAction(ProtocolBase amendment);    
     
@@ -1974,4 +1981,26 @@ public abstract class ProtocolBase extends KcPersistableBusinessObjectBase imple
         }
     }
 
+	public String getCreateUser() {
+		return createUser;
+	}
+
+	public void setCreateUser(String createUser) {
+		this.createUser = createUser;
+	}
+
+	public Timestamp getCreateTimestamp() {
+		return createTimestamp;
+	}
+
+	public void setCreateTimestamp(Timestamp createTimestamp) {
+		this.createTimestamp = createTimestamp;
+	}
+
+    @Override
+    protected void prePersist() {
+    	super.prePersist();
+    	setCreateUser(getUpdateUser());
+    	setCreateTimestamp(getUpdateTimestamp());
+    }
 }
