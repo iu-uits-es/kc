@@ -121,4 +121,6 @@
 
     <param name="kc.schemaspy.enabled">false</param>
     <param name="kc.monitoring.enabled">true</param>
+    <param name="mq.broker.dataDirectory">/opt/j2ee/security/${app.code}/${environment}</param>
+
 </config>
