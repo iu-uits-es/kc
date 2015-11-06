@@ -18,30 +18,19 @@
  */
 package org.kuali.kra.iacuc.actions;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.kuali.coeus.common.framework.module.CoeusModule;
 import org.kuali.coeus.common.framework.module.CoeusSubModule;
 import org.kuali.coeus.common.notification.impl.bo.NotificationTypeRecipient;
+import org.kuali.coeus.common.questionnaire.framework.answer.AnswerHeader;
+import org.kuali.coeus.common.questionnaire.framework.answer.ModuleQuestionnaireBean;
 import org.kuali.kra.iacuc.IacucProtocol;
 import org.kuali.kra.iacuc.IacucProtocolDocument;
 import org.kuali.kra.iacuc.IacucProtocolForm;
 import org.kuali.kra.iacuc.actions.abandon.IacucProtocolAbandonService;
-import org.kuali.kra.iacuc.actions.amendrenew.CreateIacucAmendmentEvent;
-import org.kuali.kra.iacuc.actions.amendrenew.CreateIacucContinuationEvent;
-import org.kuali.kra.iacuc.actions.amendrenew.CreateIacucRenewalEvent;
-import org.kuali.kra.iacuc.actions.amendrenew.IacucProtocolAmendRenewService;
-import org.kuali.kra.iacuc.actions.amendrenew.IacucProtocolAmendmentBean;
+import org.kuali.kra.iacuc.actions.amendrenew.*;
 import org.kuali.kra.iacuc.actions.approve.IacucProtocolApproveBean;
 import org.kuali.kra.iacuc.actions.approve.IacucProtocolApproveEvent;
 import org.kuali.kra.iacuc.actions.approve.IacucProtocolApproveService;
@@ -72,14 +61,7 @@ import org.kuali.kra.iacuc.actions.request.IacucProtocolRequestEvent;
 import org.kuali.kra.iacuc.actions.request.IacucProtocolRequestRule;
 import org.kuali.kra.iacuc.actions.request.IacucProtocolRequestService;
 import org.kuali.kra.iacuc.actions.reviewcomments.IacucReviewCommentsBean;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolActionService;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolReviewType;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolReviewerBean;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolSubmission;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolSubmissionStatus;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolSubmissionType;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolSubmitAction;
-import org.kuali.kra.iacuc.actions.submit.IacucProtocolSubmitActionService;
+import org.kuali.kra.iacuc.actions.submit.*;
 import org.kuali.kra.iacuc.actions.table.IacucProtocolTableBean;
 import org.kuali.kra.iacuc.actions.table.IacucProtocolTableService;
 import org.kuali.kra.iacuc.actions.withdraw.IacucProtocolWithdrawService;
@@ -88,20 +70,13 @@ import org.kuali.kra.iacuc.auth.IacucProtocolTask;
 import org.kuali.kra.iacuc.correspondence.IacucProtocolActionsCorrespondence;
 import org.kuali.kra.iacuc.correspondence.IacucProtocolCorrespondence;
 import org.kuali.kra.iacuc.infrastructure.IacucConstants;
-import org.kuali.kra.iacuc.notification.IacucProtocolAssignReviewerNotificationRenderer;
-import org.kuali.kra.iacuc.notification.IacucProtocolNotification;
-import org.kuali.kra.iacuc.notification.IacucProtocolNotificationContext;
-import org.kuali.kra.iacuc.notification.IacucProtocolNotificationRenderer;
-import org.kuali.kra.iacuc.notification.IacucProtocolNotificationRequestBean;
-import org.kuali.kra.iacuc.notification.IacucProtocolRequestActionNotificationRenderer;
-import org.kuali.kra.iacuc.notification.IacucProtocolReviewDeterminationNotificationRenderer;
-import org.kuali.kra.iacuc.notification.IacucProtocolWithReasonNotificationRenderer;
-import org.kuali.kra.iacuc.notification.IacucRequestActionNotificationBean;
+import org.kuali.kra.iacuc.notification.*;
 import org.kuali.kra.iacuc.onlinereview.IacucProtocolOnlineReview;
 import org.kuali.kra.iacuc.questionnaire.IacucProtocolModuleQuestionnaireBean;
 import org.kuali.kra.iacuc.questionnaire.IacucProtocolQuestionnaireAuditRule;
 import org.kuali.kra.infrastructure.Constants;
 import org.kuali.kra.infrastructure.TaskName;
+import org.kuali.kra.irb.infrastructure.IrbConstants;
 import org.kuali.kra.protocol.ProtocolBase;
 import org.kuali.kra.protocol.ProtocolDocumentBase;
 import org.kuali.kra.protocol.ProtocolFormBase;
@@ -119,13 +94,15 @@ import org.kuali.kra.protocol.notification.ProtocolNotification;
 import org.kuali.kra.protocol.notification.ProtocolNotificationContextBase;
 import org.kuali.kra.protocol.notification.ProtocolNotificationRequestBeanBase;
 import org.kuali.kra.protocol.questionnaire.ProtocolQuestionnaireAuditRuleBase;
-import org.kuali.coeus.common.questionnaire.framework.answer.AnswerHeader;
-import org.kuali.coeus.common.questionnaire.framework.answer.ModuleQuestionnaireBean;
 import org.kuali.rice.kns.document.authorization.DocumentAuthorizerBase;
 import org.kuali.rice.kns.util.WebUtils;
 import org.kuali.rice.krad.util.GlobalVariables;
 import org.kuali.rice.krad.util.ObjectUtils;
 import org.springframework.util.CollectionUtils;
+
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.*;
 
 public class IacucProtocolActionRequestServiceImpl extends ProtocolActionRequestServiceImpl implements IacucProtocolActionRequestService {
     private static final Log LOG = LogFactory.getLog(IacucProtocolActionRequestServiceImpl.class);
@@ -622,7 +599,7 @@ public class IacucProtocolActionRequestServiceImpl extends ProtocolActionRequest
     @Override
     public String createRenewal(IacucProtocolForm protocolForm) throws Exception {
         IacucProtocol protocol = protocolForm.getIacucProtocolDocument().getIacucProtocol();
-        String newDocId = getProtocolAmendRenewService().createRenewal(protocolForm.getProtocolDocument(),protocolForm.getActionHelper().getRenewalSummary());
+        String newDocId = getProtocolAmendRenewService().createRenewal(protocolForm.getProtocolDocument(), protocolForm.getActionHelper().getRenewalSummary());
         generateActionCorrespondence(IacucProtocolActionType.RENEWAL_CREATED, protocolForm.getProtocolDocument().getProtocol());
         refreshAfterProtocolAction(protocolForm, newDocId, ACTION_NAME_RENEWAL_WITHOUT_AMENDMENT, true);
         // Form fields copy needed to support modifyAmendmentSections
@@ -1020,7 +997,6 @@ public class IacucProtocolActionRequestServiceImpl extends ProtocolActionRequest
     
     /**
      * This method is to make sure we have linked correspondence and notification to both previous and versioned protocol
-     * @param isVersion
      * @param previousProtocol
      * @param newProtocolCorrespondence
      * @param notificationBean
@@ -1047,24 +1023,17 @@ public class IacucProtocolActionRequestServiceImpl extends ProtocolActionRequest
         IacucProtocolStatus.TABLED.equals(protocol.getProtocolStatusCode());
         return isVersion;
     }
-    
+
     @Override
     public String notifyProtocol(IacucProtocolForm protocolForm) throws Exception {
-        String returnPath = Constants.MAPPING_BASIC;
         IacucActionHelper actionHelper = (IacucActionHelper) protocolForm.getActionHelper();
-        actionHelper.getIacucProtocolNotifyIacucBean().setAnswerHeaders(getAnswerHeaders(protocolForm, IacucProtocolActionType.NOTIFY_IACUC));
-        if (isMandatoryQuestionnaireComplete(actionHelper.getIacucProtocolNotifyIacucBean().getAnswerHeaders(), "actionHelper.protocolNotifyIacucBean.datavalidation")) {
-            getProtocolNotifyService().submitIacucNotification((IacucProtocol)protocolForm.getProtocolDocument().getProtocol(),
-                    actionHelper.getIacucProtocolNotifyIacucBean());
-            protocolForm.getQuestionnaireHelper().setAnswerHeaders(new ArrayList<AnswerHeader>());
-            protocolForm.setReinitializeModifySubmissionFields(true);
-            LOG.info("notifyIacucProtocol " + protocolForm.getProtocolDocument().getDocumentNumber());
-            generateActionCorrespondence(IacucProtocolActionType.NOTIFY_IACUC, protocolForm.getProtocolDocument().getProtocol());
-            recordProtocolActionSuccess(ACTION_NAME_NOTIFY);
-            IacucProtocolNotificationRequestBean notificationBean = new IacucProtocolNotificationRequestBean((IacucProtocol)protocolForm.getProtocolDocument().getProtocol(),IacucProtocolActionType.NOTIFY_IACUC, "Notify IACUC");
-            returnPath = getRedirectPathAfterProtocolAction(protocolForm, notificationBean, IacucConstants.PROTOCOL_ACTIONS_TAB);
-        }
-        return returnPath;
+        String newDocId = getProtocolAmendRenewService().createFYI(protocolForm.getProtocolDocument(),
+                actionHelper.getIacucProtocolNotifyIacucBean());
+        generateActionCorrespondence(IacucProtocolActionType.NOTIFY_IACUC, protocolForm.getProtocolDocument().getProtocol());
+        refreshAfterProtocolAction(protocolForm, newDocId, ACTION_NAME_FYI, true);
+        IacucProtocolNotificationRequestBean notificationBean = new IacucProtocolNotificationRequestBean((IacucProtocol)protocolForm.getProtocolDocument().getProtocol(),IacucProtocolActionType.NOTIFY_IACUC, "Notify IACUC");
+        actionHelper.setProtocolCorrespondence(getProtocolCorrespondence(protocolForm, IacucConstants.PROTOCOL_TAB, notificationBean, false));
+        return getRedirectPathAfterProtocolAction(protocolForm, notificationBean, IacucConstants.PROTOCOL_TAB);
     }
     
     @Override

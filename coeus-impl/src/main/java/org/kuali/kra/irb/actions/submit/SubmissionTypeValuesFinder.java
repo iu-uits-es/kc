@@ -149,17 +149,19 @@ public class SubmissionTypeValuesFinder extends IrbActionsKeyValuesBase {
     private boolean hasRenewalProtocolNumber(String protocolNumber) {
         return protocolNumber.contains("R");
     }
-    
+
+    private boolean hasFyiProtocolNumber(String protocolNumber) {
+        return protocolNumber.contains("F");
+    }
+
     private boolean displayResubmission(String currentStatus) {
         String validStatuses[] = {ProtocolStatus.WITHDRAWN, ProtocolStatus.SUBMITTED_TO_IRB, ProtocolStatus.RETURN_TO_PI};
         return validateCurrentStatus(currentStatus, validStatuses);
     }
     
     protected boolean displayNotifyIrb(String currentStatus, Protocol protocol) {
-        String validStatuses[] = { ProtocolStatus.ACTIVE_OPEN_TO_ENROLLMENT };
-        String validSumissionStatuses[] = { ProtocolSubmissionStatus.SUBMITTED_TO_COMMITTEE};        
-        String currentSubmissionStatus = protocol.getProtocolSubmission().getSubmissionStatusCode();
-        return validateCurrentStatus(currentStatus, validStatuses)  && validateCurrentSubmissionStatus(currentSubmissionStatus, validSumissionStatuses);
+        String validStatuses[] = { ProtocolStatus.WITHDRAWN, ProtocolStatus.FYI_IN_PROGRESS, ProtocolStatus.SUBMITTED_TO_IRB };
+        return validateCurrentStatus(currentStatus, validStatuses)  && hasFyiProtocolNumber(protocol.getProtocolNumber());
     }
     
     private boolean validateCurrentStatus(String currentStatus, String[] validStatuses) {
