@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.kuali.coeus.common.budget.framework.calculator.BudgetCalculationService;
 import org.kuali.coeus.common.budget.framework.core.BudgetConstants;
 import org.kuali.coeus.common.budget.framework.nonpersonnel.BudgetLineItem;
-import org.kuali.coeus.common.budget.framework.query.QueryList;
 import org.kuali.coeus.common.budget.framework.core.Budget;
 import org.kuali.coeus.common.budget.framework.core.BudgetParent;
 import org.kuali.coeus.common.budget.framework.core.BudgetParentDocument;
@@ -34,6 +33,7 @@ import org.kuali.coeus.common.budget.impl.core.AbstractBudgetService;
 import org.kuali.coeus.common.framework.ruleengine.KcBusinessRulesEngine;
 import org.kuali.coeus.propdev.impl.budget.modular.BudgetModularService;
 import org.kuali.coeus.sys.framework.gv.GlobalVariableService;
+import org.kuali.kra.bo.DocumentNextvalue;
 import org.kuali.kra.infrastructure.Constants;
 import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
 import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentDocument;
@@ -44,19 +44,17 @@ import org.kuali.coeus.propdev.impl.budget.subaward.BudgetSubAwardPeriodDetail;
 import org.kuali.coeus.propdev.impl.budget.subaward.BudgetSubAwards;
 import org.kuali.coeus.propdev.impl.budget.subaward.PropDevBudgetSubAwardService;
 import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
-import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.krad.data.CopyOption;
 import org.kuali.rice.krad.data.DataObjectService;
 import org.kuali.rice.krad.data.PersistenceOption;
-import org.kuali.rice.krad.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class process requests for ProposalBudget
@@ -66,12 +64,8 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
 
     public static final String MODULAR_BUDGET_FLAG = "modularBudgetFlag";
     public static final String ADD_BUDGET_DTO = "addBudgetDto";
-    public static final String BUDGET_VERSION_NUMBER = "budgetVersionNumber";
     public static final String COST_ELEMENT_BO = "costElementBO";
     public static final String BUDGET_CATEGORY = "budgetCategory";
-    @Autowired
-    @Qualifier("documentService")
-    private DocumentService documentService;
 
     @Autowired
     @Qualifier("budgetCalculationService")
@@ -170,7 +164,7 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
         ProposalDevelopmentBudgetExt finalBudget = parentDocument.getDevelopmentProposal().getFinalBudget();
         if (finalBudget == null) {
         	return parentDocument.getDevelopmentProposal().getBudgets().stream()
-        		.sorted((b1, b2) -> {return ObjectUtils.compare(b1.getBudgetVersionNumber(), b2.getBudgetVersionNumber()) * -1;})
+        		.sorted((b1, b2) -> ObjectUtils.compare(b1.getBudgetVersionNumber(), b2.getBudgetVersionNumber()) * -1)
         		.findFirst().orElse(null);
         } else {
         	return finalBudget;
@@ -207,7 +201,8 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
 
     @Override
     public ProposalDevelopmentBudgetExt copyBudgetVersion(ProposalDevelopmentBudgetExt budget, boolean onlyOnePeriod, DevelopmentProposal developmentProposal){
-    	ProposalDevelopmentBudgetExt newBudget = copyBudgetVersionInternal((ProposalDevelopmentBudgetExt) budget, developmentProposal);
+    	ProposalDevelopmentBudgetExt newBudget = copyBudgetVersionInternal(budget, developmentProposal);
+
         if (onlyOnePeriod) {
             //Copy full first version, then include empty periods for remainder
             List<BudgetPeriod> oldBudgetPeriods = newBudget.getBudgetPeriods(); 
@@ -243,9 +238,115 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
 
         copyLineItemToPersonnelDetails(newBudget);
 
+        //budget is not saved yet so this effectively nulls out any foreign key fields from sequences
+        //some fields are not managed by JPA so manually handling the relationships
+        syncBudgetReferencesForCopy(budget);
+
         return newBudget;
-    } 
-    
+    }
+
+    @Override
+    public void syncBudgetReferencesForCopy(ProposalDevelopmentBudgetExt budget) {
+
+        Stream.concat(budget.getBudgetRates() != null ? budget.getBudgetRates().stream() : Stream.empty(),
+                budget.getBudgetLaRates() != null ? budget.getBudgetLaRates().stream() : Stream.empty()).forEach(rate -> {
+            rate.setBudgetId(budget.getBudgetId());
+            rate.setBudget(budget);
+        });
+
+        if (budget.getBudgetProjectIncomes() != null) {
+            budget.getBudgetProjectIncomes().forEach(income -> {
+                income.setBudgetId(budget.getBudgetId());
+                income.setBudgetPeriodId(income.getBudgetPeriod() != null ? income.getBudgetPeriod().getBudgetPeriodId() : null);
+            });
+        }
+
+        if (budget.getBudgetCostShares() != null) {
+            budget.getBudgetCostShares().forEach(costShare -> {
+                costShare.setBudgetId(budget.getBudgetId());
+                costShare.setBudget(budget);
+            });
+        }
+
+        if (budget.getBudgetUnrecoveredFandAs() != null) {
+            budget.getBudgetUnrecoveredFandAs().forEach(fAndA -> {
+                fAndA.setBudgetId(budget.getBudgetId());
+                fAndA.setBudget(budget);
+            });
+        }
+
+        if (budget.getBudgetPersons() != null) {
+            budget.getBudgetPersons().forEach(person -> {
+                person.setBudgetId(budget.getBudgetId());
+                person.setBudget(budget);
+
+                if (person.getBudgetPersonSalaryDetails() != null) {
+                    person.getBudgetPersonSalaryDetails().forEach(details -> details.setBudgetId(budget.getBudgetId()));
+                }
+            });
+        }
+
+        if (budget.getBudgetSubAwards() != null) {
+            budget.getBudgetSubAwards().forEach(subaward -> {
+                subaward.setBudgetId(budget.getBudgetId());
+                subaward.setBudget(budget);
+            });
+        }
+
+        if (budget.getBudgetPeriods() != null) {
+            budget.getBudgetPeriods().forEach(period -> {
+                if (period.getBudgetLineItems() != null) {
+                    period.getBudgetLineItems().forEach(lineItem -> {
+                        lineItem.setBudgetId(budget.getBudgetId());
+                        lineItem.setBudget(budget);
+                        lineItem.setBudgetPeriodId(period.getBudgetPeriodId());
+                        lineItem.setBudgetPeriodBO(period);
+
+                        if (lineItem.getBudgetLineItemCalculatedAmounts() != null) {
+                            lineItem.getBudgetLineItemCalculatedAmounts().forEach(calcAmount -> {
+                                calcAmount.setBudgetId(budget.getBudgetId());
+                                calcAmount.setBudgetPeriodId(period.getBudgetPeriodId());
+                            });
+                        }
+
+                        if (lineItem.getBudgetPersonnelDetailsList() != null) {
+                            lineItem.getBudgetPersonnelDetailsList().forEach(details -> {
+                                details.setBudgetId(budget.getBudgetId());
+                                details.setBudget(budget);
+                                details.setBudgetPeriodId(period.getBudgetPeriodId());
+                                details.setBudgetPeriodBO(period);
+
+                                if (details.getBudgetCalculatedAmounts() != null) {
+                                    details.getBudgetCalculatedAmounts().forEach(amount -> {
+                                        amount.setBudgetId(budget.getBudgetId());
+                                        amount.setBudgetPeriodId(period.getBudgetPeriodId());
+                                    });
+                                }
+
+                                if (details.getBudgetPersonnelRateAndBaseList() != null) {
+                                    details.getBudgetPersonnelRateAndBaseList().forEach(amount -> {
+                                        amount.setBudgetId(budget.getBudgetId());
+                                        amount.setBudgetPeriodId(period.getBudgetPeriodId());
+                                    });
+                                }
+                            });
+                        }
+
+                        if (period.getBudgetModular() != null) {
+                            period.getBudgetModular().setBudgetId(budget.getBudgetId());
+                            period.getBudgetModular().setBudgetPeriodId(period.getBudgetPeriodId());
+                            period.getBudgetModular().setBudgetPeriodObj(period);
+
+                            if (period.getBudgetModular().getBudgetModularIdcs() != null) {
+                                period.getBudgetModular().getBudgetModularIdcs().forEach(idc -> idc.setBudgetId(budget.getBudgetId()));
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
     protected ProposalDevelopmentBudgetExt copyBudgetVersionInternal(ProposalDevelopmentBudgetExt budget, DevelopmentProposal developmentProposal) {
         for (BudgetSubAwards subAwards : budget.getBudgetSubAwards()) {
         	//pre-fetch all lob objects from the subawards as JPA/Eclipselink doesn't do this for lazy loaded lobs
@@ -261,14 +362,28 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
         }
         DevelopmentProposal parent = budget.getDevelopmentProposal();
         budget.setDevelopmentProposal(null);
-		ProposalDevelopmentBudgetExt doServiceCopy = 
-				(ProposalDevelopmentBudgetExt) getDataObjectService().copyInstance(budget, CopyOption.RESET_OBJECT_ID, CopyOption.RESET_PK_FIELDS, CopyOption.RESET_VERSION_NUMBER);
-		budget.setDevelopmentProposal(parent);
+        ProposalDevelopmentBudgetExt doServiceCopy = getDataObjectService().copyInstance(budget, CopyOption.RESET_OBJECT_ID, CopyOption.RESET_PK_FIELDS, CopyOption.RESET_VERSION_NUMBER);
+        if (StringUtils.isBlank(doServiceCopy.getObjectId())) {
+            doServiceCopy.setObjectId(UUID.randomUUID().toString());
+        }
+
+        budget.setDevelopmentProposal(parent);
 		if (developmentProposal != null) {
 			doServiceCopy.setDevelopmentProposal(developmentProposal);
 		} else {
 			doServiceCopy.setDevelopmentProposal(parent);
 		}
+
+        final List<DocumentNextvalue> nextValues = budget.getNextValues().stream().map(orig -> {
+            final DocumentNextvalue copy = new DocumentNextvalue();
+            copy.setPropertyName(orig.getPropertyName());
+            copy.setDocumentKey(doServiceCopy.getObjectId());
+            copy.setNextValue(orig.getNextValue());
+            return copy;
+        }).collect(Collectors.toList());
+
+        doServiceCopy.setNextValues(nextValues);
+
 		return doServiceCopy;
     }
 
@@ -337,6 +452,7 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
     protected PropDevBudgetSubAwardService getPropDevBudgetSubAwardService() {
         return propDevBudgetSubAwardService;
     }
+
     public void setPropDevBudgetSubAwardService(PropDevBudgetSubAwardService propDevBudgetSubAwardService) {
         this.propDevBudgetSubAwardService = propDevBudgetSubAwardService;
     }
@@ -355,14 +471,6 @@ public class ProposalBudgetServiceImpl extends AbstractBudgetService<Development
 
     public void setBudgetModularService(BudgetModularService budgetModularService) {
         this.budgetModularService = budgetModularService;
-    }
-
-    public DocumentService getDocumentService() {
-        return documentService;
-    }
-
-    public void setDocumentService(DocumentService documentService) {
-        this.documentService = documentService;
     }
 
     public void setBudgetCalculationService(BudgetCalculationService budgetCalculationService) {

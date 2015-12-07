@@ -649,7 +649,7 @@
                       p:order="20" />
                 <bean parent="Uif-PrimaryActionButton-Small" p:methodToCall="clearAnswers" p:actionLabel="Clear All Answers"
                       p:actionParameters="personNumber:@{(#line.proposalPersonNumber)}"
-                      p:render="@{!#ViewHelper.isCertQuestViewOnly(document,#line)  and !document.developmentProposal.isChild()}"
+                      p:render="@{!#ViewHelper.isCertQuestViewOnly(document,#line)  and !document.developmentProposal.isChild() and !#parent.readOnly}"
                       p:order="30">
                     <property name="confirmationDialog">
                         <bean parent="Uif-DialogGroup-OkCancel" p:promptText="Are you sure you want to clear all the answers?"/>
@@ -723,7 +723,7 @@
 		</bean>
     <bean id="PropDev-Personal-NotifyPersonsPage" parent="PropDev-Personal-NotifyPersonsPage-parentBean"/>
     <bean id="PropDev-Personal-NotifyPersonsPage-parentBean" abstract="true" parent="Uif-TableCollectionSection"
-      p:propertyName="document.developmentProposal.proposalPersons"   
+      p:propertyName="personnelWhoRequireCertification"   
            p:collectionObjectClass="org.kuali.coeus.propdev.impl.person.ProposalPerson"
            p:renderAddLine="false"
 		p:layoutManager.renderSequenceField="false"	
@@ -785,7 +785,7 @@
         <bean id="PropDev-PersonnelPage-COIStatus-Collection1" parent="PropDev-PersonnelPage-COIStatus-Collection1-parent" />
         <bean id="PropDev-PersonnelPage-COIStatus-Collection1-parent" 
          parent="Uif-TableCollectionSection" p:collectionObjectClass="org.kuali.coeus.propdev.impl.person.ProposalPerson"
-          p:propertyName="document.developmentProposal.proposalPersons" p:addWithDialog="false"
+          p:propertyName="personnelWhoRequireCertification" p:addWithDialog="false"
 		p:renderAddLine="false" p:layoutManager.renderSequenceField="false"
 		p:renderInactiveToggleButton="false" p:layoutManager.richTable.render="true" p:renderLineActions="false">
 		
@@ -803,9 +803,9 @@
 			<property name="items">
 				<list>
 					<bean parent="Uif-Message"
-						p:messageText="Project:			@{#line.developmentProposal.proposalNumber}"
+						p:messageText="Project: @{#line.developmentProposal.proposalNumber}"
 						p:order="10" p:style="font-weight: bold; font-size: larger;" />
-					<bean parent="Uif-Message" p:messageText="Title:			@{#line.developmentProposal.title}"
+					<bean parent="Uif-Message" p:messageText="Title: @{#line.developmentProposal.title}"
 						p:order="20" p:style="font-weight: bold; font-size: larger;" />
 				</list>
 			</property>

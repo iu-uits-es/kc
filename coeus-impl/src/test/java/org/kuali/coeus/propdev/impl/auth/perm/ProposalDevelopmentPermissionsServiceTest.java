@@ -1,8 +1,6 @@
 package org.kuali.coeus.propdev.impl.auth.perm;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.kuali.coeus.common.framework.person.KcPerson;
 import org.kuali.coeus.common.framework.person.PropAwardPersonRole;
@@ -20,6 +18,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
     public static final String GRADUATE_STUDENT = "GraduateStudent";
     public static boolean CUSTOM_DATA_ENFORCED = true;
     public static boolean SPONSOR_REQUIRED = true;
+    public static boolean EXEMPT_ADDRESSBOOK_MULTI_PI_CERT = true;
 
     String USER_ID = "100";
 
@@ -33,12 +32,12 @@ public class ProposalDevelopmentPermissionsServiceTest {
         }
 
         @Override
-        protected boolean forcePiCoiKeyPersonsDisclosureWithCustomData(DevelopmentProposal developmentProposal) {
+        public boolean isPiCoiKeyPersonsForcedToDiscloseWithCustomData(DevelopmentProposal developmentProposal) {
             return CUSTOM_DATA_ENFORCED;
         }
 
         @Override
-        protected boolean doesSponsorRequireKeyPersonCertification(ProposalPerson proposalPerson) {
+        public boolean doesSponsorRequireKeyPersonCertification(ProposalPerson proposalPerson) {
             return SPONSOR_REQUIRED;
         }
 
@@ -48,8 +47,13 @@ public class ProposalDevelopmentPermissionsServiceTest {
         }
         
         @Override
-        protected boolean isRolodexCertificationEnabled() {
+        public boolean isRolodexCertificationEnabled() {
         	return true;
+        }
+        
+        @Override
+        public boolean isAddressBookMultiPiCertificationExempt(ProposalPerson proposalPerson) {
+        	return EXEMPT_ADDRESSBOOK_MULTI_PI_CERT;
         }
 
     }
@@ -260,5 +264,100 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean canCertify = permissionService.canCertify(USER_ID, kp, isLoggedInUserPi, canProxyCertify);
         Assert.assertFalse(canCertify);
     }
+    
+    @Test
+    public void testCanCertifyAddressBookPersonWithMultiPiRoleAndNotExempt() throws Exception {
+        class ProposalRolodexPersonTestImpl extends ProposalPerson {
+            @Override
+            public KcPerson getPerson() {
+                return null;
+            }
+        }
+
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson proxy = new ProposalRolodexPersonTestImpl();
+        proxy.setPersonId(USER_ID);
+        proxy.setProposalPersonRoleId(PropAwardPersonRole.MULTI_PI);
+        boolean isLoggedInUserPi = false;
+        boolean canProxyCertify = true;
+        EXEMPT_ADDRESSBOOK_MULTI_PI_CERT=false;
+        boolean canCertify = permissionService.canCertify(USER_ID, proxy, isLoggedInUserPi, canProxyCertify);
+        Assert.assertTrue(canCertify);
+    }
+
+    @Test
+    public void doesRoleExemptKeyPersonRequireCertification() throws Exception {
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.KEY_PERSON);
+        keyPerson.setProjectRole(POSTDOC);
+        boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
+        Assert.assertFalse(needsToCertify);
+    }
+
+    @Test
+    public void doesNonRoleExemptKeyPersonRequireCertification() throws Exception {
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.KEY_PERSON);
+        keyPerson.setProjectRole(GRADUATE_STUDENT);
+        boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
+        Assert.assertTrue(needsToCertify);
+    }
+
+    @Test
+    public void doesCustomDataEnforcedKeyPersonRequireCertification() throws Exception {
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.KEY_PERSON);
+        keyPerson.setProjectRole(GRADUATE_STUDENT);
+        CUSTOM_DATA_ENFORCED = true;
+        boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
+        Assert.assertTrue(needsToCertify);
+    }
+
+    @Test
+    public void doesSponsorEnforcedKeyPersonRequireCertification() throws Exception {
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.KEY_PERSON);
+        keyPerson.setProjectRole(GRADUATE_STUDENT);
+        CUSTOM_DATA_ENFORCED = false;
+        SPONSOR_REQUIRED = true;
+        boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
+        Assert.assertTrue(needsToCertify);
+    }
+
+    @Test
+    public void doesNonKeyPersonRequireCertification() throws Exception {
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.PRINCIPAL_INVESTIGATOR);
+        boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
+        Assert.assertTrue(needsToCertify);
+    }
+
+    @Test
+    public void doesRolodexRequireCertification() throws Exception {
+        class ProposalRolodexPersonTestImpl extends ProposalPerson {
+            @Override
+            public KcPerson getPerson() {
+                return null;
+            }
+        }
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalRolodexPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.PRINCIPAL_INVESTIGATOR);
+        EXEMPT_ADDRESSBOOK_MULTI_PI_CERT = false;
+        boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
+        Assert.assertTrue(needsToCertify);
+    }
+
 
 }

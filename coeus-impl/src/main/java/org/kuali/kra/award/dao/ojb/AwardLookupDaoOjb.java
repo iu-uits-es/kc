@@ -21,6 +21,7 @@ package org.kuali.kra.award.dao.ojb;
 import org.apache.ojb.broker.query.Criteria;
 import org.apache.ojb.broker.query.QueryByCriteria;
 import org.apache.ojb.broker.query.QueryFactory;
+import org.kuali.coeus.common.framework.version.VersionStatus;
 import org.kuali.coeus.common.impl.version.history.VersionHistoryLookupDao;
 import org.kuali.kra.award.home.Award;
 import org.kuali.kra.award.dao.AwardLookupDao;
@@ -45,14 +46,14 @@ public class AwardLookupDaoOjb extends LookupDaoOjb  implements AwardLookupDao{
     public List<? extends BusinessObject> getAwardSearchResults(Map fieldValues, boolean usePrimaryKeys) {
         List<Award> searchResults = (List<Award>)getVersionHistoryLookupDao().
                 getSequenceOwnerSearchResults(Award.class, fieldValues, usePrimaryKeys);
-        List<String> activeAwards = new ArrayList<String>();
-        List<Long> awardIds = new ArrayList<Long>();
+        List<String> activeAwards = new ArrayList<>();
+        List<Long> awardIds = new ArrayList<>();
         for (Object object : searchResults) {
             Award awardSearchBo = (Award)object;
-            if(awardSearchBo.getVersionHistory().isActiveVersion()){
+            if(VersionStatus.ACTIVE.toString().equalsIgnoreCase(awardSearchBo.getAwardSequenceStatus())) {
                 activeAwards.add(awardSearchBo.getAwardNumber());
                 awardIds.add(awardSearchBo.getAwardId());
-            }else if(!activeAwards.contains(awardSearchBo.getAwardNumber()) && checkAwardHasActiveTnMDocument(awardSearchBo)){
+            } else if(!activeAwards.contains(awardSearchBo.getAwardNumber()) && checkAwardHasActiveTnMDocument(awardSearchBo)) {
                 activeAwards.add(awardSearchBo.getAwardNumber());
                 awardIds.add(awardSearchBo.getAwardId());
             }

@@ -23,6 +23,7 @@
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/context
@@ -30,7 +31,9 @@
                            http://www.springframework.org/schema/tx
                            http://www.springframework.org/schema/tx/spring-tx.xsd
                            http://www.springframework.org/schema/util
-                           http://www.springframework.org/schema/util/spring-util.xsd">
+                           http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/mvc
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <tx:annotation-driven transaction-manager="transactionManager" />
     <context:annotation-config />
@@ -39,12 +42,12 @@
     <context:component-scan base-package="org.kuali.coeus.common.impl" />
     <context:component-scan base-package="org.kuali.kra.external.unit.service.impl" />
     <context:component-scan base-package="org.kuali.coeus.common.questionnaire.impl" />
+    <mvc:annotation-driven/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="properties" value="#{T(org.kuali.rice.core.api.config.property.ConfigContext).getCurrentContextConfig().getProperties()}" />
     </bean>
 
-    <import resource="classpath:org/kuali/coeus/sys/framework/ImportRiceKradSpringBeans.xml"/>
     <import resource="classpath:org/kuali/coeus/common/impl/CommonImportRiceSpringBeans.xml"/>
     <import resource="classpath:org/kuali/coeus/common/impl/CommonImportModuleSpringBeans.xml"/>
     
@@ -62,6 +65,8 @@
 			</list>
 		</property>
 	</bean>
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+        p:prefix="/WEB-INF/client/" p:suffix=".html" />
     
     
     <!-- Load Business Rules for this module -->
@@ -239,5 +244,44 @@
           p:callbackService-ref="documentAccessDerivedRoleTypeService"
           p:localServiceName="documentAccessDerivedRoleTypeService"
           p:serviceInterface="org.kuali.rice.kim.framework.role.RoleTypeService"/>
+
+          
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.xml.XmlAwareFormHttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="costElementController"
+		class="org.kuali.coeus.sys.framework.controller.rest.SimpleCrudMapBasedRestController"
+		p:dataObjectClazz="org.kuali.coeus.common.budget.framework.core.CostElement"
+		p:writePermissionNamespace="KC-M"
+		p:writePermissionName="Maintain Institute Rates">
+	</bean>
+	
+	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+	    <property name="mappings">
+	        <value>
+	            /api/v1/cost-elements/*=costElementController
+	        </value>
+	    </property>
+	</bean>
+
+    <bean id="commonEndpointController" class="org.kuali.coeus.sys.framework.controller.rest.RestEndpointController" />
+
+    <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <value>
+                /api/v1/endpoints/*=commonEndpointController
+            </value>
+        </property>
+    </bean>
 
 </beans>

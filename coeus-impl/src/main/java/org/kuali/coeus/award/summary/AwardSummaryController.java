@@ -21,6 +21,7 @@ package org.kuali.coeus.award.summary;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.kuali.coeus.award.api.AwardResults;
 import org.kuali.coeus.sys.framework.summary.SearchResults;
 import org.kuali.kra.award.dao.AwardDao;
 import org.kuali.kra.award.home.Award;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.codiform.moo.Moo;
 import com.codiform.moo.curry.Translate;
 
 @Controller("awardSummaryController")
@@ -41,10 +41,10 @@ public class AwardSummaryController {
 	@Qualifier("awardDao")
 	private AwardDao awardDao;
 	
+	@Deprecated
 	@RequestMapping(value="/v1/awardSummary")
 	public @ResponseBody AwardResults getAwardSummary(@RequestParam(value="updatedSince", required=false) Date updatedSince,
 			@RequestParam(value="page", required=false) Integer page, @RequestParam(value="numberPerPage", required=false) Integer numberPerPage) {
-		Moo moo = new Moo();
 		return Translate.to(AwardResults.class).from(getAwards(updatedSince, page, numberPerPage));
 	}
 

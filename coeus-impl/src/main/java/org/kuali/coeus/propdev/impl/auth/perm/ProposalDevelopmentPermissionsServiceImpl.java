@@ -27,6 +27,7 @@ import org.kuali.coeus.common.framework.person.KcPersonService;
 import org.kuali.coeus.propdev.impl.attachment.LegacyNarrativeService;
 import org.kuali.coeus.propdev.impl.coi.CoiConstants;
 import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
+import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentConstants;
 import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentDocument;
 import org.kuali.coeus.propdev.impl.docperm.*;
 import org.kuali.coeus.propdev.impl.person.ProposalPerson;
@@ -49,22 +50,22 @@ import java.util.*;
 public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelopmentPermissionsService {
 
     private static final Log LOG = LogFactory.getLog(ProposalDevelopmentPermissionsServiceImpl.class);
-    
-    public static final String KEY_PERSON_PROJECT_ROLE = "keyPersonProjectRole";
+
     public static final String COI_REQUIREMENT = "COI_REQUIREMENT";
     public static final String PRINCIPAL_COI_KEY_PERSON = "PCK";
     public static final int HIERARCHY_LEVEL = 1;
     private static final String PARAMETER_DELIMITER = "\\s*,\\s*";
     private static final String ENABLE_ADDRESSBOOK_CERTIFICATION = "ENABLE_ADDRESSBOOK_CERTIFICATION";
+    private static final String EXEMPT_ADDRESSBOOK_MULTI_PI_CERT = "EXEMPT_ADDRESSBOOK_MULTI_PI_CERT";
 
     @Autowired
     @Qualifier("sponsorHierarchyService")
     private SponsorHierarchyService sponsorHierarchyService;
-    
+
     @Autowired
-  	@Qualifier("parameterService")
-  	private ParameterService parameterService;
-    
+    @Qualifier("parameterService")
+    private ParameterService parameterService;
+
     @Autowired
     @Qualifier("kcAuthorizationService")
     private KcAuthorizationService kraAuthorizationService;
@@ -120,13 +121,13 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
 
     @Override
     public void savePermissions(ProposalDevelopmentDocument document, List<ProposalUserRoles> persistedUsers,
-            List<ProposalUserRoles> newUsers) {
+                                List<ProposalUserRoles> newUsers) {
         List<ProposalUserRoles> proposalUsersToDelete = new ArrayList<ProposalUserRoles>(persistedUsers);
         proposalUsersToDelete.removeAll(newUsers);
         for (ProposalUserRoles proposalUser : proposalUsersToDelete) {
             deleteProposalUser(proposalUser, document);
         }
-        
+
         List<ProposalUserRoles> proposalUsersToAdd = new ArrayList<ProposalUserRoles>(newUsers);
         proposalUsersToAdd.removeAll(persistedUsers);
         for (ProposalUserRoles proposalUser : proposalUsersToAdd) {
@@ -137,21 +138,21 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
 
     public void deleteProposalUser(ProposalUserRoles proposalUser, ProposalDevelopmentDocument doc) {
         List<String> roleNames = proposalUser.getRoleNames();
-        for (String roleName :roleNames) {
+        for (String roleName : roleNames) {
             kraAuthorizationService.removeDocumentLevelRole(getPersonId(proposalUser.getUsername()), roleName, doc);
         }
     }
-    
+
     protected String getPersonId(String username) {
         Person person = personService.getPersonByPrincipalName(username);
         return person.getPrincipalId();
     }
-    
+
     public void saveProposalUser(ProposalUserRoles proposalUser, ProposalDevelopmentDocument doc) {
         // Assign the user to the new roles for the proposal.
-        
+
         List<String> roleNames = proposalUser.getRoleNames();
-        for (String roleName :roleNames) {
+        for (String roleName : roleNames) {
             kraAuthorizationService.addDocumentLevelRole(getPersonId(proposalUser.getUsername()), roleName, doc);
         }
     }
@@ -161,17 +162,25 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
         return person != null && StringUtils.equals(user.getPrincipalId(), person.getPersonId());
     }
 
-    public boolean hasCertificationPermissions(ProposalDevelopmentDocument document, Person user, ProposalPerson proposalPerson){
+    public boolean hasCertificationPermissions(ProposalDevelopmentDocument document, Person user, ProposalPerson proposalPerson) {
         boolean isLoggedInUserPi = isLoggedInUserPi(proposalPerson.getDevelopmentProposal(), user);
         return canCertify(user.getPrincipalId(), proposalPerson, isLoggedInUserPi, canProxyCertify(document, user));
 
 
     }
 
+    public boolean doesPersonRequireCertification(ProposalPerson person) {
+        if (person.getPerson() == null) {
+            return isAddressBookMultiPiCertificationExempt(person) ? false : isRolodexCertificationEnabled();
+        }
+        if (!person.isKeyPerson()) return true;
+        return isRoleCustomDataOrSponsorExempt(person);
+    }
+
     protected boolean canCertify(String userPrincipalId, ProposalPerson proposalPerson, boolean isLoggedInUserPi, boolean canProxyCertify) {
     	// person is null for rolodex entries
     	if (Objects.isNull(proposalPerson.getPerson())) {
-    		return isRolodexCertificationEnabled() ? canProxyCertify : false ;
+    		return isRolodexCertificationEnabled() && !isAddressBookMultiPiCertificationExempt(proposalPerson) ? canProxyCertify : false;
     	}
   	  	
         if (isPiOrProxyCertificationPossible(userPrincipalId, proposalPerson, isLoggedInUserPi, canProxyCertify)) return true;
@@ -185,9 +194,7 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
 
         if (keyPersonOrPiOrProxyCertificationPossible) {
             if (isCoiDisclosureStatusFeatureEnabled()) {
-                if (isKeyPersonRoleExempt(proposalPerson)) return false;
-                if (forcePiCoiKeyPersonsDisclosureWithCustomData(proposalPerson.getDevelopmentProposal())) return true;
-                if (doesSponsorRequireKeyPersonCertification(proposalPerson)) return true;
+                return isRoleCustomDataOrSponsorExempt(proposalPerson);
             }
             else {
                 return true;
@@ -196,8 +203,22 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
 
         return false;
     }
+
+    protected Boolean isRoleCustomDataOrSponsorExempt(ProposalPerson proposalPerson) {
+        if (isKeyPersonRoleExempt(proposalPerson)) return false;
+        if (isPiCoiKeyPersonsForcedToDiscloseWithCustomData(proposalPerson.getDevelopmentProposal())) return true;
+        if (doesSponsorRequireKeyPersonCertification(proposalPerson)) return true;
+        return false;
+    }
+
+    public boolean isAddressBookMultiPiCertificationExempt(ProposalPerson proposalPerson) {
+    	if (proposalPerson.isMultiplePi()) {
+    		return getParameterService().getParameterValueAsBoolean(ProposalDevelopmentDocument.class, EXEMPT_ADDRESSBOOK_MULTI_PI_CERT);
+    	}
+    	return false;
+    }
     
-    protected boolean isRolodexCertificationEnabled() {
+    public boolean isRolodexCertificationEnabled() {
     	return getParameterService().getParameterValueAsBoolean(ProposalDevelopmentDocument.class, ENABLE_ADDRESSBOOK_CERTIFICATION);
     }
     
@@ -209,11 +230,11 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
         return false;
     }
 
-    protected boolean isKeyPersonRoleExempt(ProposalPerson proposalPerson) {
-        return getExemptKeyPersonRoles().stream().anyMatch(projectRole -> proposalPerson.getProjectRole().equalsIgnoreCase(projectRole));
+    public boolean isKeyPersonRoleExempt(ProposalPerson proposalPerson) {
+        return getExemptKeyPersonRoles().stream().anyMatch(projectRole -> projectRole.equalsIgnoreCase(proposalPerson.getProjectRole()));
     }
 
-    protected boolean doesSponsorRequireKeyPersonCertification(ProposalPerson proposalPerson) {
+    public boolean doesSponsorRequireKeyPersonCertification(ProposalPerson proposalPerson) {
         String sponsorHierarchy = getParameterService().getParameterValueAsString(ProposalDevelopmentDocument.class, CoiConstants.COI_SPONSOR_HIERARCHY);
         String sponsorHierarchyLevelName = getParameterService().getParameterValueAsString(ProposalDevelopmentDocument.class, CoiConstants.COI_SPONSOR_HEIRARCHY_LEVEL1);
 
@@ -222,7 +243,7 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
     }
 
     protected List<String> getExemptKeyPersonRoles() {
-        String keyPersonProjectRoles = getParameterService().getParameterValueAsString(ProposalDevelopmentDocument.class, KEY_PERSON_PROJECT_ROLE);
+        String keyPersonProjectRoles = getParameterService().getParameterValueAsString(ProposalDevelopmentDocument.class, ProposalDevelopmentConstants.Parameters.KEY_PERSON_PROJECT_ROLE);
         List<String> keyPersonRoleList = Arrays.asList(keyPersonProjectRoles.split(PARAMETER_DELIMITER));
         return keyPersonRoleList;
 
@@ -262,12 +283,12 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
    }
 
    // Aggregators can use custom data to choose if PCK should disclose.
-   protected boolean forcePiCoiKeyPersonsDisclosureWithCustomData(DevelopmentProposal developmentProposal) {
+   public boolean isPiCoiKeyPersonsForcedToDiscloseWithCustomData(DevelopmentProposal developmentProposal) {
 		try {
 			List<CustomAttributeDocValue> customDataList = developmentProposal.getProposalDocument().getCustomDataList();
 			for (CustomAttributeDocValue attributeDocValue : customDataList) {
 				if (attributeDocValue.getCustomAttribute().getName().equalsIgnoreCase(COI_REQUIREMENT) &&
-                        attributeDocValue.getValue().equals(PRINCIPAL_COI_KEY_PERSON)) {
+                        PRINCIPAL_COI_KEY_PERSON.equals(attributeDocValue.getValue())) {
 					return true;
 				}
 			}

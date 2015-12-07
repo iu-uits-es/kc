@@ -31,6 +31,7 @@ import org.kuali.coeus.common.budget.framework.rate.RateType;
 import org.kuali.coeus.common.framework.fiscalyear.FiscalYearMonthService;
 import org.kuali.coeus.sys.framework.controller.rest.RestController;
 import org.kuali.coeus.sys.framework.gv.GlobalVariableService;
+import org.kuali.coeus.sys.framework.rest.ResourceNotFoundException;
 import org.kuali.coeus.sys.framework.rest.UnauthorizedAccessException;
 import org.kuali.kra.infrastructure.Constants;
 import org.kuali.kra.infrastructure.PermissionConstants;
@@ -72,32 +73,37 @@ public class BudgetRatesRestController extends RestController {
 	@Qualifier("globalVariableService")
 	private GlobalVariableService globalVariableService;
 	
-	@RequestMapping(value="/api/rateClassTypes", method=RequestMethod.GET)
+	@RequestMapping(value="/api/v1/rate-class-types", method=RequestMethod.GET)
 	public @ResponseBody Collection<RateClassTypeDto> getRateClassTypes() {
 		return Translate.to(RateClassTypeDto.class).fromEach(getBusinessObjectService().findAll(RateClassType.class));
 	}
 	
-	@RequestMapping(value="/api/rateClasses", method=RequestMethod.GET)
+	@RequestMapping(value="/api/v1/rate-classes", method=RequestMethod.GET)
 	public @ResponseBody Collection<RateClassDto> getRateClasses() {
 		return Translate.to(RateClassDto.class).fromEach(getBusinessObjectService().findAll(RateClass.class));
 	}
 	
-	@RequestMapping(value="/api/rateTypes", method=RequestMethod.GET)
+	@RequestMapping(value="/api/v1/rate-types", method=RequestMethod.GET)
 	public @ResponseBody Collection<RateTypeDto> getRateTypes() {
 		return Translate.to(RateTypeDto.class).fromEach(getBusinessObjectService().findAll(RateType.class));
 	}
 	
-	@RequestMapping(value="/api/instituteRates", method=RequestMethod.GET)
+	@RequestMapping(value="/api/v1/institute-rates", method=RequestMethod.GET)
 	public @ResponseBody Collection<InstituteRateDto> getInstituteRates(@RequestParam(value="rateClassTypeCode", required=false) String rateClassTypeCode) {
+		Collection<InstituteRateDto> rates;
 		if (rateClassTypeCode != null) {
-			return Translate.to(InstituteRateDto.class).fromEach(getBusinessObjectService().findMatching(InstituteRate.class, 
+			rates = Translate.to(InstituteRateDto.class).fromEach(getBusinessObjectService().findMatching(InstituteRate.class, 
 					Collections.singletonMap("rateClass.rateClassTypeCode", rateClassTypeCode)));
 		} else {
-			return Translate.to(InstituteRateDto.class).fromEach(getBusinessObjectService().findAll(InstituteRate.class));
+			rates = Translate.to(InstituteRateDto.class).fromEach(getBusinessObjectService().findAll(InstituteRate.class));
 		}
+		if (rates == null || rates.isEmpty()) {
+			throw new ResourceNotFoundException("not found");
+		}
+		return rates;
 	}
 	
-	@RequestMapping(value="/api/instituteRates", method=RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
+	@RequestMapping(value="/api/v1/institute-rates", method=RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(value = HttpStatus.OK)
 	public void updateInstituteRates(@Valid @RequestBody List<InstituteRateDto> updatedRates) {
 		if (!permissionService.hasPermission(globalVariableService.getUserSession().getPrincipalId(), 
@@ -131,6 +137,11 @@ public class BudgetRatesRestController extends RestController {
 				getBusinessObjectService().save(newRate);
 			}
 		});
+	}
+	
+	@RequestMapping(value="/instituteRates", method=RequestMethod.GET)
+	public String displayInstituteRates() {
+		return "instituteRates";
 	}
 	
 	public BusinessObjectService getBusinessObjectService() {

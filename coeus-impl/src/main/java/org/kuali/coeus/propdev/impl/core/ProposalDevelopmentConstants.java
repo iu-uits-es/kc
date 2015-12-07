@@ -69,11 +69,13 @@ public class ProposalDevelopmentConstants {
         public static final String INSTRUCTION_URL = "instructionUrl";
         public static final String CFDA_NUMBER = "cfdaNumber";
         public static final String PROVIDER_CODE = "providerCode" ;
+        public static final int OPP_TITLE_MAX_LENGTH = 119;
     }
 
     public static class Parameters {
         public static final String KEY_PERSON_CERTIFICATION_SELF_CERTIFY_ONLY = "KEY_PERSON_CERTIFICATION_SELF_CERTIFY_ONLY";
         public static final String NOTIFY_ALL_CERTIFICATIONS_COMPLETE = "notifyAggregatorWhenAllCertificationsComplete";
+        public static final String KEY_PERSON_PROJECT_ROLE = "keyPersonProjectRole";
     }
 
     public static class ParameterValues {
@@ -111,6 +113,7 @@ public class ProposalDevelopmentConstants {
     
     public static class PropDevParameterConstants {
         public static final String CHANGE_CORRECTED_CODE = "S2S_SUBMISSION_TYPE_CODE_CHANGE_CORRECTED_APPLICATION";
+        public static final String S2S_SUBMISSION_TYPE_CODE_PREAPPLICATION = "S2S_SUBMISSION_TYPE_CODE_PREAPPLICATION";
         public static final String PROPOSAL_TYPE_CODE_NEW_PARM = "PROPOSAL_TYPE_CODE_NEW";
         public static final String PROPOSAL_TYPE_CODE_RESUBMISSION_PARM = "PROPOSAL_TYPE_CODE_RESUBMISSION";
         public static final String PROPOSAL_TYPE_CODE_RENEWAL_PARM = "PROPOSAL_TYPE_CODE_RENEWAL";

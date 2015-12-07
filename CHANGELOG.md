@@ -1,6 +1,1165 @@
 
 
 ##CURRENT
+* Revert "Remove feature flag for new homepage and make it the default"
+  * Travis Schneeberger on Tue, 1 Dec 2015 13:17:51 -0500 [View Commit](../../commit/5bdeac82c8f0e81e9bc3d43ed72ca1e787fcfb8d)
+* Remove feature flag for new homepage and make it the default
+  * blackcathacker on Tue, 1 Dec 2015 09:27:17 -0800 [View Commit](../../commit/1431ddc2974b38c295a9751639e654fce1814d90)
+
+##coeus-1512.1
+* No Changes
+
+
+##coeus-1511.112
+* No Changes
+
+
+##coeus-1511.111
+*  Fixing UR calculation when OH rate is TDC and institute rate is set to 0.00
+  * Gayathri Athreya on Mon, 30 Nov 2015 16:56:00 -0700 [View Commit](../../commit/0529a80f54d7839c3ac072b1cb0dbe7b866aff9b)
+
+##coeus-1511.110
+*  Cannot consistently copy a budget version from the Budget Versions Modal without generating an error.
+
+  * Create a proposal with basic requirements to save.
+  * Create a budget version > add a personnel line item, add a non-personnel line item: Save.
+  * From the budget toolbar, select Budget Versions.
+  * In the modal, select Actions> Copy. Select P1 only or all periods > copy.
+  * Result:
+  * The modal will close, but the dimmed background screen stays gray and the STE text can be seen.
+  * The same results happened when I tried the Toolbar > Budget Versions >Copy from the proposal side.
+
+  * Caused by: javax.persistence.PersistenceException: Exception [EclipseLink-7251] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.ValidationException Exception Description: The attribute [documentKey] of class [org.kuali.kra.bo.DocumentNextvalue] is mapped to a primary key column in the database. Updates are not allowed. at org.eclipse.persistence.internal.jpa.EntityManagerSetupImpl$1.handleException(EntityManagerSetupImpl.java:742) at
+  * Travis Schneeberger on Mon, 30 Nov 2015 17:28:57 -0500 [View Commit](../../commit/b05ccd4648db10f4ed22b4ee6db726b2b7dc3033)
+
+##coeus-1511.109
+*  Budget > P&T > Delete period or modify budget period date range > User allowed to continue with mismatched dates to proposal
+
+  * As a user with limited training in budget, I assume I can add or delete budget periods on the Budget >  Periods & Totals screen using the trashcan icon for any reason I choose. The period can have been generated and contain data, or be empty of values because no budget details have been generated or added.
+  * I believe I can do this because the system lets me take that action, confirms that the budget period has been deleted, and lets me continue using the budget.
+  * Issue(s):
+  * Budget Period DATES are not being validated on the P&T screen, or at Complete.
+  * -users can delete budget periods and continue.
+  * -user can create a budget with missing date range
+
+  * Desired Behavior:
+  * After modifying periods on the P&T screen (*add, delete, edit existing dates*), System should validate the start and end dates in the budget to verify that they match the date range in the proposal details. *System should not let user save or leave the P&T screen until the Budget Start and End Date ranges matches the proposal start/end date range.*
+  * Present an Error message to alert the user:  The budget period date range does not match the Start and/or End dates of the proposal. Use the 'reset to period defaults' option to restore the periods, or manually adjust the periods to include all days in the proposal date range.
+  * Joe Williams on Mon, 30 Nov 2015 15:28:42 -0600 [View Commit](../../commit/07c6d44c97ab975b295044ed66ec51b5e8930e17)
+
+##coeus-1511.108
+* No Changes
+
+
+##coeus-1511.107
+*  Fixing role exemption certification and added tests.
+  * I re-tested this case in 1511.58 and found that Key Persons with roles maintained in keypersonprojectrole who do not have to certify or disclose still show in Notify All and COI disclosure status modals but should not.
+  * Gayathri Athreya on Mon, 30 Nov 2015 14:01:38 -0700 [View Commit](../../commit/4d170526406d6f4ff6a9990cb1f383dbe2e29474)
+*  Budget category desciption was not setting properly for LA Vacation overhead items and NPE was throiwng while sorting these records of rate and base line items
+  * Geo Thomas on Mon, 30 Nov 2015 15:35:53 -0500 [View Commit](../../commit/f288b2261b453b9133ec524b28387d96bc26dcd5)
+* PD - "Save" button and proposal person certification "Clear All Answers" button is enabled in view mode
+  * rmancher on Mon, 30 Nov 2015 15:19:57 -0500 [View Commit](../../commit/df4f9b609e3fc34b05ed2b2bdfdbd196d16ea829)
+
+##coeus-1511.106
+* Fix script to avoid failures
+
+  * Re-order such that all dml occurs between necessary ddl to avoid auto-commit on DDL changes.
+  * Add specific column names to avoid chances the default column ordering is different.
+  * Backup subaward_amount_info and subaward_attachments into versioned backup tables in case of errors.
+  * Geo Thomas on Mon, 30 Nov 2015 09:34:34 -0500 [View Commit](../../commit/5a7963a520ff47bdfe7740f2d9f6f16317866dbe)
+
+##coeus-1511.105
+* No Changes
+
+
+##coeus-1511.104
+* No Changes
+
+
+##coeus-1511.103
+*  Remove unused proposal budget status
+  * Travis Schneeberger on Wed, 25 Nov 2015 22:01:37 -0500 [View Commit](../../commit/bbc2db9642be59de708e74e76d4ca8ae2c212355)
+
+##coeus-1511.102
+*  Fix underrecovery in some situations and add tests
+  * If the Budget Settings > Unrecovered F&A Base selection is FUNSN, the system is not recognizing the the full difference. Cost Objects that are included in the FUNSN rate that are not charged F&A in the MTDC rate (like Equipment, Tuition, and Subawards) are not generating U/R when the rate pair of F&A = MTDC and UR F&A Base = FUNSN.
+  * The following F&A Rate Type/Unrecovered F&A Rate Type combinations are still not calculating Underrecovery correctly in the budget, specifically on the Equipment and Tuition RA Object Codes (this seems to be happening with the Object Codes that are set-up to NOT apply MTDC).
+  * F&A Rate Type/Unrecovered F&A Rate Type:
+  * > MTDC /FUNSN
+  * > FUNSN/MTDC
+  * Example Scenario 1: MTDC over FUNSN
+  * Proposal Activity Type: Other (or another one if you wish)
+  * In the Budget > Budget Settings:
+  * F&A Rate Type: MTDC
+  * Unrecovered F&A Rate Type: FUNSN
+  * In the Rates section, left the MTDC (56%) and FUNSN (M&S at 10%) rates at the Institute Rate
+  * Add an Equipment - Not MTDC Object Code with a Total Base Cost of $10000
+  * (while Equipment -Not MTDC is excluded from the MTDC base, it is included in the FUNSN base)
+  * In the Edit Assigned Non-Personnel window for the Equipment Object Code there is nothing in the Rates tab - which is CORRECT (since no F&A rate is applied to Equipment), but the
+  * Results: in all screens the KC Budget, this cost object displays 0.00
+  * Desired results:
+  * Details> Cost Sharing tab should display $1,000 for the over-recovery generated in the FUNSN UR BASE.
+  * Periods & Totals screen > Unrecovered F&A column, is blank, but the 1,000 should be listed.
+  * Add another line item of Travel of $10K.
+  * Results:
+  * The Details> Rates > MTDC = $5,6000
+  * The Details > Cost Sharing > Unrecovered F&A = $4,600.
+  * The Institutional Commitments > Unrecovered F&A is blank.
+  * Expected Results;
+  * The P&T screen > Underrecovered F&A should = $3,600 (-1000 + 4,600) Combining the unrecovered amounts of all lines.
+  * Example Scenario 2:
+  * Proposal Activity Type: Other (or another one if you wish)
+  * In the Budget > Budget Settings:
+  * F&A Rate Type: FUNSN
+  * Unrecovered F&A Rate Type: MTDC
+  * In the Rates section, left the MTDC (56%) and FUNSN (M&S at 10%) rates at the Institute Rate
+  * Add Equipment - Not MTDC Object Code with a Total Base Cost of $10000
+  * >Equipment -Not MTDC is excluded from the MTDC base, it is included in the FUNSN base
+  * In the Details > Rates tab there is a Rate Cost of 1,000 (This is CORRECT (since 10% rate is applied to Equipment in the FUNSN base)
+  * HOWEVER, in the Details> Cost Sharing tab> Underrecovered F&A is 0.00
+  * Desired Result: -1,000.00 in the Unrecovered F&A for this scenario in the line item details.
+  * Periods & Totals screen > Uncrecovered F&A is 0.00.
+  * Desired Result: should be -1,000.
+  * Next step > add travel expense of $10,000.
+  * Results: Details > Rates> F&A of FUNSN is corrrect at $1,000.
+  * Details > Cost Sharing > Unrecovered F&A = $4,600 (correct amount)
+  * Commitments > Unrecovered F&A: Total unallocated = $4,600 (INCORRECT)
+  * Periods & Totals> Unrecovered F&A = $4,600 (INCORRECT)
+  * Desired Results;
+  * Commitments > Unrecovered F&A: Total unallocated = $3,600 (-$1,000 + $4,600)
+  * Periods & Totals> Unrecovered F&A $3,600 (-$1,000 + $4,600)
+  * Gayathri Athreya on Mon, 30 Nov 2015 08:46:56 -0700 [View Commit](../../commit/1c1f0e48febc7a918a1c1b240bb168792f76fd6c)
+*  Refactor calculate breakpoints
+  * Gayathri Athreya on Tue, 24 Nov 2015 15:20:48 -0700 [View Commit](../../commit/7a4024df1a6907cd69c5cf86c80967fd5de817fb)
+* Proposal Hierarchy: Changes to the Budget Periods on the Child
+  * do NOT sync to the Parent Proposal.
+  * Confirmed in res-test1 on 7/27/2015
+  * Created a 4 year project period in initiating child> created parent.
+  * Updated Parent start/end dates to 3 year
+  * Updated Child proposal start/end dates; reset budget period boundaries.
+  * Synced to parent: parent budget did not update to 3 year period. (there
+  * were no budget details to delete; zero dollar budget).
+  * Tried creating a new budget version in child with correct 3 year
+  * periods: added budget details: marked for submission and synced to
+  * parent, but parent budget STILL did not remove the unsupported 4th
+  * period.
+  * See parent #6382 and child 6381 in res-test1.
+  * When a user creates a Proposal Hierarchy with certain project dates and
+  * then changes those dates at both the child and parent levels, the budget
+  * periods already created at the Parent Proposal do not update with the
+  * new budget periods (especially when Periods are removed).
+  * This happened last week in Production with Parent Proposal 27870 (the
+  * parent and the child proposals were set up with a 5 year project period
+  * but the parent proposal had 6 budget periods and the child proposals had
+  * 5 budget periods). User kept getting the error on the Parent Proposal
+  * Budget that 'Period 6 end date cannot exceed project end date' but there
+  * was no way for us to fix it. 
+  * Here are the steps to reproduce this:
+  * 1. Create a proposal (child 1) entering minimum info to save with
+  * Project Dates for example 07/01/2015 - 06/30/2021 
+  * 2. Add a PI to your proposal 
+  * 3. Create/Add a Budget Version (navigate to the Periods & Totals and you
+should see 6 budget periods) (no need to add cost to the budget) 
+  * 4. Click the Return to Proposal button to get back to the main proposal
+screen 
+  * 5. In the proposal screen, click the Hierarchy link in the toolbar and
+  * in the Hierarchy window: 
+  * a) Select Sub-Budget from the Hierarchy Budget Type 
+  * b) Click the Create Hierarchy button 
+  * 6. The Parent Proposal should be generated.
+  * 7. Now, navigate to your PARENT Proposal and view the Budget (you should
+see a Budget Version called 'Hierarchy Budget' and once you open it,
+  * there should be the 6 budget periods that were in the child proposal
+  * used to create the parent proposal) 
+  * 8. In the Parent Budget, click the Return to Proposal button to get back
+  * to the main proposal screen 
+  * 9. On the Parent Proposal, in the Proposal Details, change the Project
+  * End Date to 06/30/2020 
+  * 10. Save and Close your Parent proposal
+  * 11. Navigate to your CHILD proposal, and in the Proposal Details, change
+  * the Project End Date to 06/30/2020 
+  * 12. Then, open your budget and in the Periods & Totals section, click
+  * the Rest to periods defaults button. You should now see 5 budget periods
+  * (NOT 6) 
+  * 13. Save your budget and click the Return to Proposal button. 
+  * 14. In the proposal screen, click the Hierarchy link located in the
+  * toolbar. In the Hierarchy window that opens, click the Sync Hierarchy
+  * button (you should see a message that states 'Synchronization
+successful') 
+  * 15. Save and close out of your child proposal.
+  * 16. Navigate back to the PARENT Proposal. 
+  * 17. Navigate to the Budget and you still see the 6 Budget Periods that
+  * were originally there. The system did not sync the budget periods change
+  * from the child proposal. 
+  * 18. While in the budget, click the Data Validation link, and Turn On the
+  * Validations. You will get the error that 'Period 6 end date cannot
+  * exceed end date' BUT there is no way to get rid off that period 6
+  * You can see Parent Proposal Number 27496 in KC QA where this error is
+shown.
+  * Desired Behavior: The Parent Proposal Budget Periods should sync with
+  * the Child Proposal Budget Periods.
+  * MITKC-2023
+
+  * 8. In the Parent Budget, click the Return to Proposal button to get back
+  * to the main proposal screen 
+  * 9. On the Parent Proposal, in the Proposal Details, change the Project
+  * End Date to 06/30/2020 
+  * 10. Save and Close your Parent proposal
+  * 11. Navigate to your CHILD proposal, and in the Proposal Details, change
+  * the Project End Date to 06/30/2020 
+  * 12. Then, open your budget and in the Periods & Totals section, click
+  * the Rest to periods defaults button. You should now see 5 budget periods
+  * (NOT 6) 
+  * 13. Save your budget and click the Return to Proposal button. 
+  * 14. In the proposal screen, click the Hierarchy link located in the
+  * toolbar. In the Hierarchy window that opens, click the Sync Hierarchy
+  * button (you should see a message that states 'Synchronization
+successful') 
+  * 15. Save and close out of your child proposal.
+  * 16. Navigate back to the PARENT Proposal. 
+  * 17. Navigate to the Budget and you still see the 6 Budget Periods that
+  * were originally there. The system did not sync the budget periods change
+  * from the child proposal. 
+  * 18. While in the budget, click the Data Validation link, and Turn On the
+  * Validations. You will get the error that 'Period 6 end date cannot
+  * exceed end date' BUT there is no way to get rid off that period 6
+  * You can see Parent Proposal Number 27496 in KC QA where this error is
+shown.
+  * Desired Behavior: The Parent Proposal Budget Periods should sync with
+  * the Child Proposal Budget Periods.
+  * MITKC-2023  * vineeth on Wed, 25 Nov 2015 11:09:22 -0500 [View Commit](../../commit/291824ffed6b14ef16f17d71bf932d8caad05038)
+
+##coeus-1511.101
+* No Changes
+
+
+##coeus-1511.100
+* No Changes
+
+
+##coeus-1511.99
+* No Changes
+
+
+##coeus-1511.98
+* IRB - Review Comments not displaying in some Amendments
+  * Issue here is when a schedule is selected at the time of approval and review comments are added prior to it,
+  * a default schedule is set of each review comments.
+  * Referenced schedule id is not changed based on switching schedule at the time of approval.
+  * Fix to reprocess the review comments collection and update the latest schedule id prior to persisting.
+  * rmancher on Thu, 26 Nov 2015 10:10:51 -0500 [View Commit](../../commit/bc910645fe3f226d7aad76ff98b75406ff8cee74)
+*  STE occurs if initiating child proposal is unlinked before a non-lead unit child proposal.
+
+*Step 1: create the initiating child proposal*
+  * Create a proposal in lead unit IN-CARD
+  * Add PI > user dusher
+  * Create a new budget> zero dollars > mark complete/for submission
+*Step 2*: create parent from initiating child
+  * Toolbar> hierarchy > subbudget> *create parent* (Note proposal number of new parent)
+
+*Step 3: create another matching lead unit child proposal*
+  * While still in the initiating child proposal > toolbar > Copy proposal
+  * Select IN-CARD as the unit (same as initiating) > copy budget
+  * In new proposal, toolbar> budget versions > mark budget as for submission
+  * Toolbar > hierarchy > subbudget > enter parent proposal number from step 2.> link to parent
+
+*Step 4: create a new proposal in non-lead unit.*
+  * Create proposal in unit IN-MED
+  * Key Personnel > Add RHANLON as PI
+  * Create Budget > zero $, complete & mark for submission
+  * Return to proposal
+  * Toolbar > Hiearchy > enter Parent proposal number from step 2, subbudget > link to parent
+  * Close proposal
+
+*Step 5: locate initiating child proposal*
+ open in edit mode
+  * Toolbar > hierarchy > unlink from hierarchy
+save & close
+
+*Step 6: located NON-LEAD child proposal*
+  * Open in edit mode
+  * Toolbar> hierarchy>unlink from hierarchy
+
+  * {color:red}RESULT: STE{color}
+
+  * java.lang.NullPointerException at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.removeFromHierarchy(ProposalHierarchyServiceImpl.java:300) at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at
+  * Travis Schneeberger on Mon, 30 Nov 2015 08:32:19 -0500 [View Commit](../../commit/8be198573da32ae9bb4942c29f2b728fbe9b5244)
+*  Maintenance Doc > Organization > Audit > Audit Accepted field needs more than "Yes/No" options.
+  * Options should include: Accepted, Rejected, Requested, and Reviewed.
+  * In KC, the Organization "Audit Accepted" field is a checkbox, indicating a binary yes/no option.
+  * In Coeus, the Audit Accepted field is a drop down with 4 options. (The dropdown has been in place since at least before Coeus 4.4.4, if not originally.)
+
+  * This field is used by Research Subawards administrators to maintain a central, electronic record of detailed Audit status for subawardee organizations.
+  * Field in KC needs to provide the same more detailed selection options as Coeus.
+  * Travis Schneeberger on Wed, 25 Nov 2015 19:05:47 -0500 [View Commit](../../commit/1401811e891dfe428b766d7572c7c217f9826dde)
+*  Fixing numerious bugs related to proposal development.
+
+  * The user expects all proposals linked in a proposal hierarchy to be the same; therefore a children's status should match the status of the parent and should not be editable if in a status that does not allow edits.
+           Currently, when a Hierarhcy Proposal Routes, the status of the parent becomes "Approval Pending" but the status of all the children remains as "In Progress."
+           When the status of the Hierarchy Parent changes, the statuses of any linked children should be updated to match.  This should be reflected on the hierarchy tab, the medusa section, and in search results.
+
+           From PD Search results, even when Parent is status of "Approval Pending" the children with "In Progress" have "Edit" action option enabled. When a hierarchy proposal is routing, parents AND children should all be locked down for editing as regular proposals are.
+
+           From PD Search results, when Parent is status of "Approved and Submitted " the children with "In Progress" have "Edit" action option enabled. When a hierarchy proposal "Approved and Submitted, parents AND children should all be locked down from an further editing as regular proposals are.
+
+           User with Edit permission for child proposal IS indeed able to open the hierarchy children with the Edit action link, even after parent is Approved & Submitted and they shouldn't be able to make any edits
+           Note that when Hierarchy Parent is "Returned for Revisions," the child proposals should also be updated match the Proposal Status of the parent.
+
+ Avoided a NullPointerException when creating a Proposal Hiearchy on a proposal without a budget.  Now a validation error occurs.
+ Avoided a NullPointerException when linking a parent proposal to another proposal (child) that does not have a budget.  Now a validation error occurs.
+ Corrected the proposal status inquiry so that it no longer uses the proposal type code but the proposal state code for the inquiry key.
+  * Travis Schneeberger on Wed, 25 Nov 2015 11:14:47 -0500 [View Commit](../../commit/a92e0e0c9b15d3009c460d7d7e3beed5e53c4e66)
+
+##coeus-1511.97
+* No Changes
+
+
+##coeus-1511.96
+* No Changes
+
+
+##coeus-1511.95
+* PD Budget Version > Print > #1 "Budget Costshare Summary
+  * Report" - missing column headers if no personnel costs.
+  * if only non-personnel expenses are in the budget, the costshare summary
+  * report does not include any column headers, making the report virtually
+  * unusable for submission to sponsors or internal use.
+  * To duplicate, create a budget version with only non-personnel items, add
+  * cost share to the details.
+  * Print the report following path: Budget Version > Print > #1 "Budget
+  * Costshare Summary Report"
+  * Results; There are no column headers to explain which column is the cost
+share, the total cost to sponsor, and total project cost.
+  * Desired Results: The column headers should appear on this report,
+  * whether or not there is personnel.
+  * Replicated in Res-Demo1 :1509.10 09-04-2015 18:01
+  * PD 828 
+  * Budget 1 - non personnel costs only no column headers
+  * Budget 2 - personnel only included column headers
+  * Budget 3 Personnel and non-personnel lines includes column headers
+  * Discovered by MIT; their PDF of each budget attached. 
+  * Screenshots from res demo 1  * vineeth on Fri, 27 Nov 2015 10:27:29 -0500 [View Commit](../../commit/e9329d62d5b1ae31ca242fecba1d69d63a8df04f)
+
+##coeus-1511.94
+* PD Budget Version > Action > Print > Budget Cumulative Report
+  * printing formatting/subtotal & total display issues.
+  * The printed report for Cumulative budget is not well formatted in KC.
+  * The MIT Coeus version has been uploaded to compare and contrast to the
+  * KC version. It would benefit end users if the print format could be
+  * restored to match the MIT Coeus grouping on this report output.
+  * PD Budget Version > Action > Print > Budget Cumulative Report printing
+  * formatting/subtotal & total display issues
+  * 1) The Budget Cumulative Report currently has a major display issue that
+  * needs to be fixed for the Personnel section of the report. 
+  * The report should display each Personnel Budget Category header once,
+  * with multiple entries (one for each person per period entry in KC
+  * budget) listed under it, followed by a single (sub)total calculation for
+  * all budget entries using that personnel category. 
+  * The report is currently printing with a unique Personnel Budget Category
+  * header for each budget period instead of grouping.
+  * See the uploaded pdf attachment example (KC PD 28061) : 
+  * This budget contains a single Graduate Student and a single Senior
+  * Personnel entry for each budget period on a 5 year budget. 
+  * Rather than two headings & subtotals – one each for Graduate Students
+  * and Senior Personnel – the personnel section has 5 of each, and in no
+  * place is the "Total Graduate Students" or "Total Senior Personnel"
+  * calculated for the cumulative budget period. 
+  * In the pdf "KC PD 28061" The Personnel Headings and totals that should
+  * remain are highlighted in green. All individual personnel entries should
+  * be grouped under these.
+  * For comparison, see pdf from Coeus Production, where grouping & totals
+  * under personnel category headings is correct. (Coeus PD 00022845)
+  * 2) The formatting needs to be corrected so that the line separating
+  * Proposal info from start of budget report does is above the budget
+  * report column headers and does not run through them.
+  * 3) The Proposal Info at top of report – "Project" should instead be
+  * labeled "Project Period" or just "Period"
+  * 4) Formatting needs to be corrected so that longer Proposal Titles wrap
+  * rather than extend beyond end of page and are cut off. See screenshot
+  * "Long Title cut off"
+  * vineeth on Thu, 26 Nov 2015 19:17:45 -0500 [View Commit](../../commit/cc077d5470bd295f31c4b82d1767ae991351f002)
+
+##coeus-1511.93
+* IRB - Review Comments not displaying while regenerating Amendment letter
+  * Amendment is merged on to main protocol and a new document is created. Minutes/review comments
+  * are not versioned while versioning protocol when amendment is merged. The review comments are only tied
+  * corresponding amendemnt. Fix is to version review comments and attached it to versioned protocol.
+  * rmancher on Thu, 26 Nov 2015 17:22:27 -0500 [View Commit](../../commit/2cc27b2c83193a0e85a7e53fabaab6247653b552)
+
+##coeus-1511.92
+* No Changes
+
+
+##coeus-1511.91
+* adding jdeps plugin, moving other code quality plugins to profiles.  updating docs
+  * Travis Schneeberger on Thu, 26 Nov 2015 09:45:35 -0500 [View Commit](../../commit/0bccd0f74e762291f73c7ad61dbd0e2f5ad81461)
+
+##coeus-1511.90
+* Clean up subaward attachment handling
+
+  * Move subaward attachments to new KcAttachmentDao implementation to resolve duplicating attachment stores and inconsistent storage types that caused errors specifically for Mysql and large attachments > than a couple of MBs.
+
+  * Also resolves a problem with editing added subaward amount infos as changes were being made to a list that wasn't persisted.
+  * blackcathacker on Tue, 24 Nov 2015 13:54:38 -0800 [View Commit](../../commit/8498d2dd1f65f03e62a85d0f0fa48357213dcdb7)
+
+##coeus-1511.89
+* No Changes
+
+
+##coeus-1511.88
+* No Changes
+
+
+##coeus-1511.87
+*  set default submissiontype while changing proposaltype in edit mode
+  * Geo Thomas on Tue, 24 Nov 2015 16:23:59 -0500 [View Commit](../../commit/19865b435cdbe1c092862db7f966c64eabcf7b2f)
+*  set default submissiontype in refresh method
+  * Geo Thomas on Tue, 24 Nov 2015 15:50:53 -0500 [View Commit](../../commit/c0cfedafa97d3cd512b1e242ac34b940c7f2373a)
+
+##coeus-1511.86
+* No Changes
+
+
+##coeus-1511.85
+* No Changes
+
+
+##coeus-1511.84
+*  When a rejected proposal is saved the status should remain Revisions Requested unless the proposal is submitted to workflow.
+
+  * As a central support person, I have superuser role to aid campus users. When I open a rejected proposal where the Status is "Revisions Requested", the status incorrectly changes to "In Progress". When a regular aggregator edits the revisions requested proposal, it stays in 'revisions requested' status. While this seems trivial, campus users will often search for this status proposal; but if the OSP super user aids in fixing trouble proposals, this breaks the search option.
+
+  * To reproduce: as Quickstart -:
+  * Reject a proposal or locate one in Revisions Requested status.
+  * Click on Edit.
+  * Proposal Opened, showed status Revisions Requested.
+  * Clicked [Save]
+  * Status Changed to In Progress
+  * Closed proposal.
+  * Searched for proposal.
+  * Search Results showed In Progress for status.
+  * Desired Result; the proposal status should stay in 'revisions requested' status until submitted to routing by the aggregator.
+  * Travis Schneeberger on Tue, 24 Nov 2015 10:45:24 -0500 [View Commit](../../commit/c9efa5158e9e554d8d9b3fdc5375c797533d8af2)
+
+##coeus-1511.83
+* No Changes
+
+
+##coeus-1511.82
+*  database conversion to fix subaward amount info
+
+  * Adds new java based data conversion to remove duplicates from the subaward amount info table. This conversion is documented in coeus-db/coeus-db-data-conv/README.md
+  * blackcathacker on Thu, 19 Nov 2015 17:49:03 -0800 [View Commit](../../commit/34f38dfc911e4b406f5521b6baa1bb4494ef24e1)
+*  Display and use amount infos from previous subaward versions
+
+  * This commit changes the way subawards handle amount infos. Previously amount infos were copied forward with each successive version of the subaward. This changes this such that amount infos stay
+  * linked to the original subaward version, but future subawards use the entire history of amount infos for display and calculation of total amounts. This change requires a reasonably complex conversion
+  * included in the coeus-db-data-conv package that will remove these duplications. This change also makes previous amount infos read-only in future versions of subaward.
+  * blackcathacker on Wed, 4 Nov 2015 16:25:41 -0800 [View Commit](../../commit/f6471164b60cbe87f7878a036ee5609663c0db59)
+
+##coeus-1511.81
+* Committee Edit - Performance issue
+  * IRB committee document has huge performance issue.
+  * Also volume of data is high.
+  * This is when committee document is edited to make changes and routed.
+  * Edit a committee and submit/blanket approve the document takes a while to complete the process and finalize the document.
+  * Adding index to help boost performance.
+  * rmancher on Mon, 23 Nov 2015 09:59:52 -0500 [View Commit](../../commit/5d8f026039d6213ea2c9e8bd7a191b0e81bd0820)
+
+##coeus-1511.80
+* No Changes
+
+
+##coeus-1511.79
+* When Spring Security is enabled, set X-Frame option to SAMEORIGIN
+
+  * Without this things like the redirect page in the core spring context will disallow being viewed in the iframe and thus break things like Close and Cancel buttons when used.
+  * blackcathacker on Mon, 23 Nov 2015 13:02:55 -0800 [View Commit](../../commit/7c577fa0fe5b130990009f8e9d018c9a01712d63)
+*  Fixing calculation on cost element change
+  * PD Budget - Non Personnel Line items: Rate calculations not updated with change of Cost Object from one where F&A and/or LA rates apply to one where they do not
+  * Discovered in MIT KC Production.
+  * Replicated in MIT KC QA Wkly Build kc1510.32
+  * PD 29372 -
+  * Steps to recreate:
+  * Create a new proposal with Lead Unit being a unit where Lab Allocation rates are maintained.
+  * Activity Type = Organized Research
+  * Fill in other details as needed to save.
+  * Go to budget - create a detailed budget.
+  * Leave budget settings on the default (MTDC for both OH and UR rate types)
+  * Go to Assign Non Personnel
+  * Add a line item for "Materials and Services" (or any g/l which is subject to MTDC F&A and/or LA Rates) at $1000.
+  * Save.
+  * Go to Details > Rates for this line item. Note the rate types that have 'Rate Cost calculated.
+  * (for MIT QA PD 29372 this included MTDC, EB on LA, Vacation on LA, LA - M&S, LA - Salaries)
+  * Go to Details > Details for this line item
+  * Change Category to "Other Operating Expenses"
+  * Change Object Code Name to "Other Sponsor Funded Costs - Not MTDC" (or to another object code not subject to MTDC or LA )
+  * Click Save Change.
+  * After modal is closed, Click Save on the Non-Personnel Costs page.
+  * Open Details > Rates for the line item again.
+  * Note that the Rate Costs are still calculated and applied to the line item despite the change of the Cost Object.
+  * KC needs to recalculate and apply correct rates to each line item when a change to Cost Object is made and then saved.
+  * Should a user actually notice this calculation error, the only current workaround is to go to Budget Settings, change the OH Rate and the UR rate, Save, allow budget to recalculate & then save. Then go back to Budget settings, return to original selections, Save, and allow budget to again recalculate.
+  * Resyncing rates from the rates tab or calculating budget period does NOT fix the problem.
+  * Gayathri Athreya on Mon, 23 Nov 2015 13:15:32 -0700 [View Commit](../../commit/3b715d603511c9f7f948e833951cd6a8898ac2c3)
+
+##coeus-1511.78
+*  Budget Id and Budget Period Id are not set correctly when copying a proposal with a budget.
+  * Travis Schneeberger on Fri, 20 Nov 2015 16:57:25 -0500 [View Commit](../../commit/370621df7b3ad2aa49b8360058530cdfbaaa960c)
+*  Make small change to line items search ot avoid duplicate addition
+  * Gayathri Athreya on Mon, 23 Nov 2015 11:20:21 -0700 [View Commit](../../commit/9fbbd86a58d58b43fdabcddb31fbd018101a4ba7)
+*  clean out unused deep copy post processor code
+  * Travis Schneeberger on Thu, 19 Nov 2015 11:35:50 -0500 [View Commit](../../commit/2c3c6992a67b69f6d573b1adf8e7a4c870b48c4c)
+
+##coeus-1511.77
+*  Attempt to fix cost sharing issues.
+  * KC should not apply MTDC to Cost Sharing amount in Subaward cost elements that are populated to Non-Personnel expenses from Subawards entered in the Subawards Section of the budget.
+  * Subawards with Cost Sharing input via the Subawards section - either with an uploaded grants.gov form or manually - result in subawardee Cost Share incurring F&A in the applicant organization budget. This causes incorrect amounts for the Cost Sharing Commitment, as well as for the Cost Sharing amount submitted to sponsor on the Grants.gov Coversheet (and budget if FNF form is included).
+  * KC inputs the Subaward Cost Share amount that exist in Period 1 into the first Subcontract Object Code it adds to the Non-Personnel section, which in almost all cases is the Subcontracts - Subject to MIT F&A Object Code (that is set-up to apply F&A).
+  * Steps to Reproduce:
+  * 1. Create proposal with minim info required to save
+  * 2. Create/add a detailed budget
+  * 3. Navigate to the Subawards and click the +Add Subaward button
+  * a. In the Add Subaward window:
+  * i. Select an organization (e.g. enter 000090 in Organization Id field)
+  * ii. Click the Add Subaward button (no need to upload an actual file - this can be demonstrated by manually entering the costs)
+  * 4. Click the Details button for the added Subaward
+  * a. In the Subaward Details window:
+  * i. Enter the following in Budget Period 1 line:
+  * • Direct Cost: 35000
+  * • Indirect Cost:15000
+  * • Cost Share 20000
+  * ii. Click the Save Changes button
+  * 5. Navigate to the Non-Personnel Costs section and you should see three Cost Elements/Object Codes added:
+  * Subcontracts - Subject to MIT F&A
+  * Subcontracts - No MIT F&A
+  * Subcontractors F&A - No MIT F&A
+  * 6. Navigate to the Institutional Commitments -> Cost Sharing and in Period 1 you will see Cost Sharing Amount that is higher than the $20,000 entered in the Subaward Details window (reason for it - is that KC applies MIT's F&A on the $20,000 of Subaward Cost Share which is incorrect and it should not happen). Also if you click on the View Subaward Cost Share button, in the Sub Award Cost Sharing Details window, you will only see the $20,000 entered and NOT the $20,000 + MIT's F&A (as displayed in the Cost Sharing Commitments section).
+  * This miscalculation will cause the biggest issue if the proposal is to be submitted S2S since the Total Cost Share amount will populate the form showing to the Sponsor that we are committing more Cost Share than we really are.
+  * There is no workaround for S2S if the application package includes the FedNonFed versions of the budget and subaward budget forms.
+  * For non-S2S and when the RR Budget (NOT fed non fed) are included, there is a not-ideal work-around:
+  * User must NOT add the Cost Sharing amounts in the Subawards section (Subaward Details window) BUT instead to manually add an additional Subcontracts - No MIT F&A object code in the Non-Personnel Costs section in Period 1 (and other Periods impacted), clicking on Details and inputting the Cost Sharing amount in the Cost Sharing Tab of that line item.
+  * This workaround is not ideal as it makes reviewing subward info more difficult and 'buries' the cost sharing, in addition to being more work.
+  * Gayathri Athreya on Fri, 20 Nov 2015 14:21:15 -0700 [View Commit](../../commit/0efb8a915d69c649f56ba0cccc52668e61faa74d)
+
+##coeus-1511.76
+* No Changes
+
+
+##coeus-1511.75
+* No Changes
+
+
+##coeus-1511.74
+* No Changes
+
+
+##coeus-1511.72
+* MIT- IRB - Protocols listed in Agenda PDF are not in desired
+  * order.
+  * Protocols listed in the agenda PDF are not in the desired order for MIT.
+  * The agenda must sort the protocols by review type, then by submission
+  * type and within each submission type they should display in numerical
+sorting order.
+  * Currently, when printing the agenda, the protocols are sorted by review
+  * type (which is good) but then, all the submission types gets mixed
+  * together  * vineeth on Fri, 20 Nov 2015 17:52:46 -0500 [View Commit](../../commit/d0f13deacd5ea76ed7de02adcca9b0485738ba87)
+
+##coeus-1511.71
+*  fixing sequence name in ojb mapping for watermark.
+  * Travis Schneeberger on Fri, 20 Nov 2015 10:57:16 -0500 [View Commit](../../commit/baaea09feec0b07e907e4221a633e3e360a852ac)
+
+##coeus-1511.70
+* No Changes
+
+
+##coeus-1511.69
+* No Changes
+
+
+##coeus-1511.68
+* No Changes
+
+
+##coeus-1511.67
+*  remove the descriminator column DOCUMENT_NEXT_VALUE_TYPE from the table document_nextvalue.  It is not used.  Clean up next value code.
+  * Travis Schneeberger on Thu, 19 Nov 2015 11:06:43 -0500 [View Commit](../../commit/759372238b5fc8e51f3d7eb7f3add1dd839a382b)
+
+##coeus-1511.66
+* No Changes
+
+
+##coeus-1511.65
+*   fixing a potential constraint violation when adding a propdev budget
+
+  * org.springframework.orm.jpa.JpaSystemException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Column 'DOCUMENT_NUMBER' cannot be null Error Code: 1048 Call: INSERT INTO DOCUMENT_NEXTVALUE (PROPERTY_NAME, DOCUMENT_NUMBER, NEXT_VALUE, OBJ_ID, UPDATE_TIMESTAMP, UPDATE_USER, VER_NBR) VALUES (?, ?, ?, ?, ?, ?, ?) bind => [7 parameters bound] Query: InsertObjectQuery(org.kuali.kra.bo.DocumentNextvalue@6704e143[propertyName=personSequenceNumber,documentKey=<null>,nextValue=2,serialVersionUID=-9140148375067456625,updateUser=fchair,updateUserSet=false,serialVersionUID=-3519927021539948875,serialVersionUID=1451642350593233282,versionNumber=0,objectId=a647a7b8-7cc7-4c01-b41d-d45924e166cf,newCollectionRecord=false,serialVersionUID=5563310175227245001,_persistence_shouldRefreshFetchGroup=false]); nested exception is javax.persistence.PersistenceException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Column 'DOCUMENT_NUMBER' cannot be null Error Code: 1048 Call: INSERT INTO DOCUMENT_NEXTVALUE (PROPERTY_NAME, DOCUMENT_NUMBER, NEXT_VALUE, OBJ_ID, UPDATE_TIMESTAMP, UPDATE_USER, VER_NBR) VALUES (?, ?, ?, ?, ?, ?, ?) bind => [7 parameters bound] Query: InsertObjectQuery(org.kuali.kra.bo.DocumentNextvalue@6704e143[propertyName=personSequenceNumber,documentKey=<null>,nextValue=2,serialVersionUID=-9140148375067456625,updateUser=fchair,updateUserSet=false,serialVersionUID=-3519927021539948875,serialVersionUID=1451642350593233282,versionNumber=0,objectId=a647a7b8-7cc7-4c01-b41d-d45924e166cf,newCollectionRecord=false,serialVersionUID=5563310175227245001,_persistence_shouldRefreshFetchGroup=false]) at org.springframework.orm.jpa.EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(EntityManagerFactoryUtils.java:321) at org.springframework.orm.jpa.DefaultJpaDialect.translateExceptionIfPossible(DefaultJpaDialect.java:120) at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:403) at org.kuali.rice.krad.data.jpa.KradEntityManagerFactoryBean.translateExceptionIfPossible(KradEntityManagerFactoryBean.java:546) at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:58) at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:213) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider.doWithExceptionTranslation(JpaPersistenceProvider.java:555) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider.save(JpaPersistenceProvider.java:187) at sun.reflect.GeneratedMethodAccessor1106.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:317) at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:183) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150) at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:96) at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:260) at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:94) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172) at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:204) at com.sun.proxy.$Proxy51.save(Unknown Source) at org.kuali.rice.krad.data.provider.impl.ProviderBasedDataObjectService.save(ProviderBasedDataObjectService.java:155) at org.kuali.coeus.propdev.impl.budget.ProposalBudgetServiceImpl.saveBudget(ProposalBudgetServiceImpl.java:185) at org.kuali.coeus.propdev.impl.budget.ProposalBudgetServiceImpl.getNewBudgetVersion(ProposalBudgetServiceImpl.java:144) at org.kuali.coeus.propdev.impl.budget.ProposalBudgetServiceImpl.getNewBudgetVersion(ProposalBudgetServiceImpl.java:64) at org.kuali.coeus.common.budget.impl.core.AbstractBudgetService.addBudgetVersion(AbstractBudgetService.java:70) at org.kuali.coeus.propdev.impl.budget.core.ProposalBudgetSharedControllerServiceImpl.addBudget(ProposalBudgetSharedControllerServiceImpl.java:112) at org.kuali.coeus.propdev.impl.budget.core.ProposalBudgetController.addBudget(ProposalBudgetController.java:59) at org.kuali.coeus.propdev.impl.budget.core.ProposalBudgetController$$FastClassBySpringCGLIB$$ea143290.invoke(<generated>) at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204) at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:629) at org.kuali.coeus.propdev.impl.budget.core.ProposalBudgetController$$EnhancerBySpringCGLIB$$badf24d.addBudget(<generated>) at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.web.method.support.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:215) at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:132) at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:743) at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:672) at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:82) at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:919) at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:851) at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:953) at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:855) at javax.servlet.http.HttpServlet.service(HttpServlet.java:646) at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:829) at javax.servlet.http.HttpServlet.service(HttpServlet.java:727) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330) at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118) at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:103) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:154) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:45) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.authentication.www.BasicAuthenticationFilter.doFilter(BasicAuthenticationFilter.java:150) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:57) at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:50) at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106) at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192) at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160) at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:343) at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:260) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.kew.web.UserPreferencesFilter.doFilter(UserPreferencesFilter.java:78) at org.kuali.rice.kew.web.UserPreferencesFilter.doFilter(UserPreferencesFilter.java:62) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.krad.web.filter.UserLoginFilter.doFilter(UserLoginFilter.java:92) at org.kuali.rice.krad.web.filter.UserLoginFilter.doFilter(UserLoginFilter.java:80) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.krad.web.filter.BootstrapFilterChain.doFilter(BootstrapFilter.java:327) at org.kuali.rice.krad.web.filter.DummyLoginFilter.doFilter(DummyLoginFilter.java:82) at org.kuali.rice.krad.web.filter.DummyLoginFilter.doFilter(DummyLoginFilter.java:62) at org.kuali.rice.krad.web.filter.BootstrapFilterChain.doFilter(BootstrapFilter.java:320) at org.kuali.rice.krad.web.filter.BootstrapFilter.doFilter(BootstrapFilter.java:199) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:198) at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:176) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.coeus.sys.framework.controller.interceptor.PerformanceLoggingFilter.doFilter(PerformanceLoggingFilter.java:82) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.coeus.sys.framework.controller.interceptor.SessionExpiredFilter.doFilter(SessionExpiredFilter.java:46) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.krad.web.filter.HideWebInfFilter.doFilter(HideWebInfFilter.java:68) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.springframework.web.filter.AbstractRequestLoggingFilter.doFilterInternal(AbstractRequestLoggingFilter.java:223) at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:88) at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220) at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122) at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:170) at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103) at org.apache.catalina.valves.RemoteIpValve.invoke(RemoteIpValve.java:683) at org.apache.catalina.valves.CrawlerSessionManagerValve.invoke(CrawlerSessionManagerValve.java:180) at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950) at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116) at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:421) at org.apache.coyote.ajp.AjpAprProcessor.process(AjpAprProcessor.java:188) at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611) at org.apache.tomcat.util.net.AprEndpoint$SocketProcessor.doRun(AprEndpoint.java:2466) at org.apache.tomcat.util.net.AprEndpoint$SocketProcessor.run(AprEndpoint.java:2455) at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) at java.lang.Thread.run(Thread.java:745) Caused by: javax.persistence.PersistenceException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Column 'DOCUMENT_NUMBER' cannot be null Error Code: 1048 Call: INSERT INTO DOCUMENT_NEXTVALUE (PROPERTY_NAME, DOCUMENT_NUMBER, NEXT_VALUE, OBJ_ID, UPDATE_TIMESTAMP, UPDATE_USER, VER_NBR) VALUES (?, ?, ?, ?, ?, ?, ?) bind => [7 parameters bound] Query: InsertObjectQuery(org.kuali.kra.bo.DocumentNextvalue@6704e143[propertyName=personSequenceNumber,documentKey=<null>,nextValue=2,serialVersionUID=-9140148375067456625,updateUser=fchair,updateUserSet=false,serialVersionUID=-3519927021539948875,serialVersionUID=1451642350593233282,versionNumber=0,objectId=a647a7b8-7cc7-4c01-b41d-d45924e166cf,newCollectionRecord=false,serialVersionUID=5563310175227245001,_persistence_shouldRefreshFetchGroup=false]) at org.eclipse.persistence.internal.jpa.EntityManagerImpl.flush(EntityManagerImpl.java:879) at sun.reflect.GeneratedMethodAccessor1104.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at net.bull.javamelody.JpaWrapper.doInvoke(JpaWrapper.java:70) at net.bull.javamelody.JpaWrapper$EntityManagerHandler.invoke(JpaWrapper.java:130) at net.bull.javamelody.JdbcWrapper$DelegatingInvocationHandler.invoke(JdbcWrapper.java:286) at com.sun.proxy.$Proxy305.flush(Unknown Source) at sun.reflect.GeneratedMethodAccessor1104.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.orm.jpa.ExtendedEntityManagerCreator$ExtendedEntityManagerInvocationHandler.invoke(ExtendedEntityManagerCreator.java:366) at com.sun.proxy.$Proxy49.flush(Unknown Source) at sun.reflect.GeneratedMethodAccessor1104.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:241) at com.sun.proxy.$Proxy49.flush(Unknown Source) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider$1.call(JpaPersistenceProvider.java:204) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider.doWithExceptionTranslation(JpaPersistenceProvider.java:552) ... 131 more Caused by: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Column 'DOCUMENT_NUMBER' cannot be null Error Code: 1048 Call: INSERT INTO DOCUMENT_NEXTVALUE (PROPERTY_NAME, DOCUMENT_NUMBER, NEXT_VALUE, OBJ_ID, UPDATE_TIMESTAMP, UPDATE_USER, VER_NBR) VALUES (?, ?, ?, ?, ?, ?, ?) bind => [7 parameters bound] Query: InsertObjectQuery(org.kuali.kra.bo.DocumentNextvalue@6704e143[propertyName=personSequenceNumber,documentKey=<null>,nextValue=2,serialVersionUID=-9140148375067456625,updateUser=fchair,updateUserSet=false,serialVersionUID=-3519927021539948875,serialVersionUID=1451642350593233282,versionNumber=0,objectId=a647a7b8-7cc7-4c01-b41d-d45924e166cf,newCollectionRecord=false,serialVersionUID=5563310175227245001,_persistence_shouldRefreshFetchGroup=false]) at org.eclipse.persistence.exceptions.DatabaseException.sqlException(DatabaseException.java:331) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeDirectNoSelect(DatabaseAccessor.java:902) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeNoSelect(DatabaseAccessor.java:964) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.basicExecuteCall(DatabaseAccessor.java:633) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeCall(DatabaseAccessor.java:560) at org.eclipse.persistence.internal.sessions.AbstractSession.basicExecuteCall(AbstractSession.java:2055) at org.eclipse.persistence.sessions.server.ClientSession.executeCall(ClientSession.java:306) at org.eclipse.persistence.internal.queries.DatasourceCallQueryMechanism.executeCall(DatasourceCallQueryMechanism.java:242) at org.eclipse.persistence.internal.queries.DatasourceCallQueryMechanism.executeCall(DatasourceCallQueryMechanism.java:228) at org.eclipse.persistence.internal.queries.DatasourceCallQueryMechanism.insertObject(DatasourceCallQueryMechanism.java:377) at org.eclipse.persistence.internal.queries.StatementQueryMechanism.insertObject(StatementQueryMechanism.java:165) at org.eclipse.persistence.internal.queries.StatementQueryMechanism.insertObject(StatementQueryMechanism.java:180) at org.eclipse.persistence.internal.queries.DatabaseQueryMechanism.insertObjectForWrite(DatabaseQueryMechanism.java:489) at org.eclipse.persistence.queries.InsertObjectQuery.executeCommit(InsertObjectQuery.java:80) at org.eclipse.persistence.queries.InsertObjectQuery.executeCommitWithChangeSet(InsertObjectQuery.java:90) at org.eclipse.persistence.internal.queries.DatabaseQueryMechanism.executeWriteWithChangeSet(DatabaseQueryMechanism.java:301) at org.eclipse.persistence.queries.WriteObjectQuery.executeDatabaseQuery(WriteObjectQuery.java:58) at org.eclipse.persistence.queries.DatabaseQuery.execute(DatabaseQuery.java:904) at org.eclipse.persistence.queries.DatabaseQuery.executeInUnitOfWork(DatabaseQuery.java:803) at org.eclipse.persistence.queries.ObjectLevelModifyQuery.executeInUnitOfWorkObjectLevelModifyQuery(ObjectLevelModifyQuery.java:108) at org.eclipse.persistence.queries.ObjectLevelModifyQuery.executeInUnitOfWork(ObjectLevelModifyQuery.java:85) at org.eclipse.persistence.internal.sessions.UnitOfWorkImpl.internalExecuteQuery(UnitOfWorkImpl.java:2896) at org.eclipse.persistence.internal.sessions.AbstractSession.executeQuery(AbstractSession.java:1857) at org.eclipse.persistence.internal.sessions.AbstractSession.executeQuery(AbstractSession.java:1839) at org.eclipse.persistence.internal.sessions.AbstractSession.executeQuery(AbstractSession.java:1790) at org.eclipse.persistence.internal.sessions.CommitManager.commitNewObjectsForClassWithChangeSet(CommitManager.java:227) at org.eclipse.persistence.internal.sessions.CommitManager.commitAllObjectsForClassWithChangeSet(CommitManager.java:194) at org.eclipse.persistence.internal.sessions.CommitManager.commitAllObjectsWithChangeSet(CommitManager.java:139) at org.eclipse.persistence.internal.sessions.AbstractSession.writeAllObjectsWithChangeSet(AbstractSession.java:4260) at org.eclipse.persistence.internal.sessions.UnitOfWorkImpl.commitToDatabase(UnitOfWorkImpl.java:1441) at org.eclipse.persistence.internal.sessions.UnitOfWorkImpl.commitToDatabaseWithPreBuiltChangeSet(UnitOfWorkImpl.java:1587) at org.eclipse.persistence.internal.sessions.RepeatableWriteUnitOfWork.writeChanges(RepeatableWriteUnitOfWork.java:455) at org.eclipse.persistence.internal.jpa.EntityManagerImpl.flush(EntityManagerImpl.java:874) ... 150 more Caused by: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Column 'DOCUMENT_NUMBER' cannot be null at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) at java.lang.reflect.Constructor.newInstance(Constructor.java:422) at com.mysql.jdbc.Util.handleNewInstance(Util.java:409) at com.mysql.jdbc.Util.getInstance(Util.java:384) at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:1039) at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4232) at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4164) at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2615) at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2776) at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2838) at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:2082) at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:2334) at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:2262) at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:2246) at sun.reflect.GeneratedMethodAccessor253.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at bitronix.tm.resource.jdbc.BaseProxyHandlerClass.invoke(BaseProxyHandlerClass.java:64) at com.sun.proxy.$Proxy23.executeUpdate(Unknown Source) at sun.reflect.GeneratedMethodAccessor253.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at net.bull.javamelody.JdbcWrapper.doExecute(JdbcWrapper.java:404) at net.bull.javamelody.JdbcWrapper$StatementInvocationHandler.invoke(JdbcWrapper.java:129) at net.bull.javamelody.JdbcWrapper$DelegatingInvocationHandler.invoke(JdbcWrapper.java:286) at com.sun.proxy.$Proxy24.executeUpdate(Unknown Source) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeDirectNoSelect(DatabaseAccessor.java:892) ... 181 more
+  * Travis Schneeberger on Thu, 19 Nov 2015 09:07:24 -0500 [View Commit](../../commit/ab61e699265a7b8fcdf3d67f7a829ea62b1181f8)
+*   removing dead code
+  * Travis Schneeberger on Wed, 18 Nov 2015 20:21:10 -0500 [View Commit](../../commit/1d1f4c52a86823846cd1d358679ddeaf71e67124)
+
+##coeus-1511.64
+* No Changes
+
+
+##coeus-1511.63
+* Modular Budget Sync incorrectly includes 'unapplied mtdc' in
+  * F&A base.
+  * In PD Budget, for a Modular budget, when you uncheck the "Apply Rate"
+  * box for the MTDC in the details of a detailed budget line item, this is
+  * not picked up when syncing your Modular Budget. The Modular budget does
+  * NOT get adjusted to exclude the 'unapplied' MTDC from the F&A Base. The
+  * F&A Base should only show the sum of the expenses for which the F&A rate
+  * type box has been checked
+  * Steps to recreate:
+  * Start a new detailed budget version. Select Yes for modular. 
+  * Add a few line items to the detailed budget. 
+  * Go to Modular Budget Window. 
+  * Click Sync. 
+  * The Modular Budget correctly calculates based on detailed budget
+  * entries.
+  * Return to detailed budget > Non Personnel Costs (or Assign Personnel to
+  * Period). 
+  * Select Details (Or Details & Rates for personnel) for one of the line
+  * item. 
+  * In the Rates tab, Uncheck the "Apply Rate" box for MTDC. 
+  * Save changes.
+  * Go to Modular Budget Section 
+  * Click "Sync" to pull in changes made to detailed budget. 
+  * No updates are made to the calculation of F&A Base, Funds Requested,
+  * Total Requested Costs fields.
+  * Go to Budget Summary or Periods & Totals. 
+  * Amounts are different than those in the Modular budget.  * vineeth on Wed, 18 Nov 2015 18:10:07 -0500 [View Commit](../../commit/7fa47ffbacfd679ff05955609c4b9fa423191a26)
+
+##coeus-1511.62
+*   When a proposal with budget is copied and the budget contains line items that have rates applied, the copied budget cannot be deleted.  The following STE occurs:
+
+  * org.springframework.orm.jpa.JpaSystemException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`res_e1db`.`budget_details_cal_amts`, CONSTRAINT `FK1_BUDGET_DETAILS_CAL_AMTS` FOREIGN KEY (`BUDGET_DETAILS_ID`) REFERENCES `budget_details` (`BUDGET_DETAILS_ID`)) Error Code: 1451 Call: DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN ) bind => [1 parameter bound] Query: DeleteAllQuery(referenceClass=BudgetLineItem sql="DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN )"); nested exception is javax.persistence.PersistenceException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`res_e1db`.`budget_details_cal_amts`, CONSTRAINT `FK1_BUDGET_DETAILS_CAL_AMTS` FOREIGN KEY (`BUDGET_DETAILS_ID`) REFERENCES `budget_details` (`BUDGET_DETAILS_ID`)) Error Code: 1451 Call: DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN ) bind => [1 parameter bound] Query: DeleteAllQuery(referenceClass=BudgetLineItem sql="DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN )") at org.springframework.orm.jpa.EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(EntityManagerFactoryUtils.java:321) at org.springframework.orm.jpa.DefaultJpaDialect.translateExceptionIfPossible(DefaultJpaDialect.java:120) at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:403) at org.kuali.rice.krad.data.jpa.KradEntityManagerFactoryBean.translateExceptionIfPossible(KradEntityManagerFactoryBean.java:546) at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:58) at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:213) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider.doWithExceptionTranslation(JpaPersistenceProvider.java:555) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider.deleteMatching(JpaPersistenceProvider.java:317) at sun.reflect.GeneratedMethodAccessor1967.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:317) at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:183) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150) at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:96) at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:260) at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:94) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172) at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:204) at com.sun.proxy.$Proxy52.deleteMatching(Unknown Source) at org.kuali.rice.krad.data.provider.impl.ProviderBasedDataObjectService.deleteMatching(ProviderBasedDataObjectService.java:136) at org.kuali.coeus.propdev.impl.core.ProposalDevelopmentServiceImpl.cleanupBudgetObjects(ProposalDevelopmentServiceImpl.java:255) at org.kuali.coeus.propdev.impl.core.ProposalDevelopmentServiceImpl.deleteProposal(ProposalDevelopmentServiceImpl.java:222) at org.kuali.coeus.propdev.impl.core.ProposalDevelopmentSubmitController.deleteProposal(ProposalDevelopmentSubmitController.java:198) at org.kuali.coeus.propdev.impl.core.ProposalDevelopmentSubmitController$$FastClassBySpringCGLIB$$aff09485.invoke(<generated>) at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204) at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:700) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150) at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:96) at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:260) at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:94) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172) at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:633) at org.kuali.coeus.propdev.impl.core.ProposalDevelopmentSubmitController$$EnhancerBySpringCGLIB$$aba74b42.deleteProposal(<generated>) at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.web.method.support.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:215) at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:132) at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:743) at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:672) at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:82) at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:919) at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:851) at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:953) at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:855) at javax.servlet.http.HttpServlet.service(HttpServlet.java:646) at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:829) at javax.servlet.http.HttpServlet.service(HttpServlet.java:727) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.kew.web.UserPreferencesFilter.doFilter(UserPreferencesFilter.java:78) at org.kuali.rice.kew.web.UserPreferencesFilter.doFilter(UserPreferencesFilter.java:62) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.krad.web.filter.UserLoginFilter.doFilter(UserLoginFilter.java:92) at org.kuali.rice.krad.web.filter.UserLoginFilter.doFilter(UserLoginFilter.java:80) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.krad.web.filter.BootstrapFilterChain.doFilter(BootstrapFilter.java:327) at org.kuali.coeus.sys.framework.auth.AuthServiceFilter.validateWebUserLoginToken(AuthServiceFilter.java:117) at org.kuali.coeus.sys.framework.auth.AuthServiceFilter.authenticateWebBasedUser(AuthServiceFilter.java:101) at org.kuali.coeus.sys.framework.auth.AuthServiceFilter.doFilter(AuthServiceFilter.java:90) at org.kuali.rice.krad.web.filter.BootstrapFilterChain.doFilter(BootstrapFilter.java:320) at org.kuali.rice.krad.web.filter.BootstrapFilter.doFilter(BootstrapFilter.java:199) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:198) at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:176) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.coeus.sys.framework.controller.interceptor.PerformanceLoggingFilter.doFilter(PerformanceLoggingFilter.java:82) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.coeus.sys.framework.controller.interceptor.SessionExpiredFilter.doFilter(SessionExpiredFilter.java:46) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.kuali.rice.krad.web.filter.HideWebInfFilter.doFilter(HideWebInfFilter.java:68) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.springframework.web.filter.AbstractRequestLoggingFilter.doFilterInternal(AbstractRequestLoggingFilter.java:223) at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:88) at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208) at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220) at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122) at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:170) at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103) at org.apache.catalina.valves.RemoteIpValve.invoke(RemoteIpValve.java:683) at org.apache.catalina.valves.CrawlerSessionManagerValve.invoke(CrawlerSessionManagerValve.java:180) at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:950) at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116) at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:421) at org.apache.coyote.ajp.AjpAprProcessor.process(AjpAprProcessor.java:188) at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611) at org.apache.tomcat.util.net.AprEndpoint$SocketWithOptionsProcessor.run(AprEndpoint.java:2403) at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) at java.lang.Thread.run(Thread.java:745) Caused by: javax.persistence.PersistenceException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`res_e1db`.`budget_details_cal_amts`, CONSTRAINT `FK1_BUDGET_DETAILS_CAL_AMTS` FOREIGN KEY (`BUDGET_DETAILS_ID`) REFERENCES `budget_details` (`BUDGET_DETAILS_ID`)) Error Code: 1451 Call: DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN ) bind => [1 parameter bound] Query: DeleteAllQuery(referenceClass=BudgetLineItem sql="DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN )") at org.eclipse.persistence.internal.jpa.QueryImpl.executeUpdate(QueryImpl.java:308) at sun.reflect.GeneratedMethodAccessor1968.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at net.bull.javamelody.JpaWrapper.doInvoke(JpaWrapper.java:70) at net.bull.javamelody.JpaWrapper$QueryHandler.invoke(JpaWrapper.java:203) at net.bull.javamelody.JdbcWrapper$DelegatingInvocationHandler.invoke(JdbcWrapper.java:285) at com.sun.proxy.$Proxy308.executeUpdate(Unknown Source) at org.kuali.rice.krad.data.jpa.JpaCriteriaQuery.executeUpdate(JpaCriteriaQuery.java:66) at org.kuali.rice.krad.data.jpa.DataObjectCriteriaQueryBase.deleteMatching(DataObjectCriteriaQueryBase.java:95) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider$6.call(JpaPersistenceProvider.java:320) at org.kuali.rice.krad.data.jpa.JpaPersistenceProvider.doWithExceptionTranslation(JpaPersistenceProvider.java:552) ... 102 more Caused by: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`res_e1db`.`budget_details_cal_amts`, CONSTRAINT `FK1_BUDGET_DETAILS_CAL_AMTS` FOREIGN KEY (`BUDGET_DETAILS_ID`) REFERENCES `budget_details` (`BUDGET_DETAILS_ID`)) Error Code: 1451 Call: DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN ) bind => [1 parameter bound] Query: DeleteAllQuery(referenceClass=BudgetLineItem sql="DELETE FROM BUDGET_DETAILS WHERE (BUDGET_ID IN )") at org.eclipse.persistence.exceptions.DatabaseException.sqlException(DatabaseException.java:331) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeDirectNoSelect(DatabaseAccessor.java:902) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeNoSelect(DatabaseAccessor.java:964) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.basicExecuteCall(DatabaseAccessor.java:633) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeCall(DatabaseAccessor.java:560) at org.eclipse.persistence.internal.sessions.AbstractSession.basicExecuteCall(AbstractSession.java:2055) at org.eclipse.persistence.sessions.server.ClientSession.executeCall(ClientSession.java:306) at org.eclipse.persistence.internal.queries.DatasourceCallQueryMechanism.executeCall(DatasourceCallQueryMechanism.java:242) at org.eclipse.persistence.internal.queries.DatasourceCallQueryMechanism.executeCall(DatasourceCallQueryMechanism.java:228) at org.eclipse.persistence.internal.queries.DatasourceCallQueryMechanism.deleteAll(DatasourceCallQueryMechanism.java:127) at org.eclipse.persistence.queries.DeleteAllQuery.executeDatabaseQuery(DeleteAllQuery.java:201) at org.eclipse.persistence.queries.DatabaseQuery.execute(DatabaseQuery.java:904) at org.eclipse.persistence.queries.DatabaseQuery.executeInUnitOfWork(DatabaseQuery.java:803) at org.eclipse.persistence.queries.ModifyAllQuery.executeInUnitOfWork(ModifyAllQuery.java:148) at org.eclipse.persistence.queries.DeleteAllQuery.executeInUnitOfWork(DeleteAllQuery.java:124) at org.eclipse.persistence.internal.sessions.UnitOfWorkImpl.internalExecuteQuery(UnitOfWorkImpl.java:2896) at org.eclipse.persistence.internal.sessions.AbstractSession.executeQuery(AbstractSession.java:1857) at org.eclipse.persistence.internal.sessions.AbstractSession.executeQuery(AbstractSession.java:1839) at org.eclipse.persistence.internal.sessions.AbstractSession.executeQuery(AbstractSession.java:1804) at org.eclipse.persistence.internal.jpa.QueryImpl.executeUpdate(QueryImpl.java:298) ... 113 more Caused by: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Cannot delete or update a parent row: a foreign key constraint fails (`res_e1db`.`budget_details_cal_amts`, CONSTRAINT `FK1_BUDGET_DETAILS_CAL_AMTS` FOREIGN KEY (`BUDGET_DETAILS_ID`) REFERENCES `budget_details` (`BUDGET_DETAILS_ID`)) at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) at java.lang.reflect.Constructor.newInstance(Constructor.java:422) at com.mysql.jdbc.Util.handleNewInstance(Util.java:409) at com.mysql.jdbc.Util.getInstance(Util.java:384) at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:1039) at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4232) at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:4164) at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2615) at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2776) at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.java:2838) at com.mysql.jdbc.PreparedStatement.executeInternal(PreparedStatement.java:2082) at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:2334) at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:2262) at com.mysql.jdbc.PreparedStatement.executeUpdate(PreparedStatement.java:2246) at sun.reflect.GeneratedMethodAccessor267.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at bitronix.tm.resource.jdbc.BaseProxyHandlerClass.invoke(BaseProxyHandlerClass.java:64) at com.sun.proxy.$Proxy24.executeUpdate(Unknown Source) at sun.reflect.GeneratedMethodAccessor267.invoke(Unknown Source) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at net.bull.javamelody.JdbcWrapper.doExecute(JdbcWrapper.java:403) at net.bull.javamelody.JdbcWrapper$StatementInvocationHandler.invoke(JdbcWrapper.java:128) at net.bull.javamelody.JdbcWrapper$DelegatingInvocationHandler.invoke(JdbcWrapper.java:285) at com.sun.proxy.$Proxy25.executeUpdate(Unknown Source) at org.eclipse.persistence.internal.databaseaccess.DatabaseAccessor.executeDirectNoSelect(DatabaseAccessor.java:892) ... 131 more
+  * Travis Schneeberger on Wed, 18 Nov 2015 17:30:20 -0500 [View Commit](../../commit/310e44557de2df7e8d076e43ccd5b664be882fa3)
+*  Attempt to fix LA print issues.
+  * Single remaining issue in MIT KC Wkly when testing MITKC-2251 (which is marked Resolved & Ready to Deploy for the majority of issues in the case passing testing).
+  * The line for "Allocated Lab Expense" that should appear under Other Direct Costs category is missing.
+  * This is should be the sum of the M&A and the Utilities Lab Allocations entered in a single line.
+  * This amount should be $27,569.40 for this proposal.
+  * Only issue is this missing line for Allocated Lab Expense - all totals and subtotals are correct per the KC Budget, but when subtotals on the form are added, they do not equal the Total Direct Costs, etc.
+  * If manually calculating total direct costs from line items on the budget print form:
+  * TOTAL SALARIES & WAGES & FRINGE BENEFITS = 152,318.12
+  * Total Materials = $1,000.00
+  * Total Travel - Foreign = $12,000.00
+  * --------> These add to $165,318.12
+  * Amount of Total Direct Costs is actually $192,887.52
+  * The missing line for Allocated Lab Expense = Allocated Lab Expense = $27,569.40 is the difference.
+  * See uploaded PDF – all amounts correctly calculated and highlighted in Green.
+  * Tested in MIT KC Wkly build kc1509.65
+  * User = AEH
+  * PD #29290
+  * Testing scenario:
+  * The lead unit is a Lab Allocated unit
+  * The budget is built with with 5 individuals all assigned to the default Cost Element/group Research Staff - Off.
+  * There is an additional single faculty personnel added
+  * Lead Unit: Haystack
+  * LA Rates Maintained for Salaries, M&S and Utilities
+  * Budget Setting set to Off Campus for entire budget
+  * Budget Details contains:
+  * 5 Research Staff - Off.
+  * 1 Faculty line item entered with 10% academic year effort, 0% charge, to create personnel cost sharing.
+  * 1 line of M&A - $1000 cost to sponsor, $1000 entered as Cost Sharing.
+  * 1 Line item for travel costs.
+  * Gayathri Athreya on Wed, 18 Nov 2015 15:08:24 -0700 [View Commit](../../commit/b0f35348496d39618f6cd7739098b79ceb4f5ff2)
+* budget deletion fixes
+  * blackcathacker on Wed, 18 Nov 2015 12:28:56 -0800 [View Commit](../../commit/4ec933ddb353cc163a9e4739f895405a129eee75)
+
+##coeus-1511.61
+* No Changes
+
+
+##coeus-1511.60
+* Award with Multi-PI does not show Multi-PI on printed NOA.
+  * If an Award contains a contact of type PI/Multiple, that Multiple PI/MPI
+  * is not populated in the Award Notice printed report, or the Award
+  * Modification report
+  * Steps:
+  * 1) Open Demo 1 Award ID 000024-00001
+  * 2) Go to Award Actions>expand the Print panel
+  * 3) Click Print button on the far right in the Award Notice section
+  * Results:
+  * 4) The investigator list only shows the PI and any Co'-I's: not the
+  * Multi-PIs. 
+  * See screenshot from MIT.
+  * Confirmed in res demo 1 
+  * See related RESKC-776 for the IP report fix to include MPI.
+  * vineeth on Mon, 16 Nov 2015 17:08:36 -0500 [View Commit](../../commit/79189d1acf6f4a0f81d88f90849770d40412c94f)
+
+##coeus-1511.59
+* No Changes
+
+
+##coeus-1511.58
+* No Changes
+
+
+##coeus-1511.57
+* No Changes
+
+
+##coeus-1511.56
+* No Changes
+
+
+##coeus-1511.54
+* No Changes
+
+
+##coeus-1511.52
+* updating commons-collections due to a security advisory and other dependencies, reverting slf4j due to startup errors
+  * Travis Schneeberger on Wed, 18 Nov 2015 09:12:27 -0500 [View Commit](../../commit/3bf7141d5556707fd1e8e3475703a5bacde7aeaf)
+
+##coeus-1511.50
+* No Changes
+
+
+##coeus-1511.49
+* No Changes
+
+
+##coeus-1511.48
+* updating commons-collections due to a security advisory and other dependencies
+  * Travis Schneeberger on Tue, 17 Nov 2015 16:08:22 -0500 [View Commit](../../commit/b94c41efa3baa319eb39dad3498de16797f7b150)
+
+##coeus-1511.47
+*  Fix calculated direct cost calculation
+  * A recent case fixed the Assigned Personnel screen's "Fringe" field to accurately display the combined personnel rate expenses of EB and Vacation. The field name was updated to 'calculated fringe.' (RESKC-416)
+  * An unexpected result is that the Budget Summary screen is now incorrectly duplicating expenses.
+  * Discovered in MIT's testing of fix for RESKC-416
+  * Confirmed in Res Demo 1; Proposal #985
+  * While Budget > Budget Summary > Personnel > Fringe for individuals DOES correctly display the cost of EB + Vacation for the individual.
+  * The Budget > Budget Summary > Personnel > Calculated Direct Costs calculation is incorrect.
+  * This amount STILL INCLUDES the Vacation expense for the individual, thus Vacation is being double counted in the budget summary. The Personnel Calculated Direct Costs should include only the "Lab Allocation - Salaries", "EB On LA", "Vacation on LA" and NOT the "Vacation" calculated for personnel.
+  * The duplicate Vacation expense is causing the Total of the Personnel Subtotal and the Non-personnel Subtotal to exceed the Total Direct Costs listed on the Budget Summary.
+  * Each “Rate Cost” for an individual should be included in ONLY one amount on the Budget Summary.
+  * Scenario:
+  * Create a proposal in an Lab Allocated unit, entering minimum details to save, with activity Type Research.
+  * Create a new budget version with detailed budget.
+  * Add an individual to Project Personnel with salary.
+  * Assign Personnel to Period using a cost object subject to Vacation Accrual (e.g. Research Staff - On)
+  * In Non-Personnel Costs, Add a travel line item.
+  * Go to Budget Summary.
+  * Note the Personnel > Calculated Direct Costs.
+  * Go back to Assign Personnel to Period.
+  * Open Details and Rates for the Research Staff Line item.
+  * Compare amount from Budget Summary > Personnel > Calculated Direct Costs to the total of "Lab Allocation - Salaries", "EB On LA", and "Vacation on LA" rates for the person.
+  * The amount from the Budget Summary will be higher with the delta being cost of vacation accrual for the individual.
+  * Tested in KC Wkly build kc1509.65
+  * PD #29305, budget #2.
+  * Gayathri Athreya on Mon, 16 Nov 2015 13:34:57 -0700 [View Commit](../../commit/6444809495cee223c908cb78ca0396343ac74144)
+
+##coeus-1511.46
+* New Research Home page with suggest text box and quicklinks
+  * blackcathacker on Mon, 16 Nov 2015 15:36:18 -0800 [View Commit](../../commit/22de7a3838b80077d336348a55aabe3ebe10b471)
+*  Fix rest issue
+  * ISSUE4:
+  * Errors sometimes have html in them
+  * Gayathri Athreya on Mon, 16 Nov 2015 15:52:59 -0700 [View Commit](../../commit/0625957403c472e7e4463d69b21138bdd65f80ca)
+* PD - Exempt Address Book person PI/Multiple from certification
+  * & notification
+  * MIT requires some non-employees to participate in the system to perform
+  * the proposal person certification. The parameter to exempt identified
+  * key person roles is utilized to manage excluding those identified Key
+  * Persons. Another solution is required to exempt non-employee/address
+  * book persons added as the Proposal Role of PI/Multiple.
+  * Per MIT compliance policy and procedure, proposal persons added to a
+  * proposal via Non-Employee search (address book) and given the role of
+  * PI/Multiple are exempt from the proposal person certification process.
+  * Therefore, If the proposal role is PI/Multiple and the person is a
+  * Non-Employee/ address book, 
+  * THEN:
+  * do not present the proposal person certification questionnaire
+  * do not display certification status in the role header row
+  * do not have a 'notify' option button in the role header row
+  * do not include this proposal person in the "notify all' option in the
+  * COI Disclosure Status window.
+  * DO show 'Not Required" as the certification status in the COI Disclosure
+  * Status window
+  * The behavior should be the same as that of the parameterized Key Persons
+  * exemption (KeyPersonProjectRole), but used for the assigned proposal
+  * role of PI/Multiple.
+  * Providing this as a parameter option is appropriate to allow other
+  * implementers to include or exempt, as determined by their local policy.
+  * Suggested name: EXEMPT_ADDRESSBOOK_MULTI-PI_CERT
+  * vineeth on Thu, 12 Nov 2015 13:52:48 -0500 [View Commit](../../commit/8858db96a886926d565a003d61da27fd086eb14a)
+
+##coeus-1511.44
+* adding rest endpoint to discover our rest endpoints
+  * Travis Schneeberger on Mon, 16 Nov 2015 15:34:31 -0500 [View Commit](../../commit/0529dbfe8aa050dc72192f5162c4f6cd56560e53)
+
+##coeus-1511.43
+* No Changes
+
+
+##coeus-1511.42
+* IRB - Batch Correspondence is producing Blank renewal reminder letters.
+  * Prior fix to eliminate blank closure letter removed renewal stream and set the correspondence stream which now
+  * broke the renewal reminders. Current cofiguration requires renewal stream to generate renewal reminders and correspondence
+stream for other correspodences. While generating batch correspodence, all expiring and expired protocols are fetched
+  * based on configuration. So there might be a case where we need to generate both renewal reminders as well as closure
+  * letters when a batch correspondence action is performed. Tried to set both streams in the map but that is adding additional
+  * blank pages at the top and in between each letters. As a fix, created a wrapper and parameter to define renewal
+  * reminder correspondence types. The wrapper rely on this parameter to identify which stream to use while generating
+  * each correpondence. Applied the same fix in IACUC as well.
+  * Tested to make sure closure and renewal reminder correpondence are generated as per batch correspodence configuration.
+  * rmancher on Thu, 12 Nov 2015 10:37:42 -0600 [View Commit](../../commit/a5f9d86603ad16fb367c630325752717aab2e370)
+* rudimentary schema for crud endpoints using ?schema get
+  * blackcathacker on Fri, 13 Nov 2015 13:14:55 -0600 [View Commit](../../commit/b7f5bd00dfd667cbda362efc94d328aeee6070eb)
+
+##coeus-1511.41
+* No Changes
+
+
+##coeus-1511.40
+* No Changes
+
+
+##coeus-1511.39
+* No Changes
+
+
+##coeus-1511.38
+* adding default field and pk discovery for rest services
+  * Travis Schneeberger on Fri, 13 Nov 2015 17:52:10 -0500 [View Commit](../../commit/92defe2bd53a566f7e8835c6f3f7052bc77dc197)
+
+##coeus-1511.37
+* PD: S2S: eRA Commons ID field needs to accommodate other
+  * Gov't agency credentials without error.
+  * For S2S proposals, users need the ability to enter Agency Credentials
+  * for sponsors other than NIH, in the eRA Commons ID field in Key
+  * Personnel. Currently, there is a system validation error message if the
+  * information entered in eRA Commons ID field is anything less than 6
+  * characters (which NIH requires). BUT, other Gov't agency credential
+  * information may be less than 6 characters. This field needs to contain a
+system warning, rather than an error message, so it may accommodate all
+  * Agency Credential information, and not just eRA Commons ID. Without
+  * this, S2S submission may not be possible for sponsored proposals other
+  * than NIH.
+  * Create a proposal with the minimum required fields to save: Add a
+  * federal sponsor that is NOT NIH.
+  * Key Personnel> Add a person as PI and save
+  * Expand to display Details tab
+  * Enter the PI's AGENCY CREDENTIAL Id in the "ERA Commons User ID Field"
+  * (with less than 6 characters)
+  * ON the S2S Opportunity screen, search and add a non-NIH Opportunity 
+  * Turn on Validations.
+  * Results: The system presents an error noting the 6 character requirement
+  * for NIH
+  * Desired Results: The system should present a warning only. KRMS Rules
+  * can be maintained locally to enforce sponsor specific format
+  * requirements.  * vineeth on Fri, 13 Nov 2015 16:55:54 -0500 [View Commit](../../commit/6c462067c072255186318b1cca0c8910be0aafeb)
+
+##coeus-1511.36
+* adding servlet mappings for rest endpoints
+  * Travis Schneeberger on Fri, 13 Nov 2015 15:25:59 -0500 [View Commit](../../commit/b79955076a7a9e3eb0ff3b11064db806a9ef1139)
+
+##coeus-1511.35
+* creating map based generic controller for rest endpoints
+  * blackcathacker on Fri, 13 Nov 2015 13:14:55 -0600 [View Commit](../../commit/5d7798efa081ddaadc0b14197a76ed81bd95c0f3)
+
+##coeus-1511.34
+* adding more BO rest logic, update/insert logic
+  * Travis Schneeberger on Fri, 13 Nov 2015 11:04:01 -0500 [View Commit](../../commit/a4f96778a1376bcadb7273602a5f542777db3195)
+
+##coeus-1511.33
+* No Changes
+
+
+##coeus-1511.32
+* No Changes
+
+
+##coeus-1511.31
+* adding more BO rest logic, update/insert logic
+  * Travis Schneeberger on Thu, 12 Nov 2015 16:22:29 -0500 [View Commit](../../commit/fdeaa8fe824e74bd2900540955db40d1fd2e3df9)
+* update simplecrudrestcontroller to be non-abstract to support eventually spring/auto configuration
+  * blackcathacker on Thu, 12 Nov 2015 14:24:37 -0600 [View Commit](../../commit/aba1746a986675c1ede8963cf73a3384a837fea0)
+
+##coeus-1511.30
+* adding more BO rest logic, update/insert logic
+  * Travis Schneeberger on Thu, 12 Nov 2015 15:42:41 -0500 [View Commit](../../commit/e0fc6c1e332b142a22359706651ae0995612cdcb)
+
+##coeus-1511.29
+* adding more BO rest logic, update/insert logic
+  * Travis Schneeberger on Thu, 12 Nov 2015 14:27:43 -0500 [View Commit](../../commit/1e7759916dd8f1ad043d58fdb5af371ff0c33b3f)
+
+##coeus-1511.28
+* fix error codes for RestController and better error handling when objects don't exist
+
+  * also do validation for foreign key references when attempting a delete
+  * blackcathacker on Thu, 12 Nov 2015 10:03:20 -0600 [View Commit](../../commit/b16b85f84d56564c3d88833070159cac9f3cba07)
+
+##coeus-1511.27
+* No Changes
+
+
+##coeus-1511.26
+* No Changes
+
+
+##coeus-1511.25
+* adding more BO rest logic, delete logic
+  * Travis Schneeberger on Wed, 11 Nov 2015 17:53:09 -0500 [View Commit](../../commit/5f3fa3408444a5dbae12b8c93dd1b94ad4e46e74)
+
+##coeus-1511.24
+* adding more BO rest logic
+  * Travis Schneeberger on Wed, 11 Nov 2015 12:36:28 -0500 [View Commit](../../commit/63a91b601e1c624bdb8d9b1ddf4e664c3d7247ca)
+* Rest Endpoint for Budget Category Type as sample service for csv upload
+  * blackcathacker on Tue, 10 Nov 2015 16:55:24 -0600 [View Commit](../../commit/3d1795c198545a49200cd1e8ea95d55e2b77a8ff)
+
+##coeus-1511.23
+* No Changes
+
+
+##coeus-1511.22
+*  NumberFormatException
+  * curl --user coeus-kualico:password https://res-demo1.kuali.co/kc-dev/award/api/v1/accounts/awards/16586noah
+  * curl --user coeus-kualico:password https://res-demo1.kuali.co/kc-dev/award/api/v1/accounts/awards/16586noah
+  * this gives a number format exception
+  * Gayathri Athreya on Mon, 9 Nov 2015 16:26:46 -0600 [View Commit](../../commit/7def55f9519c1163476cf541d4fdb83ad14aea16)
+
+##coeus-1511.21
+*  Fixing null pointer
+  * curl --user coeus-kualico:password https://res-demo1.kuali.co/kc-dev/award/api/v1/accounts/awards/3342
+  * curl --user coeus-kualico:password https://res-demo1.kuali.co/kc-dev/award/api/v1/accounts/awards/3342
+  * results in
+        org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:106)
+  * </pre></p><p><b>root cause</b> <pre>java.lang.NullPointerException
+        java.util.Optional.orElseGet(Optional.java:267)
+        org.kuali.kra.award.home.Award.getCurrentFandaRate(Award.java:2508)
+        org.kuali.coeus.award.finance.impl.AccountServiceImpl.createAccountInformation(AccountServiceImpl.java:61)
+        org.kuali.coeus.award.finance.AwardAccountController.getAccountInformation(AwardAccountController.java:97)
+  * Gayathri Athreya on Mon, 9 Nov 2015 15:40:45 -0600 [View Commit](../../commit/3aa447bfd7aa0ccc10583201f7fbb5e7611722ec)
+*  Fixing validation.
+  * When hitting REST endpoint with integerrs greater than db length, fails with db error.
+  * Gayathri Athreya on Mon, 9 Nov 2015 14:56:10 -0600 [View Commit](../../commit/3207a09b5306828a7b5447fcc26d9a25dc5a28bd)
+
+##coeus-1511.19
+* No Changes
+
+
+##coeus-1511.18
+* Update award account apis to match url standards
+  * blackcathacker on Sun, 8 Nov 2015 17:15:33 -0600 [View Commit](../../commit/95ce9fee9c9d768a75d11f3f247962ab633e6a35)
+
+##coeus-1511.17
+* No Changes
+
+
+##coeus-1511.16
+* Updating existing apis to match current Kuali standards
+  * blackcathacker on Fri, 6 Nov 2015 14:48:09 -0800 [View Commit](../../commit/64c2a22a21e4553300f9d23b21a049b44abcbd08)
+
+##coeus-1511.15
+* fixing other BO names in jsp/tag files
+  * Travis Schneeberger on Fri, 6 Nov 2015 17:26:42 -0500 [View Commit](../../commit/b9cb3425ae6278c1b3f9aec355b36253953e9394)
+* fixing unit and sponsor lookups for several kew documents
+  * Travis Schneeberger on Fri, 6 Nov 2015 15:56:45 -0500 [View Commit](../../commit/c793bd1b00f0f6b1ec3439afc4632e4f456a006b)
+
+##coeus-1511.14
+* No Changes
+
+
+##coeus-1511.13
+* No Changes
+
+
+##coeus-1511.12
+*  Changing logic since it was wrong.
+  * Gayathri Athreya on Fri, 6 Nov 2015 12:00:06 -0700 [View Commit](../../commit/2fb16d6970ddaf8040d18f5b8d778ae1ebfd6aa0)
+* Budget Rates - Use fontawesome from cdn and slight style changes
+
+  * Include link to new URL on maintenance page
+  * blackcathacker on Thu, 5 Nov 2015 16:24:56 -0800 [View Commit](../../commit/5de02a7cb7c1da42ae724ddde6b0de8161061803)
+
+##coeus-1511.11
+*  update award summary api to match standards
+  * blackcathacker on Thu, 5 Nov 2015 13:56:00 -0800 [View Commit](../../commit/21d2956709bcba4d8be11374608c9f865c073e5d)
+
+##coeus-1511.10
+* No Changes
+
+
+##coeus-1511.9
+* No Changes
+
+
+##coeus-1511.8
+*  fixing integration test
+  * Travis Schneeberger on Wed, 4 Nov 2015 18:20:24 -0500 [View Commit](../../commit/1be364e45b28ff1fcd77c772df116a762f682f24)
+*  Fix issues with cancelled awards
+  * Gayathri Athreya on Wed, 4 Nov 2015 14:36:29 -0700 [View Commit](../../commit/f24b0e9c32a3c407ee0a35d06e86c2c5300d65f8)
+*  Fixing propsal types for s2s namespace with the proposal types defined in the bootstrap data. Since these params need to be more user friendly to map different proposal types to one s2s proposal type, changed the @PARAM defnitions and used individual values or comma separated ones for S2S namespace
+  * Geo Thomas on Tue, 3 Nov 2015 16:24:59 -0500 [View Commit](../../commit/3b57984a610dc1475bfbd87fc346315bbb081673)
+*  (User Story) As an IRB/IACUC Admin, I can configure the watermark for protocol attachments to include key data about the protocol so that it is clearly displayed on protocol attachments.
+
+  * Acceptance Criteria:
+  * Given an IRB Admin is maintaining watermarks for IRB protocol attachments, when they edit or add a watermark, then they can optionally include these data elements to the watermark:
+  * Initial Protocol Approval Date
+  * Last Protocol Approval Date
+  * Expiration Date
+  * Text up to 200 characters.
+  * And when the watermark maintenance document is approved, then when PDF protocol attachments are printed these data correctly display based on the maintenance set up, along with the status watermark on the PDF:
+  * And Dates will use the same date formats as in the UI
+  * Given an IACUC Admin is maintaining watermarks for IACUC protocol attachments, when they edit or add a watermark, then they can optionally include these data elements to the watermark:
+  * Initial Protocol Approval Date
+  * Last Protocol Approval Date
+  * Expiration Date
+  * Text up to 200 characters.
+  * And when the watermark maintenance document is approved, then when PDF protocol attachments are printed these data correctly display based on the maintenance set up, along with the status watermark on the PDF:
+  * And Dates will use the same date formats as in the UI
+
+  * The above requirements are already supported through property replacement however the watermark length must be increased.  Also, watermarks should be able to use a smaller font.
+  * Travis Schneeberger on Tue, 3 Nov 2015 16:41:40 -0500 [View Commit](../../commit/740f11c8948039f952bb861fb52c64e6021e54a9)
+
+##coeus-1511.7
+* No Changes
+
+
+##coeus-1511.6
+* Fixing STE with Additional Budget Persons with RR Budget
+
+  * When a proposal budget has more than 8 personnel across multiple periods, printing the S2S Form RR_Budget_1_3 requires generating of system narrative attachments. This fixes an exception that is generated due to incorrectly persisting of these attachments. Additional information on issue
+
+  * Attempted printing this budget form to confirm if the Additional Key Persons attachment included the correct "Project Role" title from the Key Person screen from a customer reported issue.
+  * I added >8 Senior persons to my budget and then the Key Person that was in budget category Senior Personnel to duplicate the issue.
+  * Instead, I got an STE - see below.
+  * Tested in Res-test1 for S2S connection, used PA-C-R01 opportunity for the form.
+  * org.springframework.orm.jpa.JpaSystemException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.6.0.v20150309-bf26070): org.eclipse.persistence.exceptions.DatabaseException Internal Exception: com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException: Column 'UPLOAD_TIMESTAMP' cannot be null Error Code: 1048 Call: UPDATE NARRATIVE_ATTACHMENT SET FILE_DATA_ID = ?, FILE_NAME = ?, OBJ_ID = ?, UPDATE_TIMESTAMP = ?, UPDATE_USER = ?, UPLOAD_TIMESTAMP = ?, UPLOAD_USER = ?, VER_NBR = ? WHERE ((PROPOSAL_NUMBER = ?) AND (MODULE_NUMBER = ?)) bind => [10 parameters bound] Query: UpdateObjectQuery(org.kuali.coeus.propdev.impl.attachment.NarrativeAttachment@3b118e62[serialVersionUID=4673438132556125127,name=73922_EXTRA_KEYPERSONS.pdf,type=application/octet-stream,fileDataId=35136425-3009-44d8-9595-72f89e156662,uploadUser=
+  * blackcathacker on Tue, 3 Nov 2015 12:09:27 -0800 [View Commit](../../commit/8f1bf9de7b848d8d4d30f24f0b1cac423114c317)
+
+##coeus-1511.5
+*  Filter persons who do not need certs.
+  * Currently, when the COI Disclosure Status feature is enabled, _all _key personnel are listed in the Disclosure Status window. This case is to update the COI Disclosure Status window and restrict the listed persons to _only _those key persons that are required to disclose. This update will better convey locally implemented Conflict of Interest compliance policy and procedure as maintained via the COI Hierarchy, the keypersonprojectrole parameter, RESKC-972 which will exempt non-personnel Multiple PI, or the parameter to exempt ALL address book non-personnel, if enabled.
+  * Gayathri Athreya on Tue, 3 Nov 2015 09:05:15 -0700 [View Commit](../../commit/9741076ed4c6fc6c2db697727493a361f77400e6)
+*  IACUC: Reviewers cannot be assigned if schedule is selected on DMR (Committee Reviewers appear and then disappear)
+  * Create IACUC protocol
+  * Submit for Review
+  * Modify Submission Request:
+  * -Use Designated Member Review as the submission review type
+  * -Select committee
+  * (Notice the reviewers appear as expected)
+  * -Select schedule
+  * Actual Result: The reviewers disappear for selection even though they are available. See screen shot with schedule selected.
+  * Expected: Available Reviewers should be displayed for selection
+  * Workaround is to not select a schedule so you can select reviewers, but that doesn't work some some school's processes. See screen shot without schedule selected.
+  * Travis Schneeberger on Tue, 3 Nov 2015 10:52:16 -0500 [View Commit](../../commit/29de8afb0abf05ff631ee2b6d623fe5a5c7f3144)
+* Notification needed to informDisclosure Required for
+  * Contributed COI Disclosure Status feature.
+  * Noticed during testing and documentation of the contributed COI
+  * Disclosure Status feature in PD.
+  * In the MIT environment, when a proposal persons answers the proposal
+  * person certification saying 'yes' to at least one of the COI Disclosure
+screening questions, a message is presented to the user stating that due
+  * to their responses, they are required to submit a full financial
+  * disclosure. 
+  * As the proposal persons may be answering the external certification via
+  * the Action List or the web page link from the email notification, they
+  * are not able to see the COI Disclosure Status window in the proposal to
+  * know if they are required to submit, or if it is not required.
+  * We need a method of informing the proposal persons if they are required
+  * to submit a full disclosure. A new Notification that is triggered from
+  * the "Y" answers to the screening questions would support the
+  * requirement. Send the notification if:
+  * the proposal person answers the certification questionnaire in the
+  * Action List
+  * the proposal person answer the certification in the the web page
+  * certification
+  * -any users (proxy or proposal person) answers the certification in the
+  * proposal.
+  * The notification should be similar to the current PD Certification
+  * Request Notice (10362) - see example text.
+  * Based on your answers to the COI screening questions in the proposal
+  * certification questions, you must now complete a full disclosure for
+  * this proposal before it can be routed. 
+  * Please navigate to the Researcher > Conflict of Interest > My
+  * Disclosures menu.
+  * Proposal Details as follows:<br/>Document Number:
+  * {DOCUMENT_NUMBER}<br/>Proposal Number: <a title="" target="_self"
+  * href="{APP_LINK_PREFIX}/kc-pd-krad/proposalDevelopment?methodToCall=viewUtility&viewId=PropDev-CertificationView&docId={DOCUMENT_NUMBER}
+  * &userName=
+  * {USER_NAME}
+  * ">
+  * {PROPOSAL_NUMBER}
+  * </a> <br/>Proposal Title:
+  * {PROPOSAL_TITLE}
+  * <br/>Principal Investigator:
+  * {PRINCIPAL INVESTIGATOR}
+  * <br/>Lead Unit:
+  * {LEAD_UNIT}
+  * -
+  * {LEAD_UNIT_NAME}
+  * <br/>Sponsor:
+  * {SPONSOR_CODE}
+  * -
+  * {SPONSOR_NAME}
+  * <br/>Dealine Date:
+  * {DEADLINE_DATE}
+  * vineeth on Tue, 3 Nov 2015 10:34:37 -0500 [View Commit](../../commit/f338dd1158048616f26edbac8d206cfe0e4f3c8c)
+* Budget rates feature development of edit mode and styling improvements
+  * blackcathacker on Sun, 1 Nov 2015 19:44:25 -0800 [View Commit](../../commit/1471f811d24953ab831cfd6a0df25b59a22c2bf8)
+* SpringMVC endpoint for rates SPA and code cleanup
+  * blackcathacker on Fri, 30 Oct 2015 17:52:52 -0700 [View Commit](../../commit/9a62212ef6f2b45706ed629801747f56689a3bf7)
+
+##coeus-1511.4
+* No Changes
+
+
+##coeus-1511.3
+*  show the data validation message 'Validation errors exist. Please correct these errors prior to submitting to workflow routing.' inside the data validation tab and not at the bottom in the 'Other Errors' section
+  * Travis Schneeberger on Mon, 2 Nov 2015 16:58:50 -0500 [View Commit](../../commit/a39cca7979f365d4742a20b75fb937a36180770a)
+*  As an award administrator, I need to add Approved Subawards to award documents. Sometimes, multiple unique subawards are issued to the same organization; these could be to support separate investigators, projects, tasks, timeframes, etc. Currently, the system will let me add the organization on the Award tab, but will error on Validation when I try to submit.
+  * Steps to duplicate:
+  * Open an existing Award document (example: 002692-* in res-test1)
+  * Edit
+  * expand the Subawards panel
+  * Use the lookup tool to locate and add an Organization & return it; enter a dollar amount and click Add.
+  * Repeat the process, adding the previous selection a 2nd time.
+  * Navigate to Award Actions > Submit.
+  * Results: Validation error occurs stating there is a duplicate Organization Name.
+  * Desired Results: Reduce the validation to a Warning to alert the user in case this was not the intent, but let the record be submitted with the duplicate/multiple appearances of organizations. There are business requirements to list the same organization multiple times.
+  * Travis Schneeberger on Mon, 2 Nov 2015 16:57:31 -0500 [View Commit](../../commit/cbc4d656c317a2d48b6f02ba39fc50ebeceabff4)
+
+##coeus-1511.2
+*  As an Award administrator, I can maintain the Federal award identification number (FAIN) and Year, and Federal Award Date in my Awards and Subawards so that I can comply with the OMB's Uniform Grant Guidance.
+  * Background:
+  * See Uniform Grant Guidance policy statements: https://www.whitehouse.gov/omb/grants_docs/
+  * Federal Award Identification Number (FAIN) is unique within the Federal agency, and required for each financial assistance award to assist recipients in correctly reporting subawards. The Federal agency may not - with limited exceptions - modify the FAIN during the life of the award. A unique number assigned to a financial assistance award. Needs to be alphanumberic and should be at least as long as Sponsor Award Number in KC. Agencies use different formats. For example, NIH implements the FAIN by deriving it from the core elements of the grant number. For example, the FAIN for 1R0lGM654321-01 would be R01GM654321.
+  * Year is YYYY.
+  * Federal Award Date means the date when the Federal award is signed by the authorized official of the Federal awarding. Format is month, day, and year.
+  * Subcommittee Requirements confirmed 9/16/2015
+  * Award Document Changes
+  * 1. Award Document: New FAIN ID field on the Award tab, Sponsor panel – varchar, length 32
+  * 2. Award Document: New Federal Award Year field on Award tab, Sponsor panel – YYYY
+  * 3. Award Document: New Federal Award Date field on Award tab, Details & Dates panel, Time & Money subpanel along with other date fields and same format.
+  * Subaward Document Changes
+  * 4. Subaward Document: New Federal Award Project Description field – Subaward tab, Subaward panel, between the Title and Comments fields.
+  * 5. Subaward Document: New F&A Rate field on the Subaward tab, Subaward panel – XX.XX% format
+  * 6. Subaward Document: New de Minimus radio button or Y/N field added beside the F&A Rate field.
+  * 7. Subaward Document: Create a display panel on the Subaward Tab, Funding Source panel to display the FAIN, the Federal Award Date, Obligated Total Award Amount, Sponsor and Prime Sponsor, CFDA Number, and Activity Type (similar to the information that displays in the Award document when a Funding Proposal is linked).
+  * Travis Schneeberger on Sat, 31 Oct 2015 08:21:38 -0400 [View Commit](../../commit/80a9a451cce07d69f2e8832732e34eb843b673e8)
+
+##coeus-1511.1
+*  Fixing opp title
+  * The xml _header _data being submitted S2S and not part of the form schemas that is causing the problem. So we need to correct why are we putting incorrect information into the Header, and to correctly handle when to populate and NOT populate the SF 424 CFDA Activity Title field.
+  * Legacy Coeus also populated both these xml fields with the "OpportunityTitle" data, but trimmed to 119 characters to prevent errors on Submission.
+  * Suggested Improvement:
+  * KC needs to populate the "ActivityTitle" with the CFDA Description data from the S2S opportunity if available; and ALWAYS trim the length to stay under the 120 character limit.
+  * IF the CFDA is blank in the opportunity, this field should remain blank in the SF424 RR forms.
+  * Error at Grants.gov for field character length violation on a sponsor supplied field
+  * Error Message from Grants.gov for this particular submission:
+  * XML validation error: Schema validation error(s): cvc-maxLength-valid: Value 'Novel and Innovative Tools to Facilitate Identification, Tracking, Manipulation, and Analysis of Glycans and their Functions (R21)' with length = '130' is not facet-valid with respect to maxLength '120' for type 'StringMin1Max120Type'.
+  * The system xml transmits the package "OpportunityTitle" (appears in the Adobe download) in the CFDA "ActivityTitle" field. (LIMIT = 120 characters)
+  * Both of these fields are NOT able to be edited by KC end users.
+  * Per the grants.gov header schema for this opportunity (http://apply07.grants.gov/apply/system/schemas/Header-V1.0.xsd), the field with the 120 character max length is the "Activity Title" – this corresponds to the Grants.gov opportunity CFDA Description field. Per the schema, it is NOT a required field (min occurances = 0)
+  * Per the NIH Opportunity posted at grants.gov and displayed in the KC PD Opprtunity Search > Opportunity tab, the "Opportunity Title" field is the one that has the entry "Novel and Innovative Tools to Facilitate Identification, Tracking, Manipulation, and Analysis of Glycans and their Functions (R21)". The Opportunity Title field allows 255 characters per the Grants.gov header schema.
+  * Gayathri Athreya on Fri, 30 Oct 2015 13:54:54 -0700 [View Commit](../../commit/266dddd065d7a435e06485ef455a28fb6b66faf6)
+
+##coeus-1510.64
 * No Changes
 
 
