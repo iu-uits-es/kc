@@ -442,7 +442,7 @@ public class ProtocolProtocolActionsAction extends ProtocolAction implements Aud
                 ((ProtocolForm) form).getActionHelper().getProtocolNotifyIrbBean().setNewActionAttachment(new ProtocolActionAttachment());
             }
         }
-        return mapping.findForward(Constants.MAPPING_BASIC);
+        return mapping.findForward(getProtocolHistoryForwardNameHook());
     }
 
     // TODO: This method can be used as-is for both IRB and IACUC
@@ -457,12 +457,12 @@ public class ProtocolProtocolActionsAction extends ProtocolAction implements Aud
         if (attachment == null) {
             LOG.info("The attachment was not found for protocolAction: " + actionIndex + ", protocolSubmissionDoc: " + attachmentIndex);
             // may want to tell the user the selection was invalid.
-            return mapping.findForward(Constants.MAPPING_BASIC);
+            return mapping.findForward(getProtocolHistoryForwardNameHook());
         }
 
         getBusinessObjectService().delete(attachment);
 
-        return mapping.findForward(Constants.MAPPING_BASIC);
+        return mapping.findForward(getProtocolHistoryForwardNameHook());
     }
 
     /**

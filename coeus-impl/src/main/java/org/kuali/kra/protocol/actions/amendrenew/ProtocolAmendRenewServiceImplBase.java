@@ -105,6 +105,9 @@ public abstract class ProtocolAmendRenewServiceImplBase implements ProtocolAmend
         fyiProtocolDocument.getProtocol().setProtocolStatusCode(getFyiInProgressStatusHook());
         fyiProtocolDocument.getProtocol().refreshReferenceObject(PROTOCOL_STATUS);
 
+        ArrayList<ProtocolAttachmentProtocolBase> fyiAttachments = new ArrayList<ProtocolAttachmentProtocolBase>();
+        fyiProtocolDocument.getProtocol().setAttachmentProtocols(fyiAttachments);
+
         ProtocolActionBase protocolAction = createNotifyIrbAction(originalProtocol, fyiProtocolDocument.getProtocol().getProtocolNumber());
         protocolDocument.getProtocol().getProtocolActions().add(protocolAction);
 
