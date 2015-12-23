@@ -492,7 +492,7 @@ public class IacucProtocolActionsAction extends IacucProtocolAction {
                 ((IacucActionHelper) ((IacucProtocolForm) form).getActionHelper()).getIacucProtocolNotifyIacucBean().setNewActionAttachment(new ProtocolActionAttachment());
             }
         }
-        return mapping.findForward(Constants.MAPPING_BASIC);
+        return mapping.findForward(getProtocolHistoryForwardNameHook());
     }
 
     public ActionForward deleteSubmissionDoc(ActionMapping mapping, ActionForm form, HttpServletRequest request,
@@ -506,12 +506,12 @@ public class IacucProtocolActionsAction extends IacucProtocolAction {
         if (attachment == null) {
             LOG.info("The attachment was not found for protocolAction: " + actionIndex + ", protocolSubmissionDoc: " + attachmentIndex);
             // may want to tell the user the selection was invalid.
-            return mapping.findForward(Constants.MAPPING_BASIC);
+            return mapping.findForward(getProtocolHistoryForwardNameHook());
         }
 
         getBusinessObjectService().delete(attachment);
 
-        return mapping.findForward(Constants.MAPPING_BASIC);
+        return mapping.findForward(getProtocolHistoryForwardNameHook());
     }
 
     /**
