@@ -76,6 +76,7 @@ public class ProposalDevelopmentConstants {
         public static final String KEY_PERSON_CERTIFICATION_SELF_CERTIFY_ONLY = "KEY_PERSON_CERTIFICATION_SELF_CERTIFY_ONLY";
         public static final String NOTIFY_ALL_CERTIFICATIONS_COMPLETE = "notifyAggregatorWhenAllCertificationsComplete";
         public static final String KEY_PERSON_PROJECT_ROLE = "keyPersonProjectRole";
+        public static final String ALPHABETIZE_ATTACHMENT_TYPES = "alphabetizeAttachmentTypes";
     }
 
     public static class ParameterValues {
@@ -135,6 +136,11 @@ public class ProposalDevelopmentConstants {
         public static final String MAINTAIN_HIERARCHY_EDIT_MODE = "maintainProposalHierarchy";
         public static final String CAN_SAVE_CERTIFICATION = "canSaveCertification";
         public static final String MODIFY_S2S = "modifyS2s";
+    }
+
+    public static class KewConstants {
+
+        public static final String PROPOSAL_DEVELOPMENT_DOCUMENT = "ProposalDevelopmentDocument";
     }
     
     

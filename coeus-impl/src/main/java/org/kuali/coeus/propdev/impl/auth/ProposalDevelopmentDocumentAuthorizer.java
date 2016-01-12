@@ -28,6 +28,7 @@ import org.kuali.coeus.propdev.impl.attachment.NarrativeUserRights;
 import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
 import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentConstants;
 import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentDocument;
+import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentUtils;
 import org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyException;
 import org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyService;
 import org.kuali.coeus.propdev.impl.person.ProposalPerson;
@@ -401,15 +402,47 @@ public class ProposalDevelopmentDocumentAuthorizer extends KcKradTransactionalDo
     }
     
     protected boolean canSaveCertification(ProposalDevelopmentDocument document, Person user) {
-        for(ProposalPerson person : document.getDevelopmentProposal().getProposalPersons()) {
-            if (getProposalDevelopmentPermissionsService().hasCertificationPermissions(document, user, person)) {
-                return true;
-            }
-        }
-
+    	if(isProposalStateEditableForCertification(document.getDevelopmentProposal())) {
+    		if (document.getDevelopmentProposal().getProposalPersons().stream()
+    				.filter(person -> getProposalDevelopmentPermissionsService().hasCertificationPermissions(document, user, person))
+    				.anyMatch(person -> true)) { 
+    			return true; 
+    		}    		
+    	}
         return false;
     }
+    
+    protected boolean canViewCertification(ProposalDevelopmentDocument document, Person user) {
+    	return getKcAuthorizationService().hasPermission(user.getPrincipalId(), document, PermissionConstants.VIEW_CERTIFICATION);
+    }
 
+    protected boolean isProposalStateEditableForCertification(DevelopmentProposal developmentProposal) {
+    	return getProposalStatesEditableForCertification().contains(developmentProposal.getProposalStateTypeCode());
+    }
+    
+    protected Set<String> getProposalStatesEditableForCertification() {
+        Set<String> proposalStates = new HashSet<String>();
+        if(isCertificationRequiredOnlyBeforeApproval()) {
+        	proposalStates.add(ProposalState.IN_PROGRESS);
+        	proposalStates.add(ProposalState.REVISIONS_REQUESTED);
+        	proposalStates.add(ProposalState.APPROVAL_PENDING);
+        	proposalStates.add(ProposalState.APPROVAL_PENDING_SUBMITTED);
+        }else {
+        	proposalStates.add(ProposalState.IN_PROGRESS);
+        	proposalStates.add(ProposalState.REVISIONS_REQUESTED);
+        }
+        return proposalStates;
+    }
+   
+    protected boolean isCertificationRequiredOnlyBeforeApproval() {
+        String keyPersonCertDefferalParam =  ProposalDevelopmentUtils.getProposalDevelopmentDocumentParameter(ProposalDevelopmentUtils.KEY_PERSON_CERTIFICATION_DEFERRAL_PARM);
+        if(keyPersonCertDefferalParam.equalsIgnoreCase(ProposalDevelopmentConstants.ParameterValues.KEY_PERSON_CERTIFICATION_BEFORE_APPROVE)) {
+        	return true;
+        }else {
+        	return false;
+        }
+    }
+    
     protected boolean isAuthorizedToReplaceNarrative(Narrative narrative, Person user) {
         final ProposalDevelopmentDocument pdDocument = (ProposalDevelopmentDocument) narrative.getDevelopmentProposal().getDocument();
 
@@ -606,14 +639,11 @@ public class ProposalDevelopmentDocumentAuthorizer extends KcKradTransactionalDo
         final ProposalDevelopmentDocument pdDocument = ((ProposalDevelopmentDocument) document);
         return pdDocument.getDocumentHeader().hasWorkflowDocument() && pdDocument.getDocumentHeader().getWorkflowDocument().isEnroute()
                 && getKcAuthorizationService().hasPermission(user.getPrincipalId(), pdDocument, PermissionConstants.RECALL_DOCUMENT)
-                && !isRevisionRequested(pdDocument.getDevelopmentProposal().getProposalState());
+                && !isRevisionRequested(pdDocument.getDevelopmentProposal().getProposalStateTypeCode());
     }
 
-    protected boolean isRevisionRequested(ProposalState proposalState) {
-        if (proposalState != null){
-            return StringUtils.equalsIgnoreCase(proposalState.getDescription(), ProposalStateConstants.REVISION_REQUESTED);
-        }
-        return false;
+    protected boolean isRevisionRequested(String code) {
+        return StringUtils.equalsIgnoreCase(code, ProposalState.REVISIONS_REQUESTED);
     }
 
     protected boolean isAuthorizedToRejectProposal(Document document, Person user) {
@@ -842,7 +872,7 @@ public class ProposalDevelopmentDocumentAuthorizer extends KcKradTransactionalDo
              * and the user has the require permission.
              */
 
-           final boolean hasBeenRejected = proposal.getProposalState().getCode().equals(ProposalState.REVISIONS_REQUESTED);
+           final boolean hasBeenRejected = ProposalState.REVISIONS_REQUESTED.equals(proposal.getProposalStateTypeCode());
 
             hasPermission = !pdDocument.isViewOnly() &&
                     getKcAuthorizationService().hasPermission(user.getPrincipalId(), pdDocument, PermissionConstants.MODIFY_PROPOSAL) &&

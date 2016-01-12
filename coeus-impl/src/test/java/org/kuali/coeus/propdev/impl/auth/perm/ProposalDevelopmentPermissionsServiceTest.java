@@ -19,6 +19,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
     public static boolean CUSTOM_DATA_ENFORCED = true;
     public static boolean SPONSOR_REQUIRED = true;
     public static boolean EXEMPT_ADDRESSBOOK_MULTI_PI_CERT = true;
+    public static boolean EXEMPT_ADDRESSBOOK_KP_CERT = true;
 
     String USER_ID = "100";
 
@@ -55,6 +56,11 @@ public class ProposalDevelopmentPermissionsServiceTest {
         public boolean isAddressBookMultiPiCertificationExempt(ProposalPerson proposalPerson) {
         	return EXEMPT_ADDRESSBOOK_MULTI_PI_CERT;
         }
+        
+        @Override
+        public boolean isKeyPersonRoleExempt(ProposalPerson proposalPerson) {
+        	return EXEMPT_ADDRESSBOOK_KP_CERT;
+        }
 
     }
 
@@ -71,7 +77,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         ProposalPerson pi = new ProposalPersonTestImpl();
         pi.setPersonId(USER_ID);
         pi.setProposalPersonRoleId(PropAwardPersonRole.PRINCIPAL_INVESTIGATOR);
-        boolean canCertify = permissionService.canCertify(USER_ID, pi, true, false);
+        boolean canCertify = permissionService.canCertify(USER_ID, pi, false);
         Assert.assertTrue(canCertify);
     }
 
@@ -90,7 +96,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         proxy.setProposalPersonRoleId(PropAwardPersonRole.PRINCIPAL_INVESTIGATOR);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
-        boolean canCertify = permissionService.canCertify(USER_ID, proxy, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(USER_ID, proxy, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -102,7 +108,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         coi.setProposalPersonRoleId(PropAwardPersonRole.CO_INVESTIGATOR);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = false;
-        boolean canCertify = permissionService.canCertify(USER_ID, coi, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(USER_ID, coi, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -114,7 +120,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         mpi.setProposalPersonRoleId(PropAwardPersonRole.MULTI_PI);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = false;
-        boolean canCertify = permissionService.canCertify(USER_ID, mpi, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(USER_ID, mpi, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -126,7 +132,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         mpi.setProposalPersonRoleId(PropAwardPersonRole.PRINCIPAL_INVESTIGATOR);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -138,7 +144,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         mpi.setProposalPersonRoleId(PropAwardPersonRole.CO_INVESTIGATOR);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -150,34 +156,9 @@ public class ProposalDevelopmentPermissionsServiceTest {
         mpi.setProposalPersonRoleId(PropAwardPersonRole.MULTI_PI);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
-
-    @Test
-    public void testCanPiCertifyForCoI() throws Exception {
-        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
-        ProposalPerson mpi = new ProposalPersonTestImpl();
-        mpi.setPersonId(USER_ID);
-        mpi.setProposalPersonRoleId(PropAwardPersonRole.CO_INVESTIGATOR);
-        boolean isLoggedInUserPi = true;
-        boolean canProxyCertify = false;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, isLoggedInUserPi, canProxyCertify);
-        Assert.assertTrue(canCertify);
-    }
-
-    @Test
-    public void testCanPiCertifyForMpi() throws Exception {
-        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
-        ProposalPerson mpi = new ProposalPersonTestImpl();
-        mpi.setPersonId(USER_ID);
-        mpi.setProposalPersonRoleId(PropAwardPersonRole.MULTI_PI);
-        boolean isLoggedInUserPi = true;
-        boolean canProxyCertify = false;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, mpi, isLoggedInUserPi, canProxyCertify);
-        Assert.assertTrue(canCertify);
-    }
-
 
     @Test
     public void testCanExemptKeyPersonCertify() throws Exception {
@@ -188,7 +169,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         kp.setProjectRole(POSTDOC);
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = false;
-        boolean canCertify = permissionService.canCertify(USER_ID, kp, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(USER_ID, kp, canProxyCertify);
         Assert.assertFalse(canCertify);
     }
 
@@ -202,7 +183,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
         CUSTOM_DATA_ENFORCED = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -216,7 +197,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
         CUSTOM_DATA_ENFORCED = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -231,7 +212,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean canProxyCertify = true;
         CUSTOM_DATA_ENFORCED = false;
         SPONSOR_REQUIRED = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -246,7 +227,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean canProxyCertify = false;
         CUSTOM_DATA_ENFORCED = false;
         SPONSOR_REQUIRED = true;
-        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(LOGGED_IN_USER_ID, kp, canProxyCertify);
         Assert.assertFalse(canCertify);
     }
 
@@ -261,7 +242,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean canProxyCertify = false;
         CUSTOM_DATA_ENFORCED = false;
         SPONSOR_REQUIRED = false;
-        boolean canCertify = permissionService.canCertify(USER_ID, kp, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(USER_ID, kp, canProxyCertify);
         Assert.assertFalse(canCertify);
     }
     
@@ -281,7 +262,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean isLoggedInUserPi = false;
         boolean canProxyCertify = true;
         EXEMPT_ADDRESSBOOK_MULTI_PI_CERT=false;
-        boolean canCertify = permissionService.canCertify(USER_ID, proxy, isLoggedInUserPi, canProxyCertify);
+        boolean canCertify = permissionService.canCertify(USER_ID, proxy, canProxyCertify);
         Assert.assertTrue(canCertify);
     }
 
@@ -292,6 +273,7 @@ public class ProposalDevelopmentPermissionsServiceTest {
         keyPerson.setPersonId(USER_ID);
         keyPerson.setProposalPersonRoleId(PropAwardPersonRole.KEY_PERSON);
         keyPerson.setProjectRole(POSTDOC);
+        EXEMPT_ADDRESSBOOK_KP_CERT = true;
         boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
         Assert.assertFalse(needsToCertify);
     }
@@ -358,6 +340,24 @@ public class ProposalDevelopmentPermissionsServiceTest {
         boolean needsToCertify = permissionService.doesPersonRequireCertification(keyPerson);
         Assert.assertTrue(needsToCertify);
     }
-
-
+    
+    @Test
+    public void testCanCertifyAddressBookPersonWithKeyPersonRoleAndNotExempt() throws Exception {
+        class ProposalRolodexPersonTestImpl extends ProposalPerson {
+            @Override
+            public KcPerson getPerson() {
+                return null;
+            }
+        }
+        ProposalDevelopmentPermissionsServiceTestImpl permissionService = new ProposalDevelopmentPermissionsServiceTestImpl();
+        ProposalPerson keyPerson = new ProposalRolodexPersonTestImpl();
+        keyPerson.setPersonId(USER_ID);
+        keyPerson.setProposalPersonRoleId(PropAwardPersonRole.KEY_PERSON);
+        EXEMPT_ADDRESSBOOK_KP_CERT = false;
+        boolean isLoggedInUserPi = false;
+        boolean canProxyCertify = true;
+        boolean needsToCertify = permissionService.canCertify(USER_ID, keyPerson, canProxyCertify);
+        Assert.assertTrue(needsToCertify);
+    }
+    
 }

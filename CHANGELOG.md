@@ -1,6 +1,851 @@
 
 
 ##CURRENT
+* No Changes
+
+
+##coeus-1512.92
+* PD - PI can proxy certify other personnel from within
+  * proposal on key Personnel screen.
+  * user kdenutte created pd 30474 with PI mjcima. Logged out closed
+  * browser.
+  * Backdoor logged in as mjcima, searched for pd, opened in view mode. 
+  * Navigated to Key Personnel, expanded Key Person details of KP, Holden,
+  * and was able to proxy answer the cert questions for holden.
+  * Derived role for PI Certify should not include proxy permission.
+  * vineeth on Wed, 30 Dec 2015 14:17:55 -0500 [View Commit](../../commit/80195fe4b9468cd5eb96cf69923b9bd20c6deb86)
+
+##coeus-1512.91
+* No Changes
+
+
+##coeus-1512.90
+* PD: Aggregator cannot send Notification to Key Personnel to
+  * certify.
+  * In MIT QA Weekly instance (version 1512.82), if I am logged in as myself
+  * (kmann), and create a proposal, I have the ability to use either "Notify
+  * All" or "Notify (individual)" to send the certification requests to
+  * those who must certify. But, when I am backdoor logged in as an
+  * Aggregator in the Department, I only have the "Notify All" button
+  * available, and when I access this, I am unable to send the certification
+  * request. I believe this may be related to the fix that was done for
+  * RESMER-415.
+  * Steps to reproduce issue (this was in PD #30536):
+  * 1) Backdoor login as Aggregator in Department (I used "coombs")
+  * 2) Create Proposal - enter basic proposal information, then click on
+  * Save and Continue
+  * 3) Go to Key Personnel section - add person (I added Carol Wood as
+  * PI/Contact), click on Save
+  * 4) Aggregator only has "Notify All" button available - there is no
+  * "Notify (individual)" button available
+  * 5) Click on "Notify All" button and window opens - I can see Carol Wood,
+  * but when I try to select her, I have the red circle with the line
+  * through it)
+  * 6) Exit proposal, and logout as "coombs"
+  * 7) Logged in as "kmann", go into PD #30536 in edit mode
+  * 8) Add myself as "Aggregator" in Access section of proposal, click Save
+  * and Continue
+  * 9) Go to Key Personnel section - as "kmann", I have neither the "Notify
+  * All" button, or the "Notify (individual)" buttons available.
+  * When I am logged in as myself (kmann) and create proposal (PD #30535),
+  * then add Key Personnel, I have both "Notify All" and "Notify
+  * (individual)" buttons available, and I am able to send the certification
+  * request.
+  * vineeth on Tue, 29 Dec 2015 11:54:27 -0500 [View Commit](../../commit/5b614deafa796b00c491d0eb879137adc3147962)
+
+##coeus-1512.89
+*  adding null check for closeout dates while printing award modification
+  * Geo Thomas on Mon, 28 Dec 2015 13:35:18 -0500 [View Commit](../../commit/0a24a4ddb2c5f942a60303645fb9217b167e1bdb)
+
+##coeus-1512.88
+* No Changes
+
+
+##coeus-1512.87
+* Print > Sponsor form Packages > all Generic & Sponsor forms cause STE (when address book Key Persons?)
+  * From proposal > Print > Sposnor Forms, try to print any generic or NIH print form and receive STE:
+  * Error Message:
+  * Stacktrace (only in dev mode)
+  * java.lang.IllegalArgumentException: Failed to locate a valid relationship from class org.kuali.coeus.propdev.impl.person.ProposalPerson with the given relationship name 'rolodex' at org.kuali.rice.krad.data.provider.impl.DataObjectWrapperBase.findAndValidateRelationship(DataObjectWrapperBase.java:1006) at org.kuali.rice.krad.data.provider.impl.DataObjectWrapperBase.fetchRelationship(DataObjectWrapperBase.java:718) at
+  * Rolodex is fetched. There is no relationship set.
+  * rmancher on Wed, 23 Dec 2015 17:13:02 -0500 [View Commit](../../commit/69356ce74ee45f8b8860efe4fc0f6794a356e510)
+* Subaward: Last Update field in the Document Header does not display the correct Username once the Subaward Document is in Final status
+
+  * In the Subaward Document Header, the Last Update field displays the wrong username (of the user that made the update/change) when the document status is set to 'FINAL'. Instead, the system displays user 'kr' as the one who made the Last Update. When the Document is in 'SAVED' status the correct user name displays.
+  * Joe Williams on Wed, 23 Dec 2015 13:30:48 -0600 [View Commit](../../commit/56f2b78d4a40415d3c2fe3092441b01e0c75e3e7)
+
+##coeus-1512.86
+*  Addding NO_FIELD attribute to messageKeyMap to display message properly
+  * Geo Thomas on Wed, 23 Dec 2015 14:11:23 -0500 [View Commit](../../commit/1ec4ae2dda56914744db83914db3835598038866)
+* IRB - Duplication of Review Comments in Minutes
+  * In IRB protocol minutes are duplicated while generating minutes through schedule/minutes actions.
+  * Steps to reproduce.
+  * 1. Create protocol, submit to a schedule, add review comments and perform expedited approval
+  * 2. Create amendment 1, submit to same schedule, add review comments and perform expedited approval
+  * 3. Create amendment 2, submit to same schedule, add review comments and perform expedited approval
+  * 4. View above schedule and generate minutes.
+  * Review comments are duplicated for both amendments.
+  * Now that we have versioned schedule minutes, we need to look at the original protocol and corresponding submission number to display the minutes.
+  * Same fix is applied to IACUC.
+  * rmancher on Wed, 23 Dec 2015 12:52:59 -0500 [View Commit](../../commit/3c822a1c359691e42e20c6d5dd330de66ea69a3c)
+
+##coeus-1512.85
+*  display active award sponsor name on subaward funding source
+  * Joe Williams on Wed, 23 Dec 2015 09:56:13 -0600 [View Commit](../../commit/545cc96f0e19dfb40508d769bb1a29f5044b93b1)
+
+##coeus-1512.84
+* No Changes
+
+
+##coeus-1512.83
+* get sequence number from subaward table using dao
+  * Joe Williams on Tue, 22 Dec 2015 15:39:38 -0600 [View Commit](../../commit/73f4167612dc7d5e42eefa770c7a7518e260ffdb)
+*  Subaward: System generates wrong Subaward version numbers when not the latest Subaward Document is selected to be edited.
+
+  * The system is not generating the Subaward Versions correctly. If, for example, my Subaward has 4 Versions and I open and edit the Subaward Document that corresponds to Version 1 (searching for it in the doc search). The system will assign the new Subaward Document version 2 as opposed to version 5. It's assigning the next version number from the Document opened and not the next version number in the whole sequence. This is also causing the system to create duplicate/multiple Subawards with the same Subaward ID.
+  * Joe Williams on Tue, 22 Dec 2015 14:19:23 -0600 [View Commit](../../commit/1a617c1ef1ee3af316a28a76b818ca25e19c245c)
+
+##coeus-1512.82
+* Fix IACUC protocol actions
+  * rmancher on Tue, 22 Dec 2015 18:15:40 -0500 [View Commit](../../commit/e687fedc6352762ba3ad14a8501660d8a780c1e0)
+
+##coeus-1512.81
+* Fix integration test
+  * rmancher on Tue, 22 Dec 2015 15:03:41 -0500 [View Commit](../../commit/9665036b24f17d7a4a0e6766f2ca803409909ca2)
+* STE - PD - Trying to Print various Budget Print Reports of Approved and Submitted PDs
+  * Joe Williams on Tue, 22 Dec 2015 12:58:28 -0600 [View Commit](../../commit/f9bc76171c7b3b65b0fa85a857a0568eb0b290d0)
+* Protocol Performance Issue
+  * Protocols take excessive time to open.
+  * To reproduce, just search for a protocol and either "Edit" it or "View" it.
+  * Minor tweaks to adjust the initialization depending on the tab invoked.
+  * Form initialization is invoked while accessing each tab and all tab helpers are
+  * initialized each time. Moving it to invoke when required - depending on the tab accessed.
+  * Protocol actions tab is packed with permissions and validations. We need this only when
+  * user navigate to actions tab.
+  * Also questionaire data is persisted each time navigating to actions tab. For printing purpose
+  * we need to save the default questionnaire once irrespective of whether user accessed questionnaire tab or not.
+  * Adding a check to persist the default once.
+  * There is more to this. We need to look at what is required for Actions and History tab.
+  * Just started with that process but it is not complete. Currently it is the same as before
+  * where we initialize all permissions and helpers for both Actions and History irrespective of its usage.
+  * Just want to get this out for review.
+  * rmancher on Thu, 17 Dec 2015 14:55:34 -0500 [View Commit](../../commit/aaf1342068c2f393d21bc0db34f456ea2a1b30d5)
+
+##coeus-1512.80
+* clean up code
+  * Joe Williams on Tue, 22 Dec 2015 10:32:49 -0600 [View Commit](../../commit/6fc063a4a5b0ccb785d14c296333eb918a62d1eb)
+* Subaward: Funding Source panel does not reflect information as it is updated in the Award.
+
+  * I noticed that the Funding Source panel > Current Funding Sources subpanel in the Subaward tab does 'refresh' the information from the most recent Award Version (instead the info is static). Also, when a user clicks the Open award link (in the Funding Source panel of Subaward tab), the system opens up the Award Version document that was available at the time this award was added to the Funding Source panel of the Subaward Document and NOT the latest finalized Award Version that is available in the system now.
+  * Joe Williams on Tue, 22 Dec 2015 09:51:15 -0600 [View Commit](../../commit/0abb7fb558ea7febbd46d43fd3ebcbd475b8da50)
+
+##coeus-1512.79
+* Merge PD > S2S Opportunity > Forms: For Approved and Submitted
+  * Migrated Proposals, Create PDF prints form but does NOT print any
+  * attachments.
+  * PD > S2S Opportunity > Forms: For Approved and Submitted Migrated
+  * Proposals, Create PDF prints form but does NOT print any attachments.
+  * Any migrated Coeus proposal in Approved and Submitted status that was
+submitted to Grants.gov - when you open in KC and select the Create PDF
+  * option for any form, the form prints but the pdf does not include any
+  * attachments. This seems to be true for ALL forms and all attachment
+  * types.
+  * It does include attachments when printing for proposals that were NOT
+  * migrated from Coeus.
+  * See for example PD 25607 (in either KC Wkly or KC Production)
+  * One example of why this is needed to be fixed is sponsor requests for
+  * copies of the proposal materials submitted to grants.gov (including
+  * print of forms and attachments). The KC electronic proposal is the
+system of record for this.
+  * NOTE: Some migrated "Submitted" proposals from Coeus have the status of
+  * "Approval Granted" in KC. This status for migrated proposals also is not
+  * printing the attachments for the G.gov forms. See for example PD 23373
+  * MITKC 2096  * vineeth on Mon, 21 Dec 2015 18:28:12 -0500 [View Commit](../../commit/b6b02f3fbeee539d032f9a4dce0f2a92055dbcb5)
+
+##coeus-1512.78
+* No Changes
+
+
+##coeus-1512.77
+* Resubmission options dialog is read only when accessing proposals from proposal search (not doc search)
+
+  * Steps:
+
+  * 1.) Create Proposal with type 'Renewal'
+  * 2.) submit proposal.
+  * 3.) take proposal threw final approval
+  * 4.) open with view link from proposal search (not doc search)
+  * 5.) try to submit to sponsor
+  * 6.) dialog pops up with no options.
+  * Joe Williams on Mon, 21 Dec 2015 15:00:47 -0600 [View Commit](../../commit/b56ea69264af20fc33296f3a11b00a6eb6bc5ad6)
+
+##coeus-1512.76
+* No Changes
+
+
+##coeus-1512.75
+* No Changes
+
+
+##coeus-1512.74
+* PD: Attachments: STE after clicking the [Save] button in the Attachment Details window
+  * STE when I go to the Detail of an Attachment and click the [Save] button (happens in all attachments: Proposal, Personnel, Internal)
+  * Steps to Reproduce:
+  * 1. Create a Proposal with min. info to save
+  * 2. Navigate to the Attachments section and upload an attachment in the Proposal tab (or Personnel or Internal)
+  * 3. Once the attachment is added, click the [Details] button for that attachment
+  * 4. In the Details window that opens, click the [Save] button (without selecting a New File). The following STE should appear; (it appears as though the system is looking for a new file because if I search for a new file and click the [save] button the STE does not come up - users should be able to update that window without selecting/re-selecting the file):
+  * Fixing issue for Detail as well as new attachments.
+  * STE when attachment is not selected for new attachment options where as detail is expecting to add a new
+  * attachment even though one already exist.
+  * Also fixing dialog issue with validation and close.
+  * rmancher on Fri, 18 Dec 2015 16:58:00 -0500 [View Commit](../../commit/3c2b46fd05ae936f3eea3c2b21c02acf776e2746)
+*  Proposal Budget: changing proposal date after completing budget can cause data to get corrupted
+
+  * Steps:
+
+  * 1.) create proposal with start date 01/01/2016 and end date 01/01/2017
+  * 2.) create and complete budget
+  * 3.) change proposal end date to 12/31/2016
+  * 4.) close and return to proposal (something about this resets budget start end dates to proposals, but doesn't change the period)
+  * 5.) submit proposal
+  * 6.) submit to sponsor - get error about initial end date being after total end date
+  * Joe Williams on Mon, 21 Dec 2015 11:08:24 -0600 [View Commit](../../commit/106d6ce3b113a4fa8769d9f6e9074a785d286279)
+* Fix term spec
+  * Unable to open proposal due to incorrect term spec - at MIT
+  * Stacktrace (only in dev mode)
+  * org.kuali.rice.krms.api.engine.TermResolutionException: Unable to plan the resolution of Term([sumUnderrecoveryAmountFromPeriods]) [TermResolver=null, parameters={}] at org.kuali.rice.krms.framework.engine.TermResolutionEngineImpl.resolveTerm(TermResolutionEngineImpl.java:121) at org.kuali.rice.krms.framework.engine.BasicExecutionEnvironment.resolveTerm(BasicExecutionEnvironment.java:100) at
+  * This property does not exist in budget. It still has reference to old properties
+  * Reverting it.
+  * rmancher on Mon, 21 Dec 2015 12:17:12 -0500 [View Commit](../../commit/34ede5f31b2b8b8af243a70acacec3428113fafd)
+
+##coeus-1512.73
+*  remove delete attachment button from readOnly awards
+
+  * Multiple reports from PI's that there is a "delete" button in their "read only" view of awards.
+  * Joe Williams on Mon, 21 Dec 2015 09:30:30 -0600 [View Commit](../../commit/c930cc30748954c301ef2dcb97edfc7b9c80b8c7)
+
+##coeus-1512.72
+* PD - Aggregator should not be able to proxy certify for
+  * proposal personnel.
+  * user kdenutte in MITKC qa pd 30447 added atat as Aggregator Document
+  * Level then logged out closed browser.
+  * Backdoor logged in as atat searched for 30447 and on Key Personnel
+screen was able to answer proposal certification questions for Key
+  * Person, Hammond.
+  * In Roles I find "Proposal Proxy Certify" showing only three users
+  * assigned, rhanlon, aeh and sdowdy but not atat. 
+  * In Permissions I find "Certify" is contained in derived roles for
+  * investigator and other central admin roles but no departmental
+  * users/aggregators are assigned to any of those roles nor should they
+  * have derived role.  * vineeth on Fri, 18 Dec 2015 18:07:39 -0500 [View Commit](../../commit/1d17c2ac9bb1eb065e6ec8e1c9c5713facc68ada)
+* PD - Key Personnel Modals Notify All and COI Disclosure Status
+  * must only display personnel required to certify.
+  * Currently, when the COI Disclosure Status feature is enabled, _all _key
+  * personnel are listed in the Disclosure Status window. This case is to
+  * update the COI Disclosure Status window and restrict the listed persons
+  * to _only _those key persons that are required to disclose. This update
+  * will better convey locally implemented Conflict of Interest compliance
+  * policy and procedure as maintained via the COI Hierarchy, the
+  * keypersonprojectrole parameter, RESKC-972 which will exempt
+  * non-personnel Multiple PI, or the parameter to exempt ALL address book
+  * non-personnel, if enabled.  * vineeth on Thu, 17 Dec 2015 17:48:53 -0500 [View Commit](../../commit/78d37f44e24c63145ff77ff1335097879ecafb1f)
+
+##coeus-1512.71
+* Correcting autocalculate period stack trace exception
+
+  * When there are multiple years and at least one person line item and multiple non-personnel costs the follow stack trace occurs when autocalculate periods is initiated.
+
+  * java.util.ConcurrentModificationException
+  * at java.util.Vector$Itr.checkForComodification(Vector.java:1184)
+  * at java.util.Vector$Itr.next(Vector.java:1137)
+  * at org.eclipse.persistence.indirection.IndirectList$1.next(IndirectList.java:618)
+  * at org.kuali.coeus.common.budget.impl.summary.BudgetSummaryServiceImpl.generateAllPeriods(BudgetSummaryServiceImpl.java:159)
+  * blackcathacker on Tue, 15 Dec 2015 15:53:57 -0800 [View Commit](../../commit/12d5318b99021674855b4d19e1af36ced8ac8ba1)
+* Add new synthetic key to institute rates to replace the composite key
+
+  * Move simple rest endpoints and DTOs to use the new common rest controller
+  * blackcathacker on Tue, 15 Dec 2015 10:42:59 -0800 [View Commit](../../commit/793154fe2db9ca55a684b2cec31041b5c3032479)
+
+##coeus-1512.70
+* No Changes
+
+
+##coeus-1512.69
+* No Changes
+
+
+##coeus-1512.68
+* Award - Template sync with reports - partial screen reload -hidden STE
+  * Syncing report terms from a template to some accounts is causing the page to partially reload, then we get errors when trying to further navigate.
+  * Exception - Index out of bound.
+  * Total report term items changed during sync and we need to initialize report tracking beans to match
+  * total report items.
+  * rmancher on Mon, 14 Dec 2015 14:55:12 -0500 [View Commit](../../commit/d3a6e8b2fad8297754165609f4e2dd5cbd65f7e9)
+
+##coeus-1512.67
+* No Changes
+
+
+##coeus-1512.66
+* No Changes
+
+
+##coeus-1512.65
+* No Changes
+
+
+##coeus-1512.62
+* only send coi required noticiation if prop person coi flag is on
+  * Joe Williams on Fri, 11 Dec 2015 13:29:04 -0600 [View Commit](../../commit/bae8a479317738a98b8601fb41ba175923bfe5be)
+* Certification question are not locked while enroute
+  * The key person certifications are editable while the proposal is enroute, the document should be view only while enroute unless the feature for enroute certification is enabled and even then only the key person themselves should be able to edit.
+  * Fix is to refer to KEY_PERSON_CERTIFICATION_DEFERRAL parameter to decide the proposal states that will enable
+  * certification questions.
+  * rmancher on Fri, 11 Dec 2015 14:10:27 -0500 [View Commit](../../commit/516c519e0471434df92f7b60508845fa5c01b652)
+
+##coeus-1512.61
+*  PD - Notification null to PI after certification questions completed
+  * Joe Williams on Fri, 11 Dec 2015 11:19:59 -0600 [View Commit](../../commit/809c34ee23be604969a94ab00ad40a72ac8056d1)
+* PD - Exempt Address Book person PI/Multiple from certification
+  * & notification.
+  * MIT requires some non-employees to participate in the system to perform
+  * the proposal person certification. The parameter to exempt identified
+  * key person roles is utilized to manage excluding those identified Key
+  * Persons. Another solution is required to exempt non-employee/address
+  * book persons added as the Proposal Role of PI/Multiple.
+  * Per MIT compliance policy and procedure, proposal persons added to a
+  * proposal via Non-Employee search (address book) and given the role of
+  * PI/Multiple are exempt from the proposal person certification process.
+  * Therefore, If the proposal role is PI/Multiple and the person is a
+  * Non-Employee/ address book, 
+  * THEN:
+  * do not present the proposal person certification questionnaire
+  * do not display certification status in the role header row
+  * do not have a 'notify' option button in the role header row
+  * do not include this proposal person in the "notify all' option in the
+  * COI Disclosure Status window.
+  * DO show 'Not Required" as the certification status in the COI Disclosure
+  * Status window
+  * The behavior should be the same as that of the parameterized Key Persons
+  * exemption (KeyPersonProjectRole), but used for the assigned proposal
+  * role of PI/Multiple.
+  * Providing this as a parameter option is appropriate to allow other
+  * implementers to include or exempt, as determined by their local policy.
+  * Suggested name: EXEMPT_ADDRESSBOOK_MULTI-PI_CERT
+  * vineeth on Thu, 10 Dec 2015 18:49:32 -0500 [View Commit](../../commit/2ae05460fbd58040f39bb6ae7379658ee71274db)
+
+##coeus-1512.60
+* PD Budget Version > Action > Print > Budget Cumulative Report
+  * printing formatting/subtotal & total display issues.
+  * The printed report for Cumulative budget is not well formatted in KC.
+  * The MIT Coeus version has been uploaded to compare and contrast to the
+  * KC version. It would benefit end users if the print format could be
+  * restored to match the MIT Coeus grouping on this report output.
+  * PD Budget Version > Action > Print > Budget Cumulative Report printing
+  * formatting/subtotal & total display issues
+  * 1) The Budget Cumulative Report currently has a major display issue that
+  * needs to be fixed for the Personnel section of the report. 
+  * The report should display each Personnel Budget Category header once,
+  * with multiple entries (one for each person per period entry in KC
+  * budget) listed under it, followed by a single (sub)total calculation for
+  * all budget entries using that personnel category. 
+  * The report is currently printing with a unique Personnel Budget Category
+  * header for each budget period instead of grouping.
+  * See the uploaded pdf attachment example (KC PD 28061) : 
+  * This budget contains a single Graduate Student and a single Senior
+  * Personnel entry for each budget period on a 5 year budget. 
+  * Rather than two headings & subtotals – one each for Graduate Students
+  * and Senior Personnel – the personnel section has 5 of each, and in no
+  * place is the "Total Graduate Students" or "Total Senior Personnel"
+  * calculated for the cumulative budget period. 
+  * In the pdf "KC PD 28061" The Personnel Headings and totals that should
+  * remain are highlighted in green. All individual personnel entries should
+  * be grouped under these.
+  * For comparison, see pdf from Coeus Production, where grouping & totals
+  * under personnel category headings is correct. (Coeus PD 00022845)
+  * 2) The formatting needs to be corrected so that the line separating
+  * Proposal info from start of budget report does is above the budget
+  * report column headers and does not run through them.
+  * 3) The Proposal Info at top of report – "Project" should instead be
+  * labeled "Project Period" or just "Period"
+  * 4) Formatting needs to be corrected so that longer Proposal Titles wrap
+  * rather than extend beyond end of page and are cut off. See screenshot
+  * "Long Title cut off"
+  * MITKC 2210
+  * vineeth on Fri, 11 Dec 2015 11:34:55 -0500 [View Commit](../../commit/51c8817094bbfbd263ffdf372f5563a5db052584)
+
+##coeus-1512.59
+* No Changes
+
+
+##coeus-1512.58
+* Proposal Log Permament -> Temporary merge bug fix
+
+  * Fixing a bug whereby in some cases a new permament proposal log would not prompt to merge with qualifying temporary proposal logs.
+  * blackcathacker on Thu, 10 Dec 2015 18:18:08 -0800 [View Commit](../../commit/596062c151797646de121ebfae85d37202498e2e)
+
+##coeus-1512.57
+*  PD - In Progress Proposal not yet submitted for review showing status Revisions Requested
+  * Joe Williams on Thu, 10 Dec 2015 13:09:44 -0600 [View Commit](../../commit/c188692f255f2d5893b2dd06fa1323a42ba95ab7)
+
+##coeus-1512.56
+*  Re-enable delivery info for s2s submissions.
+  * Gayathri Athreya on Thu, 10 Dec 2015 13:03:00 -0700 [View Commit](../../commit/63ddd6e230c3559753c723239628776de12ba418)
+
+##coeus-1512.55
+* No Changes
+
+
+##coeus-1512.54
+* Adding integration tests for underrecovery calculations.
+  * Gayathri Athreya on Mon, 7 Dec 2015 10:10:26 -0700 [View Commit](../../commit/9f11fb9b3a908ac3a54e4a8c96473231871eeac3)
+
+##coeus-1512.53
+* PD - include lookup for investigator and OSP administrator in award search criteria
+  * This is part of fix required for RESMER-89 where MIT has configured relationship for investigator and OSP administrator
+  * fields used in search criteria. Merging that code to base in this PR.
+  * KRAD is building inquiry on full name. RESMER-89 fix is to disable auto inquiry on this field.
+  * RESMER-89 indicates - Production and QA users are unable to search and select an Award ID from the Proposal > Details screen.
+  * This conditional field appears for certain submission types, example: Renewal.
+  * Create or edit a Proposal Development document.
+  * Select Proposal Type = Renewal
+  * Fill in the required fields for saving if a new proposal and Save.
+  * In the Details screen, use the search icon on the Award ID field.
+  * Result: when the modal window appears on screen, the search does not function:
+  * An STE fills the modal screen
+  * rmancher on Wed, 9 Dec 2015 16:32:04 -0500 [View Commit](../../commit/642977f1bb121d3e4c66a19c039c4c8dfbe1c02b)
+
+##coeus-1512.52
+* No Changes
+
+
+##coeus-1512.51
+* No Changes
+
+
+##coeus-1512.50
+*  Reject workflow changes.
+  * As a proposal user, I often add several aggregators to a proposal so multiple users can complete their assigned tasks. When a proposal is submitted to routing by one aggregator, if rejected for correction, the aggregator that submitted the proposal is now automatically added to the workflow and must approve the document before it commences with the expected routing. This is not the desired routing path.
+  * Alternate common scenario: As a support person, I am frequently an added aggregator to 'problem' proposals to aid in preparation and submission. If the proposal get's submitted, I am automatically added as an approver when I should not be.
+  * Steps to reproduce:
+  * As User A: example (rhanlon)
+  * Create a proposal with all the required information to submit to routing.
+  * On the Access screen, add another Aggregator. (User B: example aslusar)
+  * On the Summary/Submit screen, submit the proposal to routing.
+  * View the Route Log to determine the user at the next stop. (ex. rrabbit)
+  * Close the proposal.
+  * Login as the user identified in the route log. (Ex. rrabbit)
+  * Via the action list, locate the proposal and open it.
+  * Reject the proposal.
+  * Log out as the approver (rrabbit)
+  * Login as User B: ex. aslusar
+search for the proposal used in the example.
+  * On the Summary Submit screen, review the Route Log.
+  * Results:
+  * Notice that User A (ex. rhanlon) is required to approve the proposal because that user submitted the proposal in the first routing session.
+  * Expected Result:
+  * The prior submitter should not be required to approve. ANY aggregator should be able to submit and move the proposal directly into the workflow.
+  * Gayathri Athreya on Wed, 9 Dec 2015 16:09:28 -0700 [View Commit](../../commit/827ff9a2eb94631a90fe4ff46a78bbdb7f428aab)
+
+##coeus-1512.45
+*  Fix eraCommonsValidation
+  * As a result of removing the 6-character minimum validation error for the Proposal > Key Personnel > Details > eRA Commons User ID field to support ID's for non-NIH systems, we need to provide a System warning for when the eRA Commons ID field is less than 6 characters for NIH submissions.
+  * Warning message should state: "For NIH proposals, the eRA Commons ID must be a minimum of 6 characters"
+  * We've been advised that Because there this eRA Commons ID field appears for every proposal person, thus not a unique field, this validation may not be easily managed via a KRMS property.
+  * So if there is no KRMS solution, the desired result of this JIRA is to reinstate the system-wide validation for the eRA Commons User ID field at 6 characters, but to make it a WARNING, not an ERROR.
+  * Gayathri Athreya on Wed, 9 Dec 2015 13:49:44 -0700 [View Commit](../../commit/1fae9994da2caeb74c80c1263aefd1bd55bac2cc)
+* Upgrade rice
+  * Fix for person search. Verified RESMER-99 connecting to MIT QA WKLY
+  * Search is now returning appropriate results (person searhc, PD key personnel).
+  * Assuming this will reflect in mit_master when merged so that I don't have
+  * to update same for mit_master.
+  * rmancher on Wed, 9 Dec 2015 15:02:07 -0500 [View Commit](../../commit/f85b03ff5008080edff2151068c2f003d22ef76e)
+
+##coeus-1512.43
+* No Changes
+
+
+##coeus-1512.42
+* Support alphabetizing attachment types in proposal development
+
+  * A new parameter called 'alphabetizeAttachmentTypes' has been added to enable or disable this functionality. Disabled by default which is the previous behavior.
+  * blackcathacker on Wed, 9 Dec 2015 10:48:09 -0800 [View Commit](../../commit/051c1071d992c5ef342f9067e0a4480e0dabfb30)
+* preventing subaward files from returning null in s2s generator code due to strange jpa lazy fetch behavior.  upgrading s2sgen
+  * Travis Schneeberger on Wed, 9 Dec 2015 08:41:34 -0500 [View Commit](../../commit/7d2e99409faebe4326e58e942abfccaa0cc4a692)
+
+##coeus-1512.41
+* Subaward Obligated Fund modifications do not update associated Award record
+
+  * As an Award and Subaward user, I reference the Award module > Subaward where this award is a funding source panel to confirm the funding amount obligated to those records.
+  * Currently, the Award record will successfully update with the initial subaward fund allocation. But successive modifications that alter the funding level of the subaward are not reflected in the award.
+  * Joe Williams on Wed, 9 Dec 2015 09:54:53 -0600 [View Commit](../../commit/8740515dbbbb24c82ad4ce16ee766bde8fb07696)
+
+##coeus-1512.40
+* move fixes to other methods
+  * Joe Williams on Tue, 8 Dec 2015 15:12:44 -0600 [View Commit](../../commit/bd0f7f3ae7e0ff03a4a4658cf9501ef8fd82b7fb)
+*  STE trying to delete address book entry
+
+  * When I tried to delete the address book that was not tied to any other record but when I clicked submit I get the following Stack trace error
+
+  * "The system has encountered an error and is unable to complete your request at this time. Please provide more information regarding this error by completing this Incident Report.
+  * Error Details: OJB operation; bad SQL grammar []; nested exception is com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown column 'lookupReviewerRolodexId' in 'where clause'" I have attached the screen shot of the error also.
+  * Joe Williams on Tue, 8 Dec 2015 13:58:14 -0600 [View Commit](../../commit/3d42c673c575883c8343a65582703dbf4939c78e)
+
+##coeus-1512.39
+* In PD Budget, underrecovery detail row can have on/off campus set as invalid select value
+
+  * This change adds validation to ensure on/off campus is selected and provides a message when it is invalid.
+  * It also does a null safe comparison when looking for duplicate rows to ensure stack traces do not occur if a valid is left empty.
+  * blackcathacker on Tue, 8 Dec 2015 16:41:45 -0800 [View Commit](../../commit/b91795b92b369e16271a79cae1a84dd42df53e93)
+
+##coeus-1512.38
+* No Changes
+
+
+##coeus-1512.37
+* No Changes
+
+
+##coeus-1512.36
+* Do not display certification toggle functionality when Prop Person COI Status param is enabled
+
+  * The COI Disclosure Status flag feature is designed to control if the proposal person certification questionnaire should appear for proposal personnel.
+  * When the contribution was initially merged, it 'broke' the manual 'include certification questions' button that appears for Key Persons. RESKC-688 restored that manual option.
+  * This case is to hide the manual 'include certification questions' button when the COI Disclosure Status feature is enabled. (PROP_PERSON_COI_STATUS_FLAG = Y)
+
+  * The contributed feature provided an override mechanism (custom attribute) that lets the user apply the PPC questionnaire if the sponsor is not in the COI Hierarchy, so this button is not needed.
+  * blackcathacker on Tue, 8 Dec 2015 12:59:02 -0800 [View Commit](../../commit/9d3e515c9d1c3657684fba0c34c342e478669ac0)
+
+##coeus-1512.35
+*  Fixing completed by message.
+  * Reproduced basic issue: PD: Hierarchy > Certification shows as Complete, but there are no answers in Hierarchy Parent
+  * With Certification completed at child then child linked to a hierarchy, the parent has Proposal Personnel > Certification status as Complete with timestamp and user pulled in from child, but none of the answers.
+  * There is no problem, however, with PI or Co-I completing the certification at parent level when a Notify request is sent from parent. The completion timestamp updates and answers are pulled in with the PI/Co-I's completion of certification at parent level.
+  * The only real issue that needs fixing is: when linked to a hierarchy, if a child proposal has had a certification completed, the completion status, timestamp and user should NOT be pulled into and displayed on the parent proposal for that person.
+  * Certification should not be listed as complete at parent when only done at the/a child.
+  * Gayathri Athreya on Mon, 7 Dec 2015 13:33:52 -0700 [View Commit](../../commit/5b487d3c5193f5a24ec9931b58f89cfe9b939d73)
+
+##coeus-1512.34
+* No Changes
+
+
+##coeus-1512.33
+* Sort proposal number as a numeric field instead of string based
+  * blackcathacker on Mon, 7 Dec 2015 14:06:54 -0800 [View Commit](../../commit/77c608bac66906ef07c0da9c20637ad66e9b8728)
+*  Non-personnel rates unchecked will not save
+
+  * The non-personnel rates cannot be unselected
+
+  * Create a proposal budget
+  * Add non-personnel budget item, such as travel
+  * Open Details
+  * On Rates tab, uncheck all the rates
+save
+  * open details
+  * Boxes are all checked again.
+  * Joe Williams on Mon, 7 Dec 2015 15:51:35 -0600 [View Commit](../../commit/97921f39805c3d5a03dcb132a18c51eb7267a237)
+
+##coeus-1512.32
+* Improvments to View S2S Submissions search page
+
+  * Include more pertinent information in the results
+  * The action links includes a dialog to show the s2s details
+  * blackcathacker on Mon, 7 Dec 2015 13:02:41 -0800 [View Commit](../../commit/831784caa14763d36d2a4c6f310400f35542a031)
+
+##coeus-1512.31
+*  avoiding a NullPointerException when creating a PD hierarchy.
+  * Travis Schneeberger on Mon, 7 Dec 2015 16:19:44 -0500 [View Commit](../../commit/e356f4a41fc8475bdc32d538403dc53f7b5bc836)
+*  Making sure that Unrecovered F and A are merged when the fiscal year, account, rate, oncampus flag are the same across budgets.  This fixes hierarchy sync and avoids the below scenario where Institutional Proposals are generated during PD routing.
+
+  * Hierarchy proposal parent was able to route all the way to the approving liaison(final stop). When the liaison clicked Approve, the following presented STE error "A row duplicates another. Enter different Unrecovered F&A information."
+
+  * Steps to reproduce:
+  * Create a proposal with basic information
+  * Key person: PI
+  * Create a Budget: add non-personnel line item, in Details, uncheck the Apply MTDC rate flag.
+  * Autogenerate periods.
+  * On Commitments > UR . enter source code as "123" in each row for on campus rate, and distribute the $.
+  * Complete the budget
+  * Return to the proposal >
+  * Toolbar > Hierarchy > create a parent with this proposal as sub-budget. Make note of the parent proposal number.
+  * Toolbar > Copy > copy this proposal including the budget.
+  * In the new proposal > toolbar > budget versions > mark the budget as for submission and complete. (it is identical to first proposal, including the UR source code).
+  * Toolbar > Hierarchy > link this as sub-budget, child to the parent created initially.
+  * Save & close the proposal
+  * Open the Parent proposal, turn on Validations and make the necessary updates to finalize the proposal.
+  * Submit this parent.
+  * Open the route log on the Summary/Submit screen and note the next approver . close
+  * Log in as that next approver and approve.
+  * Repeat this step until you get to the final approver (shulte in res-demo 1)
+  * Approve as Schulte:
+  * Result: The STE occurs here - A row duplicates another. Enter different Unrecovered F&A information.
+  * As well as the full STE Text (see comments).
+  * Desired result:
+  * There should be no restrictions on the use of duplicate sources for any of the Commitments - U/R orCost Sharing (not tested)
+  * Travis Schneeberger on Mon, 7 Dec 2015 16:18:31 -0500 [View Commit](../../commit/f5e12f708b46b6ae592c0c3d88dfaebb592f1ea0)
+* PD Budget: Modular KC should NOT Include the LA Amounts
+  * Calculated on 'Subcontractors F&A - Subject to MIT F&A' Line Item in the
+  * Consortium F&A field on the Modular Budget Screen. (MITKC 2316).
+  * Currently, for those Units that have Lab Allocations, when their
+  * Detailed Budget includes Subaward F&A Cost - Subject to MIT F&A and then
+  * that detailed Budget is converted to a Modular Budget, KC includes the
+  * LA Amounts calculated on 'Subcontractors F&A - Subject to MIT F&A' Line
+  * Item in the Consortium F&A field on the Modular Budget Screen. These LA
+  * amounts in Modular Budgets, should be part of the Direct Cost Less
+  * Consortium F&A amount (which rounds up to the nearest 25K module).
+  * Steps to reproduce/demonstrate: 
+  * 1. Create a proposal with minimum info to save in a Lead Unit that has
+  * Lab Allocation rates. 
+  * 2. Create a new budget version. 
+  * 3. In the Non-Personnel Costs section: 
+  * a. Add the 'Subcontractor F&A - Subject to MIT F&A' Object Code with an
+  * associated cost (e.g. 1,000). 
+  * b. Click the [Details] button for the added Object Code and in the Rates
+  * Tab you should see LA calculated. 
+  * 4. Navigate to the Modular section, and click the [Sync] button. 
+  * a. You should see a number populate in the Consortium F&A field. 
+  * b. Currently the number you see, is the total of the Total Base Cost
+  * plus the LA amounts of 'Subcontractors F&A - Subject to MIT F&A' Object
+  * Code - which is NOT correct 
+  * c. If in your example, you entered $1,000 in the Total Base Cost field
+  * for the 'Subcontractors F&A - Subject to MIT F&A' Object Code (and you
+  * have no other costs in your budget), then you should see only the $1,000
+  * in the Consortium F&A field. The LA amounts should be part of the Direct
+  * Cost Less Consortium F&A amount.
+  * vineeth on Mon, 7 Dec 2015 11:35:19 -0500 [View Commit](../../commit/1e63b8bb6fb5586291ab3078fa953753799983ed)
+
+##coeus-1512.30
+* Budget> Personnel Line item double inflates in Year 2 if Salary Anniversary field equals Proposal Start Date Month & Day
+
+  * If a users enters a Salary Anniversary date for budgetpersonnel with a Month and Day that equals the proposal start date/salary effective date, the calculated Year 2 salary expense will double inflate (ie: if inflation rate is 3%, year 2 charge will show 6% inflation). Later periods resume expected % increase, but the salary base from Y2 is over-inflated, making all the later periods for that person incorrect.
+  * Joe Williams on Fri, 4 Dec 2015 13:47:41 -0600 [View Commit](../../commit/95efbcf54a7907f94d3304698695ab03e9b5d8f3)
+*  Fix single point entry dates and added tests.
+  * The Single Point Entry screen appears to always display the default project period start and end dates for personnel, even though the actual details for the person use defined dates.
+  * Steps to reproduce:
+  * Create a proposal
+  * Create a budget
+  * Add several budget persons if they were not existing in the proposal
+  * Assign the personnel to the periods, being sure to change the start date /month so that it is not on the first day of the project period. Also, make at least one person end before default end date
+  * autocalculate periods
+  * Navigate to the Single Point Entry screen
+  * Results: All personnel line show the proposal default start and end dates even though they have different details available to display.
+  * Expected results:
+  * If a person was added via Assign Personnel Details and has specific start and end dates for their effort, those dates should be displayed in the SPE screen.
+  * Gayathri Athreya on Fri, 4 Dec 2015 15:45:31 -0700 [View Commit](../../commit/206efb45ffcb679d2c17964f98573395ea26703c)
+
+##coeus-1512.29
+* PD - S2S - User Attached S2S Forms Cannot view PDF in view mode
+  * PD - S2S - User Attached S2S Forms - No way to view form unless in Edit mode.
+  * Cannot view while Approval In Progress (approvers & OSP) or if Approved and Submitted.
+  * Actions > View PDF/View XML/ is only available when in Edit Mode.
+  * In View mode, have display of form and file names, but no link to view.
+  * Need to able to view all uploaded forms when simply viewing proposal, not just when editing.
+  * rmancher on Fri, 4 Dec 2015 16:36:45 -0500 [View Commit](../../commit/f5c3cbc961c8303f02589d38dd6aa79d72a45885)
+
+##coeus-1512.28
+* No Changes
+
+
+##coeus-1512.27
+* No Changes
+
+
+##coeus-1512.26
+*  Either display subaward invoice 'open' link to open an invoice document or a  subaward invoice 'view' link that does an inquiry.  This supports invoices that do not have corresponding maintenance documents. This feature is controlled by a parameter.
+
+  * As a customer with migrated data in the Subaward Module, I need to be able to review my prior invoice entry data on current and prior invoices. In the current version, when I use the 'open' link to generate a view of the invoice entry screen, I get an error message..
+           Please provide an 'inquiry' view option for migrated Subaward Invoice data.
+           Subaward > Financial tab > Invoices panel
+           User was unable to select the OPEN link in the right-hand column of the financial tab/invoice panel.
+           By selecting the open link on migrated data, the user receives an error message.
+           The link should bring the user to the details of the invoice in KC.
+           The link will generate a view for invoices created after go live weekend (5/3/15). However, the invoices migrated do not open.
+  * Travis Schneeberger on Fri, 4 Dec 2015 16:22:57 -0500 [View Commit](../../commit/e17b97e4209bccd2895419b17770a10894fbc04c)
+
+##coeus-1512.25
+*  Preventing empty files from being uploaded.
+  * Travis Schneeberger on Fri, 4 Dec 2015 09:55:48 -0500 [View Commit](../../commit/687c8f6f5ffefec0206b5b4c7be03f7b8712d491)
+*  Users are unable to create a Parent Proposal from a Child Proposal that includes a PERSONNEL attachment(s). When users try, they get the STE identified below.
+
+  * Steps to Reproduce:
+  * 1. Create a Proposal (with minimum info to save)
+  * 2. Add a PI in the Key Personnel section
+  * 3. Navigate to the Attachments section and upload an attachment in the Personnel Tab [ I tested this separately with the Biosketch and the CurrentPending Personnel attachments. Same STE for each] - Important. Make sure you add the two attachments listed above without using the standard save button at the bottom of the page. Only save after the second attachment is added.
+  * 4. Save
+  * 5. Navigate to the Budget section and create/add Budget (no need to add any costs - budget just needs to be initiated to create/link hierarchy)
+  * a. In the Budget, click the [Return to proposal] button
+  * 6. In the Proposal, click the Hierarchy link in the toolbar. In the Hierarchy window select:
+  * a. Hierarchy Budget Type: Sub Budget
+  * b. Click the [Create Hierarchy] button
+
+  * STE happens
+  * Travis Schneeberger on Thu, 3 Dec 2015 11:18:52 -0500 [View Commit](../../commit/5847c8711ee914b07471cf60d5a1af10bc1b64a0)
+
+##coeus-1512.24
+*  PD - Budget Underrecovered F&A error warning that Fiscal Year outside of project period is not correct.
+
+  * By default, when UR is present in the budget, this screen generates rows pairs for On and Off Campus rates (as maintained): One (1) pair for each Fiscal Year present at the Project Year Start.
+           Users may delete any row, and add new rows.
+           But the user is not allowed to enter a Fiscal Year that is outside the range of the project period.
+           *Currently, the system is not recognizing all applicable FY's for budgets.
+           It seems to be restricting the user to FY's that match Calendar Year Start Dates for project periods*.
+           (See proposal #896 in Res Demo 1 on build 1509.42 09-18-2015 10:25
+           To Reproduce:
+           Create a activity type = Research with Start Date of 10/1/2015 and End Date of 9/30/2019.
+           Create a detailed budget
+           Change the MTDC rate to LESS than the institute rate.
+           Add a Non-personnel Line item
+           Generate all periods (autocalculate periods)
+           Open the Institutional Commitments > Underrecovered F&A
+           (Note the default rows for eligible Fiscal Years align with the Start Date of each period.)
+           Maintain the source and amounts in each row
+           Add a new row and enter FY 2020 - which does fall within this project period and can be found in the Rate > Inflation table
+           distribute some details in the FY 2020 row
+           Save
+           Turn on Validations
+           Result: error warnings state that the Fiscal Year is outside the project period.
+           Desired Results;
+           The system should recognize all applicable FY's - not just those that match the period start date year.
+           (Note: I was able to add 2015 FY row to this proposal, even though that year is NOT valid for this range starting 10/15).
+  * Travis Schneeberger on Fri, 4 Dec 2015 14:43:58 -0500 [View Commit](../../commit/7c677f39874563c5f89fc1e5e0a38038337c0a86)
+
+##coeus-1512.23
+* PD - S2S Forms when USer Attached Include column should show YES or be editable by OSP
+  * Fix is have to checkbox be automatically selected when a user adds via user attached forms.
+  * rmancher on Wed, 2 Dec 2015 17:39:50 -0500 [View Commit](../../commit/73355557e537041475122cda2532dfff686b83b5)
+
+##coeus-1512.22
+* Getting stack trace error when trying to create budget
+  * Joe Williams on Fri, 4 Dec 2015 11:48:38 -0600 [View Commit](../../commit/1a3572e6deb7a2e4735f3075dfedd2ab229d117a)
+
+##coeus-1512.21
+* PD - "Save" button and proposal person certification "Clear All Answers" button is enabled in view mode.
+  * Updating changes along with merged MIT code for certification where investigators should be able to make changes to certification
+  * questions in view mode. Changes are allowed only when proposal is pending
+  * or current state is revision requested.
+  * rmancher on Wed, 2 Dec 2015 16:54:28 -0500 [View Commit](../../commit/becc0b61c399cfc15ab9f85d89c1d472fc501ea9)
+
+##coeus-1512.20
+*  Indirect cost base calculation.
+  * In KC budget, in the line item details (both in Non-Personnel Costs and SPE screens) or personnel group Details & Rates, if you uncheck the "Apply Rate" box for MTDC, the IDC in the budget is correctly adjusted to exclude the unchecked amounts.
+  * However, when you print the budget forms, the full Indirect Cost Base is still populating in the Indirect Cost Base section when the unapplied item is an Other Direct Cost expense. When Personnel expenses use the 'unapply rate' option, the Base is incorrect by an undetermined amount. Please investigate.
+  * The MTDC costs rate amounts that are unchecked for Apply Rates should not appear on the budget form Indirect Cost Base fields.
+  * Screenshot attached for Budget Versions > Print > Budget Summary Report (report 4 on the list).
+  * Steps to reproduce: (See proposal #830 in Res Demo 1)
+  * Create a budget for a research proposal
+  * Add a Personnel, and assign them to the period.
+  * Once added, click Details & Rates to open that window. Click on the Rates tab and uncheck the "Apply" box for MTDC. Save.
+  * Add some other personnel, but do not unapply their MTDC rates.
+  * Save ( you can autogenerate periods or just review P1)
+  * Toolbar > Budget Versions > Print > #4 Budget Summary Report > Create PDF.
+  * ON p2 in the methodology - review the total exemptions to F&A. Subtract that value from the Total Direct Costs on P1.
+  * Review the F&A Base in the next section on the form: it does not match your calculated amount.
+  * Calculate the printed amount x the F&A rate: compare that to the published amount: that doesn't add up either.
+  * Scenario 2:
+  * Create another budget version.
+  * Do not add personnel
+  * Add Other Direct Cost items that will bear overhead, like M&S or Travel
+  * Once added, click'details' and unapply the MTDC.
+  * Print the #4 report.
+  * Note that in this example, clearly the unapplied line item is not excluded from the F&A base in the next section.
+  * Gayathri Athreya on Thu, 3 Dec 2015 12:54:46 -0700 [View Commit](../../commit/8a25dc7af07b8a3f4f2a42a20772245acc8aab6e)
+* View S2S Submission Search
+  * blackcathacker on Thu, 3 Dec 2015 18:13:53 -0800 [View Commit](../../commit/eaf60b2c969dd0b14725716f3e3f9b40e6dee36f)
+
+##coeus-1512.19
+* Fix null pointer and not mess up situations wher eUR and OH rate are same.
+  * Gayathri Athreya on Thu, 3 Dec 2015 19:00:59 -0700 [View Commit](../../commit/f776fa98ebbb923cbcf571b1fe8d44b1d5235f57)
+
+##coeus-1512.18
+* Setting a default underrecovery bean to avoid any null pointers.
+  * Gayathri Athreya on Thu, 3 Dec 2015 16:01:17 -0700 [View Commit](../../commit/4b70f1570da421952296e20d74a7d734872a55b9)
+
+##coeus-1512.17
+* Towson null pointer
+  * Gayathri Athreya on Thu, 3 Dec 2015 14:50:13 -0700 [View Commit](../../commit/f1f758cb0ffa45eac0a647f92fb6c0a5acd3a670)
+
+##coeus-1512.16
+* No Changes
+
+
+##coeus-1512.15
+*  refactor getNewStartEndDates
+  * Joe Williams on Thu, 3 Dec 2015 11:25:47 -0600 [View Commit](../../commit/c84aad092761d4ca6cb697438399e00bdafeac9c)
+*  Budget: Leap Year Issue: Personnel Costs Dates are Wrong when Start Date is other than 1st of the month and Autocalculate Periods is Performed
+
+  * This issue was identified in the comments received from the community: "There seems to be a leap year error. Some of our staff account for 20 days' vacation by starting the person 20 days after their actual appointment. If you do this in KC, for year 2 it will start it 19 days later. Also an appointment that should have ended on e.g. Oct 31, for year 2 will end on Oct 30. This can be manually edited but it's inconvenient.:
+  * Joe Williams on Thu, 3 Dec 2015 10:00:08 -0600 [View Commit](../../commit/704458ebbfd358eebecd7a6608dffa4efe71bded)
+
+##coeus-1512.14
+* No Changes
+
+
+##coeus-1512.13
+* No Changes
+
+
+##coeus-1512.12
+* No Changes
+
+
+##coeus-1512.11
+* No Changes
+
+
+##coeus-1512.10
+* No Changes
+
+
+##coeus-1512.9
+* Populate additional date related fields on ProposalAdminDetails
+
+  * Populate the additional date and create fields for proposaladmindetails. This includes DATE_SUBMITTED_BY_DEPT, DATE_RETURNED_TO_DEPT, DATE_APPROVED_BY_OSP, DATE_SUBMITTED_TO_AGENCY, INST_PROP_CREATE_DATE, and INST_PROP_CREATE_USER
+  * blackcathacker on Wed, 2 Dec 2015 12:56:17 -0800 [View Commit](../../commit/ff9c4f55eb153f06ec334db28db7a1329f3477ee)
+*  When the Award Notice is printed, the PI's name is displaying as the Administrative Contact. See attached - highlighted area. This isn't correct. Should be a value from the Central Contact panel on the award. To recreate the issue, open any award in resdemo1, navigate to the Award Actions tab, open the print panel, and select the print button to the right of the Award Notice area.
+  * Travis Schneeberger on Wed, 2 Dec 2015 12:23:15 -0500 [View Commit](../../commit/75c7094a0eadf622c67e29f20b98d8e71a6a38a6)
+
+##coeus-1512.7
+* IRB - STE In QA when trying to submit Agenda or Minutes
+
+  * If i open a schedule for a meeting I get and STE when i try to generate the agenda or the minutes:
+  * Go to the "Meeting Actions" tab >>agenda>submit & I get an STE
+  * or, go to the "Meeting Actions" tab >minutes>submit & I get an STE
+  * See the STEs pasted in the comment below
+  * Joe Williams on Wed, 2 Dec 2015 08:53:07 -0600 [View Commit](../../commit/f1765c4ae33954c53aff3c86c86696d155f91b8a)
+
+##coeus-1512.6
+* T&M History obligated change amounts always zero if Award not finalized prior
+
+  * If the award is finalized after the T&M is in final status, the T&M history obligated change amount shows as zero, even though the T&M added money and the history shows the obligated cumulative as updated amounts
+  * Joe Williams on Wed, 2 Dec 2015 07:59:47 -0600 [View Commit](../../commit/cf1e2cfa92fdcca5ecb1e3aa8be7e041d0271ee8)
+
+##coeus-1512.5
+*  setting character set and collation type for audit type table
+  * Travis Schneeberger on Tue, 1 Dec 2015 20:08:08 -0500 [View Commit](../../commit/dcaee6235706f6d8b5891bb7c74e7fd9ac9aa0bf)
+
+##coeus-1512.3
+* Correct logic so maintenance documents without error can be deleted
+
+  * Attempting to delete an unreferenced record would result in errorneous "business rule evaluation failed" despite there being no errors.
+  * blackcathacker on Tue, 1 Dec 2015 15:06:48 -0800 [View Commit](../../commit/5e11d839fc7c42ca2dedfed0977e7ce9965a5e71)
+*  Handles items with no overhead or line item calculated amounts
+  * Gayathri Athreya on Tue, 1 Dec 2015 14:04:53 -0700 [View Commit](../../commit/fd1891b80e4c1895655d31225b55ad25cb02bf55)
+* Remove feature flag for new homepage and make it the default
+  * blackcathacker on Tue, 1 Dec 2015 12:53:34 -0800 [View Commit](../../commit/c602d9f0c0c3e98e6f028c54d7bb1e8a4bd9a8dc)
+* Submitting T&M document without a transaction zeros out obligated and anticipated totals in some cases
+
+  * When the MAKE_AWD_CUM_ANTICIPATED_OBL_EDITABLE parameter is set to Y or the amounts on the T&M hierarchy panel are un-editable for other reasons, saving or submitting the T&M document will cause a new transaction to be errornously created that zeros out the totals. This prevents this by not creating single-node transactions based on changes when those fields are disabled.
+  * blackcathacker on Tue, 1 Dec 2015 12:46:30 -0800 [View Commit](../../commit/c1156c0890a62cde910e7272d2a6a1ac6710b3ee)
+* IRB - Edits to committee is disconnecting minutes, agenda and schedule data
+  * Edit committee and approve is disconnecting minutes, agenda and schedule data.
+  * This occurs when prior document is not finalized.
+  * During approval process we are merging changes from old committee document to new versioned document.
+  * We need to select the latest finalized committee document as old committee document
+  * to merge these changes (ignore any disconected or cancelled document).
+  * rmancher on Tue, 1 Dec 2015 11:43:21 -0500 [View Commit](../../commit/65a88b6dc3b79aaf5a5c89b40c0044d16d8b9a09)
+
+##coeus-1512.2
 * Revert "Remove feature flag for new homepage and make it the default"
   * Travis Schneeberger on Tue, 1 Dec 2015 13:17:51 -0500 [View Commit](../../commit/5bdeac82c8f0e81e9bc3d43ed72ca1e787fcfb8d)
 * Remove feature flag for new homepage and make it the default

@@ -547,7 +547,8 @@ public abstract class ProposalDevelopmentControllerBase {
                         if (isComplete && !wasComplete) {
                             person.setCertifiedBy(getGlobalVariableService().getUserSession().getPrincipalId());
                             person.setCertifiedTime(getDateTimeService().getCurrentTimestamp());
-                            if (!getProposalPersonCoiIntegrationService().getProposalPersonCoiStatus(person).equals(CoiConstants.DISCLOSURE_NOT_REQUIRED)) {
+                            if (getParameterService().getParameterValueAsBoolean(Constants.KC_GENERIC_PARAMETER_NAMESPACE,Constants.KC_ALL_PARAMETER_DETAIL_TYPE_CODE, Constants.PROP_PERSON_COI_STATUS_FLAG) &&
+                                    !getProposalPersonCoiIntegrationService().getProposalPersonCoiStatus(person).equals(CoiConstants.DISCLOSURE_NOT_REQUIRED)) {
                             	sendCoiDisclosureRequiredNotification(developmentProposal,person);
                             }
                         } else if (wasComplete && !isComplete) {
@@ -579,7 +580,9 @@ public abstract class ProposalDevelopmentControllerBase {
     	ProposalDevelopmentNotificationContext context = new ProposalDevelopmentNotificationContext(developmentProposal, COI_DISCLOSURE_REQUIRED_ACTION_TYPE_CODE, COI_DISCLOSURE_REQUIRED_NOTIFICATION);
         ((ProposalDevelopmentNotificationRenderer) context.getRenderer()).setDevelopmentProposal(developmentProposal);
     	KcNotification notification = getKcNotificationService().createNotificationObject(context);
-        getKcNotificationService().sendNotification(context,notification,createRecipientFromPerson(person));
+        if (notification.getMessage() != null) {
+           getKcNotificationService().sendNotification(context,notification,createRecipientFromPerson(person));
+        }
     }
     
     protected List<NotificationTypeRecipient> createRecipientFromPerson(ProposalPerson person) {

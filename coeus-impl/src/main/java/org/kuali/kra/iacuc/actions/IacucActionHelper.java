@@ -216,7 +216,11 @@ public class IacucActionHelper extends ActionHelperBase {
      */
     public IacucActionHelper(ProtocolFormBase form) throws Exception {
         super(form);
-        
+   }
+    
+    @Override
+    public void initializeProtocolActions() throws Exception {
+    	super.initializeProtocolActions();
         protocolAssignCmtBean = new IacucProtocolAssignCmtBean(this);
         iacucProtocolTableBean = new IacucProtocolTableBean(this);
         iacucProtocolModifySubmissionBean = new IacucProtocolModifySubmissionBean(this);
@@ -236,8 +240,7 @@ public class IacucActionHelper extends ActionHelperBase {
         iacucProtocolRemoveFromAgendaBean = new IacucProtocolGenericActionBean(this, "actionHelper.iacucProtocolRemoveFromAgendaBean");
         iacucProtocolReviewNotRequiredBean = new IacucProtocolReviewNotRequiredBean(this);
         initIacucSpecificActionBeanTaskMap();
-   }
-    
+    }
 
     /**
      * Initializes the mapping between the task names and the beans.  This is used to get the bean associated to the task name passed in from the tag file.

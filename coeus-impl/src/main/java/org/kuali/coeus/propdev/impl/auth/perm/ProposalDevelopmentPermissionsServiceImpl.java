@@ -163,36 +163,26 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
     }
 
     public boolean hasCertificationPermissions(ProposalDevelopmentDocument document, Person user, ProposalPerson proposalPerson) {
-        boolean isLoggedInUserPi = isLoggedInUserPi(proposalPerson.getDevelopmentProposal(), user);
-        return canCertify(user.getPrincipalId(), proposalPerson, isLoggedInUserPi, canProxyCertify(document, user));
-
-
+        return canCertify(user.getPrincipalId(), proposalPerson, canProxyCertify(document, user));
     }
 
     public boolean doesPersonRequireCertification(ProposalPerson person) {
         if (person.getPerson() == null) {
-            return isAddressBookMultiPiCertificationExempt(person) ? false : isRolodexCertificationEnabled();
+        	return canCertifyAddressBookPerson(person);
         }
         if (!person.isKeyPerson()) return true;
         return isRoleCustomDataOrSponsorExempt(person);
     }
 
-    protected boolean canCertify(String userPrincipalId, ProposalPerson proposalPerson, boolean isLoggedInUserPi, boolean canProxyCertify) {
-    	// person is null for rolodex entries
-    	if (Objects.isNull(proposalPerson.getPerson())) {
-    		return isRolodexCertificationEnabled() && !isAddressBookMultiPiCertificationExempt(proposalPerson) ? canProxyCertify : false;
-    	}
-  	  	
-        if (isPiOrProxyCertificationPossible(userPrincipalId, proposalPerson, isLoggedInUserPi, canProxyCertify)) return true;
+    protected boolean canCertify(String userPrincipalId, ProposalPerson proposalPerson, boolean canProxyCertify) {
+        // person is null for rolodex entries
+        if (Objects.isNull(proposalPerson.getPerson())) {
+            return canCertifyAddressBookPerson(proposalPerson) ? canProxyCertify : false;
+        }
 
-        if (isCoiOrPiOrProxyCertificationPossible(userPrincipalId, proposalPerson, isLoggedInUserPi, canProxyCertify)) return true;
+        final boolean keyPersonOrPiOrProxyCertificationPossible = canProxyCertify || proposalPersonIsUser(userPrincipalId, proposalPerson);
 
-        if (isMultiPiOrPiOrProxyCertificationPossible(userPrincipalId, proposalPerson, isLoggedInUserPi, canProxyCertify)) return true;
-
-        final boolean keyPersonOrPiOrProxyCertificationPossible =
-                isKeyPersonOrPiOrProxyCertificationPossible(userPrincipalId, proposalPerson, isLoggedInUserPi, canProxyCertify);
-
-        if (keyPersonOrPiOrProxyCertificationPossible) {
+        if (keyPersonOrPiOrProxyCertificationPossible && proposalPerson.isKeyPerson()) {
             if (isCoiDisclosureStatusFeatureEnabled()) {
                 return isRoleCustomDataOrSponsorExempt(proposalPerson);
             }
@@ -200,9 +190,21 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
                 return true;
             }
         }
-
-        return false;
+        return keyPersonOrPiOrProxyCertificationPossible;
     }
+    
+    protected Boolean canCertifyAddressBookPerson(ProposalPerson proposalPerson) {
+		if (!isRolodexCertificationEnabled()) {
+			return false;
+		}
+		if (proposalPerson.isMultiplePi()) {
+			return !isAddressBookMultiPiCertificationExempt(proposalPerson);
+		}
+		if (proposalPerson.isKeyPerson()) {
+			return !isKeyPersonRoleExempt(proposalPerson);
+		}
+		return true;
+	}
 
     protected Boolean isRoleCustomDataOrSponsorExempt(ProposalPerson proposalPerson) {
         if (isKeyPersonRoleExempt(proposalPerson)) return false;
@@ -222,14 +224,6 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
     	return getParameterService().getParameterValueAsBoolean(ProposalDevelopmentDocument.class, ENABLE_ADDRESSBOOK_CERTIFICATION);
     }
     
-    protected boolean isPiOrProxyCertificationPossible(String userPrincipalId, ProposalPerson proposalPerson, boolean isLoggedInUserPi, boolean canProxyCertify) {
-        if((isLoggedInUserPi && proposalPersonIsUser(userPrincipalId, proposalPerson)) ||
-     		   (canProxyCertify && proposalPerson.isPrincipalInvestigator())) {
-            return true;
-        }
-        return false;
-    }
-
     public boolean isKeyPersonRoleExempt(ProposalPerson proposalPerson) {
         return getExemptKeyPersonRoles().stream().anyMatch(projectRole -> projectRole.equalsIgnoreCase(proposalPerson.getProjectRole()));
     }
@@ -249,37 +243,12 @@ public class ProposalDevelopmentPermissionsServiceImpl implements ProposalDevelo
 
     }
 
-    protected boolean isKeyPersonOrPiOrProxyCertificationPossible(String userPrincipalId, ProposalPerson proposalPerson, boolean isLoggedInUserPi, boolean canProxyCertify) {
-        return (proposalPersonIsUser(userPrincipalId, proposalPerson) && proposalPerson.isKeyPerson()) ||
-                (isLoggedInUserPi && proposalPerson.isKeyPerson()) ||
-                (canProxyCertify && proposalPerson.isKeyPerson());
-    }
-
-    protected boolean isMultiPiOrPiOrProxyCertificationPossible(String userPrincipalId, ProposalPerson proposalPerson, boolean isLoggedInUserPi, boolean canProxyCertify) {
-        if ((proposalPersonIsUser(userPrincipalId, proposalPerson) && proposalPerson.isMultiplePi())
-     		  || (isLoggedInUserPi && proposalPerson.isMultiplePi()) ||
-     		  (canProxyCertify && proposalPerson.isMultiplePi())){
-            return true;
-       }
-        return false;
-    }
-
-    protected boolean isCoiOrPiOrProxyCertificationPossible(String userPrincipalId, ProposalPerson proposalPerson, boolean isLoggedInUserPi, boolean canProxyCertify) {
-        if ((proposalPersonIsUser(userPrincipalId, proposalPerson) && proposalPerson.isCoInvestigator())
-                || (isLoggedInUserPi && proposalPerson.isCoInvestigator()) ||
-                (canProxyCertify && proposalPerson.isCoInvestigator())){
-            return true;
-        }
-        return false;
-    }
-
     protected boolean proposalPersonIsUser(String userPrincipalId, ProposalPerson proposalPerson) {
         return proposalPerson.getPersonId().equals(userPrincipalId);
     }
 
-    protected boolean canProxyCertify(ProposalDevelopmentDocument document, Person user){
-        return getKraAuthorizationService().hasPermission(user.getPrincipalId(), document, PermissionConstants.VIEW_CERTIFICATION)
-                || getKraAuthorizationService().hasPermission(user.getPrincipalId(), document, PermissionConstants.CERTIFY);
+   protected boolean canProxyCertify(ProposalDevelopmentDocument document, Person user) {
+        return getKraAuthorizationService().hasPermission(user.getPrincipalId(), document, PermissionConstants.CERTIFY);
    }
 
    // Aggregators can use custom data to choose if PCK should disclose.
