@@ -65,7 +65,7 @@
               <c:set var="statusNm" value="Hold"/>
           </c:when>
           <c:when test="${node.bo.awardStatus.statusCode == 7}">
-              <c:set var="statusImg" value="static/images/award_underwrite.gif"/>
+              <c:set var="statusImg" value="static/images/award_underwrite.gif"/>git
               <c:set var="statusNm" value="Underwrite"/>
           </c:when>
           <c:otherwise><c:set var="statusImg" value="static/images/award_inactive.gif"/></c:otherwise>
