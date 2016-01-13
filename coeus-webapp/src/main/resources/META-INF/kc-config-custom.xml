@@ -1,54 +1,59 @@
 <config>
-    <param name="environment">@ENV@</param>
-    <param name="app.code">@APP@</param>
-    <param name="svn.tag">@SVN@</param>
+    <param name="environment">dev</param>
+    <param name="app.code">kc</param>
 
-    <!-- Begin common config -->
     <param name="build.environment">${environment}</param>
-    <param name="version">5.1</param>
+    <param name="version">6.0 - KC DEV</param>
     <param name="rice.environment">${environment}</param>
+
+    <param name="context.name">kc-dev</param>
 
     <param name="module.name">kc</param>
     <param name="service.namespace">KC</param>
     <param name="app.namespace">kc</param>
 
     <param name="application.id">KC</param>
-    <param name="application.host">https://onestart.iu.edu</param>
+    <param name="application.host">http://localhost:8080</param>
     <param name="kc.port"></param>
     <param name="production.environment.code">PRD</param>
 
-    <param name="application.url">${application.host}/${app.code}-${environment}</param>
-    <param name="secureServiceServletUrl">${application.url}/remoting/</param>
-    <param name="serviceServletUrl">${secureServiceServletUrl}</param>
+    <param name="application.url">${application.host}/${context.name}</param>
+    <param name="http.url" override="true">127.0.0.1:8080</param>
+    <param name="secureServiceServletUrl">http://${http.url}/${app.code}-${environment}/remoting/</param>
+    <param name="serviceServletUrl">${application.url}/remoting/</param>
     <param name="dev.mode">false</param>
 
     <!-- These are the recommended Rice defaults -->
     <param name="kr.mode">LOCAL</param>
     <param name="kns.mode">LOCAL</param>
-    <param name="kcb.mode">REMOTE</param>
-    <param name="kim.mode">EMBEDDED</param>
-    <param name="kew.mode">EMBEDDED</param>
-    <param name="ken.mode">REMOTE</param>
-    <param name="krms.mode">REMOTE</param>
-    <param name="ksb.mode">REMOTE</param>
-    <param name="location.mode">REMOTE</param>
+    <param name="kcb.mode">LOCAL</param>
+    <param name="kim.mode">LOCAL</param>
+    <param name="kew.mode">LOCAL</param>
+    <param name="ken.mode">LOCAL</param>
+    <param name="krms.mode">LOCAL</param>
+    <param name="ksb.mode">LOCAL</param>
+    <param name="location.mode">LOCAL</param>
     <param name="core.mode">LOCAL</param>
-    <param name="coreservice.mode">REMOTE</param>
+    <param name="coreservice.mode">LOCAL</param>
 
-    <param name="rice.server.url">https://uisapp2.iu.edu/kr-${rice.environment}</param>
+    <param name="rice.server.url">${application.url}</param>
     <param name="rice.app.url">${rice.server.url}</param>
-    <param name="rice.ksb.registry.serviceUrl">https://uisapp2.iu.edu/ksb-${rice.environment}/remoting/soap/ksb/v2_0/serviceRegistry</param>
     <param name="rice.ksb.serviceRegistry.security">true</param>
     <param name="rice.ksb.config.allowSelfSignedSSL">false</param>
     <param name="rice.ksb.batch.mode">false</param>
 
+    <param name="rice.portal.allowed.regex">^(${application.url}|${rice.server.url})(/.*|)</param>
+
     <param name="oneStart.portal.mode">false</param>
+    <param name="oneStart.portal.url">https://test.uisapp2.iu.edu/my2-unt/portal/2064</param>
     <param name="oneStart.portal.redirection.url">${application.url}/close.jsp</param>
 
-    <param name="externalizable.help.url">http://researchadmin.iu.edu/EO/AppHelp/KC/</param>
+    <!-- this is for uitsra-1460 - temporary set up -->
+    <param name="externalizable.help.url">${application.url}/static/help/</param>
+    <!--<param name="externalizable.help.url">http://researchadmin.iu.edu/EO/AppHelp/KCtest/</param>-->
     <param name="externalizable.images.url">${rice.server.url}/kr/static/images/</param>
     <param name="kr.externalizable.images.url">${rice.server.url}/kr/static/images/</param>
-    <param name="kra.externalizable.images.url">/${app.context.name}/static/images/</param>
+    <param name="kra.externalizable.images.url">${application.url}/static/images/</param>
 
     <param name="kr.url">${rice.server.url}/kr</param>
     <param name="ken.url">${rice.server.url}/ken</param>
@@ -60,26 +65,24 @@
     <param name="kuali.docHandler.url.prefix">${application.url}</param>
 
     <!-- Java mail properties -->
-    <param name="mail.from">kc-admin-l@list.iu.edu</param>
+    <param name="mail.from">kciu-core-l@indiana.edu</param>
     <param name="mail.transport.protocol">smtps</param>
     <param name="mail.smtp.starttls.enable">true</param>
     <param name="mail.smtp.host">mail-relay.iu.edu</param>
     <param name="mail.smtp.port">465</param>
     <param name="mail.smtps.auth">true</param>
-    <param name="mail.user.credentials">${mail.smtp.password}</param>
-    <param name="mail.smtp.user">${mail.smtp.username}</param>
 
     <!-- image overrides -->
     <param name="application.custom.image.url.copyoneper">/${app.context.name}/static/images/buttonsmall_copyallperiods.gif</param>
     <param name="application.custom.image.url.copyallperiods">/${app.context.name}/static/images/buttonsmall_copyoneper.gif</param>
 
     <!-- IU CAS Config -->
-    <param name="filter.login.class">edu.iu.uis.cas.filter.CASFilter</param>
+    <param name="cas.url">https://cas-stage.iu.edu/cas</param>
+    <param name="filter.login.class">org.kuali.rice.krad.web.filter.DummyLoginFilter</param>
     <param name="filter.login.cassvc">IU</param>
     <param name="filter.login.loginURL">${cas.url}/login</param>
     <param name="filter.login.validationURL">${cas.url}/serviceValidate</param>
     <param name="filtermapping.login.1">/*</param>
-
 
     <!-- For IU Rice -->
     <!-- Turn off KEW use of quartz db to avoid db clear issues -->
@@ -94,37 +97,38 @@
     <param name="KualiExceptionIncidentServiceImpl.REPORT_MAIL_LIST">BL-UITS-Research_Admin_Systems@exchange.iu.edu</param>
     <param name="mail.relay.server">mail-relay.indiana.edu</param>
 
-    <param name="enhanced.identity.service.active">true</param>
-    <param name="print.logging.enable">false</param>
+    <param name="enhanced.identity.service.active">false</param>
 
-    <!--  kc/kfs integration config -->
+    <param name="security.dir">/opt/j2ee/security/${app.code}/${environment}</param>
+    <param name="config.location">${security.dir}/kc-security.xml</param>
+
+    <!-- following is just for local dev -->
     <param name="fin.system.integration.service.url">${application.host}/kfs-${environment}/remoting/</param>
-    <param name="shared.rice">true</param>
-    <param name="kfs.integration.bus.security.enabled">true</param>
-    <param name="fin.system.integration.bus.security.on">${kfs.integration.bus.security.enabled}</param>
 
+    <!-- IU for customspring kc5.0-->
     <param name="kc.custom.mode">LOCAL</param>
+
+    <param name="shared.rice">false</param>
+    <param name="fin.system.integration.bus.security.on">false</param>
+    <param name="kfs.integration.bus.security.enabled">${fin.system.integration.bus.security.on}</param>
+
+    <param name="print.logging.directory">/opt/work/kc/dev/</param>
+    <param name="custom.xsl.dir">https://es-test-doc.uits.indiana.edu/dav/ERA/KC/Custom</param>
+    <param name="print.logging.enable">true</param>
 
     <param name="context.names.kc">${app.code}-${environment}</param>
     <param name="context.names.rice">kr-${rice.environment}</param>
 
     <param name="kns.editable.properties.history.size">200</param>
-    <!-- End common config -->
 
-    <!-- For showing/hiding IRB phase 4 sections. This can be removed post-p3 release. -->
-    <param name="kcirb.display.p4">false</param>
-
-    <param name="security.dir">/opt/j2ee/security/${app.code}/${environment}</param>
-    <param name="config.location">${security.dir}/kc-security.xml</param>
-    <param name="settings.dir">/opt/j2ee/settings/${app.code}/${environment}</param>
-    <param name="config.location">${settings.dir}/kc-settings.xml</param>
-
-    <param name="tm.btm.logPart1Filename">/opt/j2ee/security/${app.code}/${environment}/btm1.tlog</param>
-    <param name="tm.btm.logPart2Filename">/opt/j2ee/security/${app.code}/${environment}/btm2.tlog</param>
+    <param name="tm.btm.logPart1Filename" override="false">/opt/j2ee/security/${app.code}/${environment}/btm1.tlog</param>
+    <param name="tm.btm.logPart2Filename" override="false">/opt/j2ee/security/${app.code}/${environment}/btm2.tlog</param>
     <param name="tm.btm.defaultTransactionTimeout">3600</param>
 
     <param name="mq.broker.dataDirectory">/opt/j2ee/security/${app.code}/${environment}</param>
 
     <param name="kc.schemaspy.enabled">false</param>
     <param name="kc.monitoring.enabled">true</param>
+
+    <param name="rice.krad.dev.mode">true</param>
 </config>
