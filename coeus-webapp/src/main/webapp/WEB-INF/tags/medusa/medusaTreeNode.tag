@@ -64,13 +64,9 @@
               <c:set var="statusImg" value="static/images/award_holding.gif"/>
               <c:set var="statusNm" value="Hold"/>
           </c:when>
-          <c:when test="${node.bo.awardStatus.statusCode == 7}">
-              <c:set var="statusImg" value="static/images/award_underwrite.gif"/>git
-              <c:set var="statusNm" value="Underwrite"/>
-          </c:when>
           <c:otherwise><c:set var="statusImg" value="static/images/award_inactive.gif"/></c:otherwise>
       </c:choose>
-    <span class="medusaNode"><a name="${node.type}-${node.bo.awardId}" class="${hideOpen}"><img src="static/images/sponsor12.gif"/>Award ${node.bo.awardNumber}</a></span><!-- hack for treeview --><a></a>
+    <span class="medusaNode"><a name="${node.type}-${node.bo.awardId}" class="${hideOpen}"><img src="static/images/sponsor12.gif"/><img src="${statusImg}" alt="${statusNm}" title="${statusNm}"/>Award ${node.bo.awardNumber}</a></span><!-- hack for treeview --><a></a>
   </c:when>
   <c:when test="${node.type == 'DP'}">
     <c:if test="${KualiForm.medusaBean.moduleName == node.type && KualiForm.medusaBean.moduleIdentifier == node.bo.proposalNumber}">
