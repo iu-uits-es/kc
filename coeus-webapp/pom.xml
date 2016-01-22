@@ -50,7 +50,7 @@
         <generated.web.sources>${project.build.directory}/generated-web-sources</generated.web.sources>
         <help.web.sources>${project.build.directory}/generated-web-sources/help-web-sources</help.web.sources>
         <rice.web.sources>${project.build.directory}/generated-web-sources/rice-web-sources</rice.web.sources>
-        <jsfrontend.web.sources>${project.build.directory}/generated-web-sources/jsfrontend-web-sources</jsfrontend.web.sources>
+        <jsfrontend.web.sources>${rice.web.sources}</jsfrontend.web.sources>
 
         <rice.web.excludes>
             <!-- Exclude for the time being to use local file -->
@@ -84,10 +84,10 @@
             <artifactId>coeus-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
-      	<dependency>
-	    	<groupId>org.jasig.cas.client</groupId>
-	    	<artifactId>cas-client-core</artifactId>
-    	</dependency>
+        <dependency>
+            <groupId>org.jasig.cas.client</groupId>
+            <artifactId>cas-client-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>edu.iu.es.esi</groupId>
             <artifactId>casfilter</artifactId>
@@ -181,7 +181,7 @@
                             <directory>${rice.web.sources}</directory>
                         </resource>
                         <resource>
-                        	<directory>${jsfrontend.web.sources}</directory>
+                            <directory>${jsfrontend.web.sources}</directory>
                         </resource>
                         <resource>
                             <directory>src/main/resources</directory>
@@ -217,51 +217,66 @@
                     <addWarDependenciesInClassloader>false</addWarDependenciesInClassloader>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend-maven-plugin.version}</version>
-			    <configuration>
-			    	<installDirectory>${project.build.directory}</installDirectory>
-			        <workingDirectory>${jsfrontend.sources}</workingDirectory>
-			    </configuration>
-                <executions>
-                    <execution>
-                        <id>install node and npm</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                        <configuration>
-                            <nodeVersion>${frontend-maven-plugin.node.version}</nodeVersion>
-                            <npmVersion>${frontend-maven-plugin.npm.version}</npmVersion>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>npm install</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-					<execution>
-						<id>gulp build</id>
-						<goals>
-							<goal>gulp</goal>
-						</goals>
-						<configuration>
-							<srcdir>${jsfrontend.sources}</srcdir>
-							<outputdir>${jsfrontend.web.sources}</outputdir>
-						</configuration>
-					</execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>grm</id>
+            <activation>
+                <property>
+                    <name>!grm.off</name>
+                </property>
+            </activation>
+            <properties>
+                <jsfrontend.web.sources>${project.build.directory}/generated-web-sources/jsfrontend-web-sources</jsfrontend.web.sources>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend-maven-plugin.version}</version>
+                        <configuration>
+                            <installDirectory>${project.build.directory}</installDirectory>
+                            <workingDirectory>${jsfrontend.sources}</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>install node and npm</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                </goals>
+                                <configuration>
+                                    <nodeVersion>${frontend-maven-plugin.node.version}</nodeVersion>
+                                    <npmVersion>${frontend-maven-plugin.npm.version}</npmVersion>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>npm install</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>install</arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>gulp build</id>
+                                <goals>
+                                    <goal>gulp</goal>
+                                </goals>
+                                <configuration>
+                                    <srcdir>${jsfrontend.sources}</srcdir>
+                                    <outputdir>${jsfrontend.web.sources}</outputdir>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>clean-jsfrontend-node</id>
             <activation>
