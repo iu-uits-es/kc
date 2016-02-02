@@ -34,7 +34,6 @@
     <bean id="krmsCacheAdminService" parent="grlImporter" p:serviceName="krmsCacheAdminService" />
     <bean id="errorReporter" parent="grlImporter" p:serviceName="errorReporter"/>
     <bean id="globalVariableService" parent="grlImporter" p:serviceName="globalVariableService" />
-    <bean id="dictionaryValidationService" parent="grlImporter" p:serviceName="dictionaryValidationService"/>
 
     <!-- making singleton false to prevent caching and avoid an NPE, this indicates a dependency issue across modules -->
     <bean id="awardAmountInfoService" parent="grlImporter" p:serviceName="awardAmountInfoService" p:singleton="false" />
@@ -48,5 +47,6 @@
     <bean id="kcEntityManager" parent="grlImporter" p:serviceName="kcEntityManager" />
     <bean id="persistenceVerificationService" parent="grlImporter" p:serviceName="persistenceVerificationService" />
     <bean id="errorHandlingUtilService" parent="grlImporter" p:serviceName="errorHandlingUtilService" />
+    <bean id="restAuditLoggerFactory" parent="grlImporter" p:serviceName="restAuditLoggerFactory" />
 
 </beans>

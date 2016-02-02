@@ -105,6 +105,7 @@ public final class KeyConstants {
     public static final String ERROR_DELETE_LEAD_UNIT = "error.deleteLeadUnit";
     public static final String ERROR_ADD_EXISTING_UNIT = "error.addExistingUnit";
     public static final String ERROR_PROPOSAL_PERSON_CERTIFICATION_INCOMPLETE = "error.proposalperson.certfication.incomplete";
+    public static final String ERROR_PROPOSAL_PERSON_NONEMPLOYEE_CERTIFICATION_INCOMPLETE="error.nonemployee.certification.required";
     public static final String ERROR_INVALID_YEAR = "error.invalid.year";
     public static final String ERROR_INVALID_UNIT = "error.invalid.unit";
     public static final String ERROR_SELECT_UNIT="error.select.unit";
@@ -170,6 +171,7 @@ public final class KeyConstants {
     public static final String ERROR_AWARD_BUDGET_START_DATE_MISSING = "error.award.budgetVersion.startDate.required";
     public static final String ERROR_AWARD_BUDGET_END_DATE_MISSING = "error.award.budgetVersion.endDate.required";
     public static final String WARNING_AWARD_BUDGET_LINE_ITEM_DATES_UPDATED = "warn.award.budget.line.item.dates.updated";
+    public static final String WARNING_AWARD_BUDGET_PERSON_EFFECTIVE_DATE = "warn.award.budget.effective.rate.start.date";
     public static final String QUESTION_TOTALCOSTLIMIT_CHANGED = "document.question.totalCostLimit.changed";
     public static final String ERROR_BUDGET_REJECT_NO_REASON = "error.budget.reject.noReason";
     public static final String ERROR_COMPLETE_BUDGET_LOCK = "error.completeBudget.locked";
@@ -889,6 +891,7 @@ public final class KeyConstants {
     public static final String ERROR_DATE_NOT_SET = "error.date.not.set";
     public static final String ERROR_NET_TOTALS_TRANSACTION = "error.net.totals.transaction";
     public static final String WARNING_TRANSACTION_OBLI_LESS_THAN_BUDGET_LIMIT = "warning.transaction.obligated.less.than.limit";
+    public static final String CREATE_TIME_AND_MONEY_PENDING_AWARD_EXISTS_ERROR = "error.timeandmoney.create.pending.award.exists";
 
     //Award Hierarchy
     public static final String ERROR_CREATE_NEW_CHILD_OTHER_AWARD_NOT_SELECTED = "error.create.new.child.other.award.not.selected";

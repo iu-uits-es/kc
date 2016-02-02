@@ -47,13 +47,12 @@
                             <bean parent="Uif-PrimaryActionButton" p:order="20" p:actionLabel="Notify All" p:actionScript="showDialog('PropDev-Personal-NotifyPersonsDialog')"  p:cssClasses="pull-right"
                                   p:render="@{#actionFlags[#{T(org.kuali.coeus.propdev.impl.core.ProposalDevelopmentConstants.PropDevDocumentActions).NOTIFY_PROPOSAL_PERSONS}]
                                   and document.developmentProposal.proposalPersons.size() > 0
-                                  and !#ViewHelper.areAllCertificationsComplete(document.developmentProposal.proposalPersons)
                                   and !document.developmentProposal.isChild()
                                   and !#parent.readOnly}"/>
                             <bean parent="Uif-PrimaryActionButton" p:actionLabel="COI Disclosure Status"
                                                p:order="35"  p:actionScript="showDialog('PropDev-PersonnelPage-COIStatus-Dialog');"
                                                 p:render="@{#ViewHelper.displayCoiDisclosureStatus() and
-                                                personnelWhoRequireDisclosure.size() > 0}"/>
+                                                document.developmentProposal.proposalPersons.size() > 0}"/>
                         </list>
                     </property>
                 </bean>
@@ -323,7 +322,6 @@
                                               p:render="@{#actionFlags[#{T(org.kuali.coeus.propdev.impl.core.ProposalDevelopmentConstants.PropDevDocumentActions).NOTIFY_PROPOSAL_PERSONS}] 
                                               and !#empty(#lp.versionNumber) 
                                               and #ViewHelper.canViewCertificationTab(document,#line) 
-                                              and !#lp.questionnairesCompleted 
                                               and !document.developmentProposal.isChild()
                                               and !#parent.readOnly}"
                                               p:order="10"/>
@@ -650,7 +648,7 @@
                       p:order="20" />
                 <bean parent="Uif-PrimaryActionButton-Small" p:methodToCall="clearAnswers" p:actionLabel="Clear All Answers"
                       p:actionParameters="personNumber:@{(#line.proposalPersonNumber)}"
-                      p:render="@{!document.developmentProposal.isChild() and !#ViewHelper.isCertQuestViewOnly(document,#line)}"
+                      p:render="@{!document.developmentProposal.isChild() and #ViewHelper.canSaveCertification(document,#line)}"
                       p:order="30">
                     <property name="confirmationDialog">
                         <bean parent="Uif-DialogGroup-OkCancel" p:promptText="Are you sure you want to clear all the answers?"/>
@@ -743,7 +741,7 @@
             <list>
             	<bean parent="Uif-InputField" p:propertyName="selectedPerson" p:order="20">
 					<property name="control">
-						<bean parent="Uif-CheckboxControl" p:disabled="@{#lp.questionnairesCompleted}"/>
+						<bean parent="Uif-CheckboxControl"/>
 					</property>
 				</bean>
                 <bean parent="Uif-InputField" p:label="Name" p:propertyName="fullName" p:order="10" p:readOnly="true"/>
@@ -797,8 +795,9 @@
          parent="Uif-TableCollectionSection" p:collectionObjectClass="org.kuali.coeus.propdev.impl.person.ProposalPerson"
           p:propertyName="personnelWhoRequireDisclosure" p:addWithDialog="false"
 		p:renderAddLine="false" p:layoutManager.renderSequenceField="false"
-		p:renderInactiveToggleButton="false" p:layoutManager.richTable.render="true" p:renderLineActions="false">
-		
+		p:renderInactiveToggleButton="false" p:layoutManager.richTable.render="true" p:renderLineActions="false"
+                p:render="@{personnelWhoRequireDisclosure.size() > 0}">
+
 		<property name="layoutManager.richTable.templateOptions">
 			<map>
 				<entry key="sDom" value="tip" />
@@ -813,9 +812,9 @@
 			<property name="items">
 				<list>
 					<bean parent="Uif-Message"
-						p:messageText="Project: @{#line.developmentProposal.proposalNumber}"
+						p:messageText="Project: @{developmentProposal.proposalNumber}"
 						p:order="10" p:style="font-weight: bold; font-size: larger;" />
-					<bean parent="Uif-Message" p:messageText="Title: @{#line.developmentProposal.title}"
+					<bean parent="Uif-Message" p:messageText="Title: @{developmentProposal.title}"
 						p:order="20" p:style="font-weight: bold; font-size: larger;" />
 				</list>
 			</property>

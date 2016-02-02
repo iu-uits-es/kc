@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.kuali.coeus.common.framework.krms.KrmsRulesExecutionService;
+import org.kuali.coeus.common.notification.impl.bo.NotificationType;
 import org.kuali.coeus.common.view.wizard.framework.WizardControllerService;
 import org.kuali.coeus.common.budget.framework.core.Budget;
 import org.kuali.coeus.common.framework.ruleengine.KcBusinessRulesEngine;
@@ -60,11 +61,13 @@ import org.kuali.rice.core.api.config.property.ConfigurationService;
 import org.kuali.rice.core.api.util.RiceKeyConstants;
 import org.kuali.rice.coreservice.framework.parameter.ParameterConstants;
 import org.kuali.rice.coreservice.framework.parameter.ParameterService;
+import org.kuali.rice.kew.actionrequest.ActionRequestValue;
+import org.kuali.rice.kew.actionrequest.service.ActionRequestService;
+import org.kuali.rice.kew.actiontaken.ActionTakenValue;
+import org.kuali.rice.kew.actiontaken.service.ActionTakenService;
 import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.kew.api.WorkflowDocument;
-import org.kuali.rice.kew.api.action.ActionRequest;
-import org.kuali.rice.kew.api.action.RoutingReportCriteria;
-import org.kuali.rice.kew.api.action.WorkflowDocumentActionsService;
+import org.kuali.rice.kew.api.action.*;
 import org.kuali.rice.kew.api.document.DocumentDetail;
 import org.kuali.rice.kim.api.group.GroupService;
 import org.kuali.rice.krad.document.Document;
@@ -87,9 +90,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+
 @Controller
 public class ProposalDevelopmentSubmitController extends
 		ProposalDevelopmentControllerBase {
+
+    public static final String REJECT_ACTION_TYPE_CODE = "500";
+    public static final String REJECT_NOTIFICATION = "Reject Notification";
+
+    public static final String ANOTHER_USER_APPROVED_ACTION_TYPE_CODE = "501";
+    public static final String ANOTHER_USER_APPROVED_NOTIFICATION = "Another User Approved Notification";
 
     private final Logger LOGGER = Logger.getLogger(ProposalDevelopmentSubmitController.class);
 
@@ -148,7 +160,7 @@ public class ProposalDevelopmentSubmitController extends
     @Qualifier("krmsRulesExecutionService")
     private KrmsRulesExecutionService krmsRulesExecutionService;
 
-        @Autowired
+    @Autowired
     @Qualifier("parameterService")
     private ParameterService parameterService;
     
@@ -171,6 +183,14 @@ public class ProposalDevelopmentSubmitController extends
     @Autowired
     @Qualifier("kcWorkflowService")
     private KcWorkflowService kcWorkflowService;
+
+    @Autowired
+    @Qualifier("actionRequestService")
+    private ActionRequestService actionRequestService;
+
+    @Autowired
+    @Qualifier("actionTakenService")
+    private ActionTakenService actionTakenService;
 
     @Transactional @RequestMapping(value = "/proposalDevelopment", params = "methodToCall=populateAdHocs")
     public ModelAndView populateAdHocs(@ModelAttribute("KualiForm") ProposalDevelopmentDocumentForm form) throws Exception {
@@ -223,7 +243,19 @@ public class ProposalDevelopmentSubmitController extends
         }
         form.setCanEditView(null);
         form.setEvaluateFlagsAndModes(true);
-        getTransactionalDocumentControllerService().route(form);
+        if (ProposalState.REVISIONS_REQUESTED.equals(form.getDevelopmentProposal().getProposalStateTypeCode())) {
+        	if (workflowDoc.isApprovalRequested()) {
+        		workflowDoc.approve("Revisions Requested Re-Submit");
+        	} else {
+        		form.getProposalDevelopmentDocument().getActionRequests().stream()
+        			.filter(actionRequest -> ProposalDevelopmentConstants.KewConstants.AGGREGATORS_REQUEST_FOR_REVIEW_ANNOTATION.equals(actionRequest.getAnnotation()))
+        			.map(actionRequest -> getActionRequestService().findByActionRequestId(actionRequest.getId()))
+        			.forEach(actionRequest -> getActionRequestService().deactivateRequest(null, actionRequest));
+        		getTransactionalDocumentControllerService().route(form);
+        	}
+    	} else {
+    		getTransactionalDocumentControllerService().route(form);
+    	}
         getPessimisticLockService().releaseWorkflowPessimisticLocking(form.getProposalDevelopmentDocument());
         updateProposalAdminDetailsForSubmit(form.getDevelopmentProposal());
         return updateProposalState(form);
@@ -499,7 +531,7 @@ public class ProposalDevelopmentSubmitController extends
         if (proposalDevelopmentDocument.getDocumentHeader().getWorkflowDocument().isFinal()) {
             getGlobalVariableService().getMessageMap().putInfo(Constants.NO_FIELD, KeyConstants.MESSAGE_INSTITUTIONAL_PROPOSAL_NOT_CREATED);
         } else {
-            getGlobalVariableService().getMessageMap().putInfo(Constants.NO_FIELD,KeyConstants.MESSAGE_INSTITUTIONAL_PROPOSAL_NOT_CREATED_INROUTE);
+            getGlobalVariableService().getMessageMap().putInfo(Constants.NO_FIELD, KeyConstants.MESSAGE_INSTITUTIONAL_PROPOSAL_NOT_CREATED_INROUTE);
         }
     }
 
@@ -674,7 +706,12 @@ public class ProposalDevelopmentSubmitController extends
             }
         }
 
+        List<NotificationTypeRecipient> recipients = getApproversInCurrentRequest(globalVariableService.getUserSession().getLoggedInUserPrincipalId(),
+                                                                                    form, Boolean.TRUE);
         getTransactionalDocumentControllerService().performWorkflowAction(form, UifConstants.WorkflowAction.APPROVE);
+        if (recipients.size() != 0) {
+            sendAnotherUserApprovedNotification(form, recipients);
+        }
         getPessimisticLockService().releaseWorkflowPessimisticLocking(form.getProposalDevelopmentDocument());
 		if (getKcWorkflowService().isFinalApproval(workflowDoc)) {
 			updateProposalAdminDetailsForFinalApproval(form.getDevelopmentProposal());
@@ -686,6 +723,16 @@ public class ProposalDevelopmentSubmitController extends
         form.setCanEditView(null);
         form.setEvaluateFlagsAndModes(true);
         return updateProposalState(form);
+    }
+
+    protected void sendAnotherUserApprovedNotification(ProposalDevelopmentDocumentForm form, List<NotificationTypeRecipient> recipients) {
+        prepareNotification(form.getDevelopmentProposal());
+        ProposalDevelopmentNotificationContext notificationContext = new ProposalDevelopmentNotificationContext(form.getDevelopmentProposal(),
+                ANOTHER_USER_APPROVED_ACTION_TYPE_CODE, ANOTHER_USER_APPROVED_NOTIFICATION, getRenderer());
+        form.getNotificationHelper().initializeDefaultValues(notificationContext);
+        if (getKcNotificationService().getNotificationType(notificationContext) != null) {
+            getKcNotificationService().sendNotification(notificationContext, form.getNotificationHelper().getNotification(), recipients);
+        }
     }
 
     private boolean canGenerateRequestsInFuture(WorkflowDocument workflowDoc, String principalId) throws Exception {
@@ -757,30 +804,93 @@ public class ProposalDevelopmentSubmitController extends
     }
 
     protected ModelAndView updateProposalState(ProposalDevelopmentDocumentForm form) throws Exception{
-    if (getKcWorkflowService().isFinalApproval(form.getWorkflowDocument())) {
-        form.getDevelopmentProposal().setProposalStateTypeCode(ProposalState.APPROVAL_GRANTED);
-        getGlobalVariableService().getMessageMap().getInfoMessages().clear();
-        getGlobalVariableService().getMessageMap().putInfoForSectionId(ProposalDevelopmentConstants.KradConstants.SUBMIT_PAGE, KeyConstants.APPROVAL_CYCLE_COMPLETE);
-    } else {
-        form.getDevelopmentProposal().setProposalStateTypeCode(getProposalStateService().getProposalStateTypeCode(form.getProposalDevelopmentDocument(), false));
-    }
-    getDataObjectService().wrap(form.getDevelopmentProposal()).fetchRelationship("proposalState");
-    return getModelAndViewService().getModelAndView(form);
+        if (getKcWorkflowService().isFinalApproval(form.getWorkflowDocument())) {
+            form.getDevelopmentProposal().setProposalStateTypeCode(ProposalState.APPROVAL_GRANTED);
+            getGlobalVariableService().getMessageMap().getInfoMessages().clear();
+            getGlobalVariableService().getMessageMap().putInfoForSectionId(ProposalDevelopmentConstants.KradConstants.SUBMIT_PAGE, KeyConstants.APPROVAL_CYCLE_COMPLETE);
+        } else {
+            form.getDevelopmentProposal().setProposalStateTypeCode(getProposalStateService().getProposalStateTypeCode(form.getProposalDevelopmentDocument(), false));
+        }
+        getDataObjectService().wrap(form.getDevelopmentProposal()).fetchRelationship("proposalState");
+        return getModelAndViewService().getModelAndView(form);
     }
 
     @Transactional @RequestMapping(value = "/proposalDevelopment", params="methodToCall=reject")
     public ModelAndView reject(@ModelAttribute("KualiForm") ProposalDevelopmentDocumentForm form) throws Exception{
+        ProposalDevelopmentRejectionBean bean = form.getProposalDevelopmentRejectionBean();
+        if (new ProposalDevelopmentRejectionRule().proccessProposalDevelopmentRejection(bean)){
+            List<NotificationTypeRecipient> recipients = getApproversInCurrentRequest(globalVariableService.getUserSession().getPrincipalId(), form, Boolean.FALSE);
+            getProposalHierarchyService().rejectProposalDevelopmentDocument(form.getDevelopmentProposal().getProposalNumber(), bean.getRejectReason(),
+                    getGlobalVariableService().getUserSession().getPrincipalId(),bean.getRejectFile());
+            updateProposalAdminDetailsForReject(form.getDevelopmentProposal());
+            if (recipients.size() != 0) {
+                sendRejectNotification(form, recipients);
+            }
+        }
 
-    ProposalDevelopmentRejectionBean bean = form.getProposalDevelopmentRejectionBean();
-    if (new ProposalDevelopmentRejectionRule().proccessProposalDevelopmentRejection(bean)){
-        getProposalHierarchyService().rejectProposalDevelopmentDocument(form.getDevelopmentProposal().getProposalNumber(), bean.getRejectReason(),
-                getGlobalVariableService().getUserSession().getPrincipalId(),bean.getRejectFile());
-        updateProposalAdminDetailsForReject(form.getDevelopmentProposal());
+        form.setCanEditView(null);
+        form.setEvaluateFlagsAndModes(true);
+        return getTransactionalDocumentControllerService().reload(form);
     }
 
-    form.setCanEditView(null);
-    form.setEvaluateFlagsAndModes(true);
-    return getTransactionalDocumentControllerService().reload(form);
+    protected void sendRejectNotification(ProposalDevelopmentDocumentForm form, List<NotificationTypeRecipient> recipients) {
+        prepareNotification(form.getDevelopmentProposal());
+        ProposalDevelopmentNotificationContext notificationContext = new ProposalDevelopmentNotificationContext(
+                                                                        form.getDevelopmentProposal(),
+                                                                        REJECT_ACTION_TYPE_CODE, REJECT_NOTIFICATION, getRenderer());
+        form.getNotificationHelper().initializeDefaultValues(notificationContext);
+        if (getKcNotificationService().getNotificationType(notificationContext) != null) {
+            getKcNotificationService().sendNotification(notificationContext, form.getNotificationHelper().getNotification(), recipients);
+        }
+    }
+
+    protected void prepareNotification(DevelopmentProposal developmentProposal) {
+        getRenderer().setDevelopmentProposal(developmentProposal);
+        getRenderer().setProposalPerson(developmentProposal.getPrincipalInvestigator());
+    }
+
+    protected NotificationTypeRecipient createRecipientFromPerson(String personId) {
+        NotificationTypeRecipient recipient = new NotificationTypeRecipient();
+        recipient.setPersonId(personId);
+        return recipient;
+    }
+
+    protected List<NotificationTypeRecipient> getApproversInCurrentRequest(String loggedInUser, ProposalDevelopmentDocumentForm form, boolean checkFirstOrAll) {
+        HashSet<String> otherApprovers = filterApproversFromActionRequest(form.getProposalDevelopmentDocument().getDocumentNumber(), loggedInUser, checkFirstOrAll);
+        List<NotificationTypeRecipient> recipients = otherApprovers.stream().map(otherApprover -> createRecipientFromPerson(otherApprover)).collect(toList());
+        return recipients;
+
+    }
+
+    protected HashSet<String> filterApproversFromActionRequest(String documentNumber, String loggedInUser, boolean checkFirstOrAll) {
+        List<ActionTakenValue> actionsTaken = getActionsTakenByDocumentId(documentNumber);
+        final HashSet<String> actionTakenSet = actionsTaken.stream().map(ActionTakenValue::getActionTakenId).collect(toCollection(HashSet::new));
+
+        List<ActionRequestValue> allActionRequests = getAllActionRequestsByDocumentId(documentNumber);
+        HashSet<String> users = allActionRequests.stream().filter(
+                actionRequestValue -> getOtherCurrentlyActiveRequests(loggedInUser, actionTakenSet, actionRequestValue, checkFirstOrAll)
+                ).map(ActionRequestValue::getPrincipalId).collect(toCollection(HashSet::new));
+
+        return users;
+    }
+
+    protected boolean getOtherCurrentlyActiveRequests(String loggedInUser, HashSet<String> actionTakenSet, ActionRequestValue actionRequestValue, boolean checkFirstOrAll) {
+        return !actionTakenSet.contains(actionRequestValue.getActionTakenId()) &&
+                ActionRequestStatus.ACTIVATED.getCode().equalsIgnoreCase(actionRequestValue.getStatus()) &&
+                !loggedInUser.equalsIgnoreCase(actionRequestValue.getPrincipalId()) &&
+                checkFirstOrAllPolicy(actionRequestValue, checkFirstOrAll);
+    }
+
+    protected boolean checkFirstOrAllPolicy(ActionRequestValue actionRequestValue, boolean checkFirstOrAll) {
+        return checkFirstOrAll ? ActionRequestPolicy.FIRST.getCode().equalsIgnoreCase(actionRequestValue.getApprovePolicy()) : Boolean.TRUE;
+    }
+
+    public List<ActionTakenValue> getActionsTakenByDocumentId(String documentNumber) {
+        return (List<ActionTakenValue>) actionTakenService.findByDocumentId(documentNumber);
+    }
+
+    public List<ActionRequestValue> getAllActionRequestsByDocumentId(String documentNumber) {
+        return actionRequestService.findAllActionRequestsByDocumentId(documentNumber);
     }
 
     @Transactional @RequestMapping(value = "/proposalDevelopment", params="methodToCall=cancelReject")
@@ -944,5 +1054,21 @@ public class ProposalDevelopmentSubmitController extends
 
     public void setKcWorkflowService(KcWorkflowService kcWorkflowService) {
         this.kcWorkflowService = kcWorkflowService;
+    }
+
+    public ActionRequestService getActionRequestService() {
+        return actionRequestService;
+    }
+
+    public void setActionRequestService(ActionRequestService actionRequestService) {
+        this.actionRequestService = actionRequestService;
+    }
+
+    public ActionTakenService getActionTakenService() {
+        return actionTakenService;
+    }
+
+    public void setActionTakenService(ActionTakenService actionTakenService) {
+        this.actionTakenService = actionTakenService;
     }
 }

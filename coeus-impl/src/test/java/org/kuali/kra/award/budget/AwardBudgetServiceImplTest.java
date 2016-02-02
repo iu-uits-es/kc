@@ -22,13 +22,16 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentDocument;
+import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
 import org.kuali.kra.award.budget.document.AwardBudgetDocument;
 import org.kuali.kra.award.home.Award;
 import org.kuali.kra.award.home.AwardService;
 import org.kuali.kra.award.home.fundingproposal.AwardFundingProposal;
+import org.kuali.coeus.common.budget.framework.core.Budget;
 import org.kuali.coeus.common.budget.framework.core.category.BudgetCategory;
 import org.kuali.coeus.common.budget.framework.nonpersonnel.BudgetLineItem;
 import org.kuali.coeus.common.budget.framework.period.BudgetPeriod;
@@ -39,17 +42,15 @@ import org.kuali.kra.institutionalproposal.home.InstitutionalProposalBoLite;
 import org.kuali.kra.institutionalproposal.proposaladmindetails.ProposalAdminDetails;
 import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
 import org.kuali.coeus.propdev.impl.budget.ProposalDevelopmentBudgetExt;
+import org.kuali.rice.krad.bo.BusinessObject;
 import org.kuali.rice.krad.bo.PersistableBusinessObjectExtension;
 import org.kuali.rice.krad.data.DataObjectService;
 import org.kuali.rice.krad.util.GlobalVariables;
-
-import com.ibm.icu.util.Calendar;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -73,7 +74,7 @@ public class AwardBudgetServiceImplTest {
     @Test
     public void testFindBudgetPeriodsFromLinkedProposal() {
         awardBudgetService = new AwardBudgetServiceImpl(){
-            protected List findMatching(Class clazz, String key, Object value){
+            protected <T extends BusinessObject> List<T>  findMatching(Class<T> clazz, String key, Object value){
                 return mockedFindObjectsWithSingleKey(clazz, key, value);
             }
         };
@@ -115,12 +116,7 @@ public class AwardBudgetServiceImplTest {
     
     @Test
     public void testCopyProposalBudgetLineItemsToAwardBudget() {
-    	awardBudgetService = new AwardBudgetServiceImpl() {
-    		@Override
-    		protected void populateCalculatedAmount(AwardBudgetPeriodExt awardBudgetPeriod, AwardBudgetLineItemExt awardBudgetLineItem) {
-    			return;
-    		}
-    	};
+    	awardBudgetService = getAwardBudgetServiceForTesting();
     	LocalDateTime awardBudgetStartDate = LocalDateTime.now().minusWeeks(26);
 		LocalDateTime awardBudgetEndDate = awardBudgetStartDate.plusYears(1);
 		final LocalDateTime proposalBudgetStartDate = awardBudgetStartDate;
@@ -138,12 +134,7 @@ public class AwardBudgetServiceImplTest {
     
     @Test
     public void testCopyProposalBudgetLineItemsToAwardBudgetWithDifferentStartDates() {
-    	awardBudgetService = new AwardBudgetServiceImpl() {
-    		@Override
-    		protected void populateCalculatedAmount(AwardBudgetPeriodExt awardBudgetPeriod, AwardBudgetLineItemExt awardBudgetLineItem) {
-    			return;
-    		}
-    	};
+    	awardBudgetService = getAwardBudgetServiceForTesting();
     	LocalDateTime awardBudgetStartDate = LocalDateTime.now().minusWeeks(26);
     	LocalDateTime awardBudgetEndDate = awardBudgetStartDate.plusYears(1);
     	final LocalDateTime proposalBudgetStartDate = awardBudgetStartDate.minusWeeks(2);
@@ -160,17 +151,12 @@ public class AwardBudgetServiceImplTest {
     	assertEquals(convertToSqlDate(proposalBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getEndDate());
     	assertEquals(convertToSqlDate(awardBudgetStartDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getStartDate());
     	assertEquals(convertToSqlDate(proposalBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getEndDate());
-    	assertEquals(1, GlobalVariables.getMessageMap().getWarningCount());
+    	assertEquals(2, GlobalVariables.getMessageMap().getWarningCount());
     }
     
     @Test
     public void testCopyProposalBudgetLineItemsToAwardBudgetWithDifferentEndDates() {
-    	awardBudgetService = new AwardBudgetServiceImpl() {
-    		@Override
-    		protected void populateCalculatedAmount(AwardBudgetPeriodExt awardBudgetPeriod, AwardBudgetLineItemExt awardBudgetLineItem) {
-    			return;
-    		}
-    	};
+    	awardBudgetService = getAwardBudgetServiceForTesting();
     	LocalDateTime awardBudgetStartDate = LocalDateTime.now().minusWeeks(26);
     	LocalDateTime awardBudgetEndDate = awardBudgetStartDate.plusYears(1);
     	final LocalDateTime proposalBudgetStartDate = awardBudgetStartDate.plusWeeks(2);
@@ -187,8 +173,85 @@ public class AwardBudgetServiceImplTest {
     	assertEquals(convertToSqlDate(awardBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getEndDate());
     	assertEquals(convertToSqlDate(proposalBudgetStartDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getStartDate());
     	assertEquals(convertToSqlDate(awardBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getEndDate());
+    	assertEquals(2, GlobalVariables.getMessageMap().getWarningCount());
+    }
+    
+    @Test
+    public void testCopyProposalBudgetLineItemsToAwardBudget_BeforePeriod() {
+    	awardBudgetService = getAwardBudgetServiceForTesting();
+    	LocalDateTime awardBudgetStartDate = LocalDateTime.now();
+    	LocalDateTime awardBudgetEndDate = awardBudgetStartDate.plusYears(1);
+    	final LocalDateTime proposalBudgetStartDate = awardBudgetStartDate.minusYears(5);
+    	final LocalDateTime proposalBudgetEndDate = awardBudgetEndDate.minusYears(5);
+    	
+    	AwardBudgetPeriodExt awardBudgetPeriod1 = prepareAwardBudgetPeriod(awardBudgetStartDate, awardBudgetEndDate);
+    	
+    	BudgetPeriod proposalBudgetPeriod = prepareProposalBudgetPeriod(proposalBudgetStartDate, proposalBudgetEndDate);
+    	
+    	GlobalVariables.getMessageMap().clearErrorMessages();
+    	awardBudgetService.copyProposalBudgetLineItemsToAwardBudget(awardBudgetPeriod1, proposalBudgetPeriod);
+    	assertEquals(1, awardBudgetPeriod1.getBudgetLineItems().size());
+    	assertEquals(convertToSqlDate(awardBudgetStartDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getStartDate());
+    	assertEquals(convertToSqlDate(awardBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getEndDate());
+    	assertEquals(convertToSqlDate(awardBudgetStartDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getStartDate());
+    	assertEquals(convertToSqlDate(awardBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getEndDate());
+    	assertEquals(2, GlobalVariables.getMessageMap().getWarningCount());
+    }
+    
+    @Test
+    public void testCopyProposalBudgetLineItemsToAwardBudget_AfterPeriod() {
+    	awardBudgetService = getAwardBudgetServiceForTesting();
+    	LocalDateTime awardBudgetStartDate = LocalDateTime.now();
+    	LocalDateTime awardBudgetEndDate = awardBudgetStartDate.plusYears(1);
+    	final LocalDateTime proposalBudgetStartDate = awardBudgetStartDate.plusYears(5);
+    	final LocalDateTime proposalBudgetEndDate = awardBudgetEndDate.plusYears(5);
+    	
+    	AwardBudgetPeriodExt awardBudgetPeriod1 = prepareAwardBudgetPeriod(awardBudgetStartDate, awardBudgetEndDate);
+    	
+    	BudgetPeriod proposalBudgetPeriod = prepareProposalBudgetPeriod(proposalBudgetStartDate, proposalBudgetEndDate);
+    	
+    	GlobalVariables.getMessageMap().clearErrorMessages();
+    	awardBudgetService.copyProposalBudgetLineItemsToAwardBudget(awardBudgetPeriod1, proposalBudgetPeriod);
+    	assertEquals(1, awardBudgetPeriod1.getBudgetLineItems().size());
+    	assertEquals(convertToSqlDate(awardBudgetStartDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getStartDate());
+    	assertEquals(convertToSqlDate(awardBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getEndDate());
+    	assertEquals(convertToSqlDate(awardBudgetStartDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getStartDate());
+    	assertEquals(convertToSqlDate(awardBudgetEndDate), awardBudgetPeriod1.getBudgetLineItems().get(0).getBudgetPersonnelDetailsList().get(0).getEndDate());
+    	assertEquals(2, GlobalVariables.getMessageMap().getWarningCount());
+    }
+    
+    @Test
+    public void testCopyProposalBudgetLineItemsToAwardBudget_EffectiveDateBeforeStart() {
+    	awardBudgetService = getAwardBudgetServiceForTesting();
+    	LocalDateTime awardBudgetStartDate = LocalDateTime.now();
+    	LocalDateTime awardBudgetEndDate = awardBudgetStartDate.plusYears(1);
+    	final LocalDateTime proposalBudgetStartDate = awardBudgetStartDate;
+    	final LocalDateTime proposalBudgetEndDate = awardBudgetEndDate;
+    	
+    	AwardBudgetPeriodExt awardBudgetPeriod1 = prepareAwardBudgetPeriod(awardBudgetStartDate, awardBudgetEndDate);
+    	
+    	BudgetPeriod proposalBudgetPeriod = prepareProposalBudgetPeriod(proposalBudgetStartDate, proposalBudgetEndDate);
+    	proposalBudgetPeriod.getBudget().getBudgetPersons().get(0).setEffectiveDate(convertToSqlDate(proposalBudgetStartDate.minusYears(1)));
+    	
+    	GlobalVariables.getMessageMap().clearErrorMessages();
+    	awardBudgetService.copyProposalBudgetLineItemsToAwardBudget(awardBudgetPeriod1, proposalBudgetPeriod);
+    	assertEquals(1, awardBudgetPeriod1.getBudgetLineItems().size());
+    	assertEquals(1, awardBudgetPeriod1.getBudget().getBudgetPersons().size());
     	assertEquals(1, GlobalVariables.getMessageMap().getWarningCount());
     }
+
+	AwardBudgetServiceImpl getAwardBudgetServiceForTesting() {
+		return new AwardBudgetServiceImpl() {
+    		@Override
+    		protected void populateCalculatedAmount(AwardBudgetPeriodExt awardBudgetPeriod, AwardBudgetLineItemExt awardBudgetLineItem) {
+
+    		}
+    		@Override
+    		Date getEffectiveRateStartDate(final Budget awardBudget) {
+    			return awardBudget.getStartDate();
+    		}
+    	};
+	}    
 
 	protected BudgetPeriod prepareProposalBudgetPeriod(
 			final LocalDateTime proposalBudgetStartDate,
@@ -216,6 +279,7 @@ public class AwardBudgetServiceImplTest {
 		};
 		person.setNonEmployeeFlag(false);
 		person.setPersonId("1");
+		person.setEffectiveDate(convertToSqlDate(proposalBudgetStartDate));
 		budget.getBudgetPersons().add(person);
 		BudgetPersonnelDetails personnelLineItem = new BudgetPersonnelDetails() {
 			@Override
@@ -236,6 +300,7 @@ public class AwardBudgetServiceImplTest {
 		AwardBudgetDocument awardBudgetDoc = new AwardBudgetDocument();
     	AwardBudgetExt awardBudget = new AwardBudgetExt();
     	awardBudget.setBudgetDocument(awardBudgetDoc);
+    	awardBudget.setStartDate(convertToSqlDate(awardBudgetStartDate));
     	AwardBudgetPeriodExt awardBudgetPeriod1 = new AwardBudgetPeriodExt();
     	awardBudgetPeriod1.setBudget(awardBudget);
     	awardBudget.getBudgetPeriods().add(awardBudgetPeriod1);
@@ -245,7 +310,7 @@ public class AwardBudgetServiceImplTest {
 	}
 
 	protected Date convertToSqlDate(LocalDateTime awardBudgetStartDate) {
-		return new java.sql.Date(awardBudgetStartDate.toEpochSecond(ZoneOffset.ofHours(0)));
+		return new java.sql.Date(awardBudgetStartDate.toInstant(ZoneOffset.ofHours(0)).toEpochMilli());
 	}
     
     protected List<AwardFundingProposal> getTestAwardFundingProposals() {
@@ -261,9 +326,9 @@ public class AwardBudgetServiceImplTest {
 	    result.add(temp);
 	    return result;
     }
-    
-    @SuppressWarnings("unchecked")
-    protected List mockedFindObjectsWithSingleKey(Class clazz, String key, Object value) {
+
+	@SuppressWarnings("unchecked")
+    protected <T extends BusinessObject> List<T>  mockedFindObjectsWithSingleKey(Class<T> clazz, String key, Object value) {
     	List result = new ArrayList();
     	if (clazz == AwardFundingProposal.class) {
             assertEquals(awardId, value);
@@ -288,4 +353,59 @@ public class AwardBudgetServiceImplTest {
         }
         return result;
     }
+
+	@Test
+	public void test_calculate_calculateTotalDirectCost_unset_previous_fringe_amount_current_fringe_amount() {
+		AwardBudgetPeriodExt period = new AwardBudgetPeriodExt();
+		final ScaleTwoDecimal currentTdc = new ScaleTwoDecimal(100);
+		period.setTotalDirectCost(currentTdc);
+
+		final ScaleTwoDecimal newTdc = new AwardBudgetServiceImpl().calculateTotalDirectCost(period);
+
+		Assert.assertEquals(currentTdc, newTdc);
+	}
+
+	@Test
+	public void test_calculate_calculateTotalDirectCost_unset_previous_fringe_amount() {
+		AwardBudgetPeriodExt period = new AwardBudgetPeriodExt();
+		final ScaleTwoDecimal currentTdc = new ScaleTwoDecimal(100);
+		final ScaleTwoDecimal fringeAmount = new ScaleTwoDecimal(500);
+		period.setTotalDirectCost(currentTdc);
+		period.setTotalFringeAmount(fringeAmount);
+
+		final ScaleTwoDecimal newTdc = new AwardBudgetServiceImpl().calculateTotalDirectCost(period);
+
+		//since the previous fringe amount and the new fringe amount are initialized to the same, the currentTdc will be 100
+		Assert.assertEquals(currentTdc, newTdc);
+	}
+
+	@Test
+	public void test_calculate_calculateTotalDirectCostAdd() {
+		AwardBudgetPeriodExt period = new AwardBudgetPeriodExt();
+		final ScaleTwoDecimal currentTdc = new ScaleTwoDecimal(100);
+		final ScaleTwoDecimal fringeAmount = new ScaleTwoDecimal(500);
+		final ScaleTwoDecimal previousFringeAmount = ScaleTwoDecimal.ZERO;
+		period.setTotalDirectCost(currentTdc);
+		period.setTotalFringeAmount(fringeAmount);
+		period.setPrevTotalFringeAmount(previousFringeAmount);
+
+		final ScaleTwoDecimal newTdc = new AwardBudgetServiceImpl().calculateTotalDirectCost(period);
+
+		Assert.assertEquals(currentTdc.add(fringeAmount.subtract(previousFringeAmount)), newTdc);
+	}
+
+	@Test
+	public void test_calculate_calculateTotalDirectCostSubtract() {
+		AwardBudgetPeriodExt period = new AwardBudgetPeriodExt();
+		final ScaleTwoDecimal currentTdc = new ScaleTwoDecimal(100);
+		final ScaleTwoDecimal fringeAmount = ScaleTwoDecimal.ZERO;
+		final ScaleTwoDecimal previousFringeAmount = new ScaleTwoDecimal(500);
+		period.setTotalDirectCost(currentTdc);
+		period.setTotalFringeAmount(fringeAmount);
+		period.setPrevTotalFringeAmount(previousFringeAmount);
+
+		final ScaleTwoDecimal newTdc = new AwardBudgetServiceImpl().calculateTotalDirectCost(period);
+
+		Assert.assertEquals(currentTdc.add(fringeAmount.subtract(previousFringeAmount)), newTdc);
+	}
 }

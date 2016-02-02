@@ -18,6 +18,8 @@
  */
 package org.kuali.coeus.common.proposal.impl.report;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.kuali.coeus.common.framework.print.PendingReportBean;
 import org.kuali.kra.institutionalproposal.contacts.InstitutionalProposalPerson;
 import org.kuali.kra.institutionalproposal.home.InstitutionalProposal;
@@ -32,8 +34,10 @@ import java.util.*;
 @Component("pendingReportDao")
 public class PendingReportDaoOjb extends BaseReportDaoOjb implements PendingReportDao {
 
+    private static final Log LOG = LogFactory.getLog(PendingReportDaoOjb.class);
+
     public List<PendingReportBean> queryForPendingSupport(String personId) throws WorkflowException {
-        List<PendingReportBean> data = new ArrayList<PendingReportBean>();
+        List<PendingReportBean> data = new ArrayList<>();
         for(InstitutionalProposalPerson ipPerson: executePendingSupportQuery(personId)) {
             lazyLoadProposal(ipPerson);
             PendingReportBean bean = buildPendingReportBean(ipPerson);
@@ -47,25 +51,31 @@ public class PendingReportDaoOjb extends BaseReportDaoOjb implements PendingRepo
     private PendingReportBean buildPendingReportBean(InstitutionalProposalPerson ipPerson) throws WorkflowException {
         InstitutionalProposal proposal = ipPerson.getInstitutionalProposal();
         PendingReportBean bean = null;
-        if(shouldDataBeIncluded(proposal.getInstitutionalProposalDocument()) && proposal.isActiveVersion()) {
+        if(proposal !=null &&  shouldDataBeIncluded(proposal.getInstitutionalProposalDocument()) && proposal.isActiveVersion()) {
             bean = new PendingReportBean(ipPerson);
         }
         return bean;
     }
 
-    @SuppressWarnings("unchecked")
     private Collection<InstitutionalProposalPerson> executePendingSupportQuery(String personId) {
         return getBusinessObjectService().findMatching(InstitutionalProposalPerson.class, Collections.singletonMap("personId", personId));
     }
 
     private void lazyLoadProposal(InstitutionalProposalPerson ipPerson) {
         if(ipPerson.getInstitutionalProposal() == null) {
-            Map<String, Object> searchParams = new HashMap<String, Object>();
+            Map<String, Object> searchParams = new HashMap<>();
             searchParams.put("proposalNumber", ipPerson.getProposalNumber());
             searchParams.put("sequenceNumber", ipPerson.getSequenceNumber());
-//            Map searchParms = svcHelper.buildCriteriaMap(new String[]{"proposalNumber", "sequenceNumber"},
-//                                                                           new Object[]{ipPerson.getProposalNumber(), ipPerson.getSequenceNumber()});
-            InstitutionalProposal proposal = (InstitutionalProposal) getBusinessObjectService().findMatching(InstitutionalProposal.class, searchParams).iterator().next();
+
+            List<InstitutionalProposal> proposals = (List<InstitutionalProposal>) getBusinessObjectService().findMatching(InstitutionalProposal.class, searchParams);
+            InstitutionalProposal proposal = null;
+            if (!proposals.isEmpty()) {
+                proposal = proposals.get(0);
+            } else {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("institute proposal person found with out valid institutional proposal (id: " + ipPerson.getInstitutionalProposalContactId() + ")");
+                }
+            }
             ipPerson.setInstitutionalProposal(proposal);
         }
     }

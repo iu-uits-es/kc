@@ -40,7 +40,6 @@
         <property name="dispatchServletMappings">
             <list>
                 <value>kc-pd-krad</value>
-                <value>propdev</value>
             </list>
         </property>
     </bean>

@@ -18,6 +18,8 @@
  */
 package org.kuali.coeus.sys.framework.summary;
 
+import org.kuali.coeus.common.framework.person.KcPersonDto;
+
 import com.codiform.moo.annotation.Optionality;
 import com.codiform.moo.annotation.Property;
 
@@ -30,6 +32,8 @@ public class InvestigatorDto {
 	private String userName;
 	private String roleCode;
 	private String projectRole;
+	@Property(translate = true, optionality = Optionality.OPTIONAL)
+	private KcPersonDto person;
 	
 	public String getPersonId() {
 		return personId;
@@ -66,5 +70,11 @@ public class InvestigatorDto {
 	}
 	public void setProjectRole(String projectRole) {
 		this.projectRole = projectRole;
+	}
+	public KcPersonDto getPerson() {
+		return person;
+	}
+	public void setPerson(KcPersonDto person) {
+		this.person = person;
 	}
 }

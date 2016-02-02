@@ -1,6 +1,937 @@
 
 
 ##CURRENT
+* Making it so unless a notification type is found, a notification is not sent. The notification service or the helper should be handling this stuff but
+  * I am not messing with those the day of the release.
+  * Gayathri Athreya on Fri, 29 Jan 2016 11:33:34 -0700 [View Commit](../../commit/ae7358868223b2ae7370ca16a054b262c9f94b18)
+
+##coeus-1601.105
+* No Changes
+
+
+##coeus-1601.104
+* Disable new notifcations by default
+  * blackcathacker on Fri, 29 Jan 2016 09:53:41 -0500 [View Commit](../../commit/f01b85451cb35524549c3c3becbe24e9fca4543c)
+*  returning the saved object on post
+  * Travis Schneeberger on Thu, 28 Jan 2016 17:59:36 -0500 [View Commit](../../commit/b909857aa76c75d2c54d03f945fc19aa1579229f)
+
+##coeus-1601.102
+*  Adding base when rate is 0 but removing when rate is not applied.
+  * Gayathri Athreya on Thu, 28 Jan 2016 08:40:34 -0700 [View Commit](../../commit/026ee4e1d413593c5a8c0565513b13879cda00cc)
+
+##coeus-1601.101
+* When no stop is created during reject, the PD continues workflow immedietly after reject.
+
+  * When this happen the default workflow falls to the KRMS Agendas and Peopleflow immedietly meaning that changes to the proposal during revisions requested will not affect the KRMS rules for routing and approvals.
+
+  * This change adds an approval stop for all current document level Aggregators. It also allows any user with the permission to submit the proposal to deactivate those approval requests so the proposal will continue into workflow.
+  * blackcathacker on Wed, 27 Jan 2016 09:27:24 -0500 [View Commit](../../commit/9851014305040ea53cac37b6a256f4c0cc93240b)
+
+##coeus-1601.100
+* No Changes
+
+
+##coeus-1601.99
+*  fixes salary inflation issues and adds unit test
+  * Joe Williams on Wed, 27 Jan 2016 13:15:44 -0600 [View Commit](../../commit/9d70702c2d75ed56e9b83d6a6cd62782174acb0e)
+
+##coeus-1601.98
+*  award budget totals in the summary tab and the parameters tab do not match when a fringe amount is entered and later changed
+  * Travis Schneeberger on Wed, 27 Jan 2016 15:39:23 -0500 [View Commit](../../commit/f46926e9797c53e2c29d08f7cd3f40513299c7ce)
+
+##coeus-1601.97
+*  fix budget cost. I reverted the fix for REKC-818 since that fix was causing rounding errors reported in this jira
+  * and added a new fix for 818.
+  * The PD Budget Print > "2 Budget Cumulative Report" & "4 Budget Summary Report" had previously been fixed and passed testing.
+  * Now, several issues have returned.
+  * In both print reports, in the Calculation Methodology "Allocated Administrative Support and Lab Expense Rates and Base" section, the Bases are populating incorrectly.
+  * For LA - Utilities, LA - Salaries, and LA- M&S, the bases should always be the same.
+  * Now, they are printing differently the Salaries base correct and the others each wrong, even though the calculated costs are correct.
+  * Gayathri Athreya on Tue, 26 Jan 2016 16:32:22 -0700 [View Commit](../../commit/b21b508ff6e776b41a2fd63617a3ae359e327752)
+
+##coeus-1601.96
+*  Creating notification when proposal approved.
+  * If I am one of several approvers at a routing stop where only one approval is required, (need the system to check if the peopleflow map stop is set to all or first and only perform notification if first) I need to be notified if another user has approved a proposal where I am either primary or alternate.
+  * Currently, there is no notification available to provide this service. This means users have to check every notice in their action list.
+  * MIT Coeus notification engine provided this type of message and it is immensely important to the campus business process.
+  * When a proposal is routing, it often routes to a People Flow (routing map) containing a Primary Approver and at least one Secondary Approver. When someone on the People Flow approves the proposal, an email notification to the Other Approvers listed on the People Flow (but who did not approve the proposal) should be sent to let them know this proposal was already approved. This email notification should not be sent to the Approver who approved the proposal.
+  * The email notification subject line should contain a subject line "Proposal _____ Approved by Other User", and the information in the email should contain the Proposal #, PI Name, Unit Name, and Proposal Title.
+  * Please execute this in the notification service so that the message body can be changes and implementers can choose if the message is active and or requires a prompt window at action or approved by another
+  * Gayathri Athreya on Mon, 25 Jan 2016 19:13:41 -0700 [View Commit](../../commit/4567ec37aba19c92ff56da46e1757be7309aad98)
+
+##coeus-1601.95
+* No Changes
+
+
+##coeus-1601.94
+* No Changes
+
+
+##coeus-1601.93
+* No Changes
+
+
+##coeus-1601.92
+* No Changes
+
+
+##coeus-1601.91
+* No Changes
+
+
+##coeus-1601.90
+* No Changes
+
+
+##coeus-1601.89
+* No Changes
+
+
+##coeus-1601.88
+*  fixing number proposal hierarchy issues.
+
+  * 1 - When hierarchy parent status is Approval Pending, and children are displayed as such, when child is opened with the View link in the PD search results Actions link, the following are available:
+  * Edit button
+  * Save button
+  * From top menu Hierarchy > Sync Hierarchy and Unlink Hierarchy
+  * Child proposals that are routing should be locked down and NOT able to be edited, synced to parent or unlinked.
+  * 2 - When hierarchy parent status is Approved and Submitted, and children are displayed as such, when child is opened with the View link in the PD search results Actions link, the following are available:
+  * Edit button
+  * Save button
+  * From top menu Hierarchy > Sync Hierarchy and Unlink Hierarchy
+  * Child proposals that are Approved and Submitted should NOT be able to be edited Synced, linked or unlinked.
+  * 3)
+  * log on with quickstart (or some other user)
+  * create a proposal with budget
+  * create hierarchy
+  * do not close child with close button or manually delete any pessimistic locks but use proposal search or doc search to find the parent proposal
+  * open parent proposal, fill in required fields, submit
+  * with the same user, in the same browser session, open the child proposal
+  * Notice that the child proposal is fully editable but should not be. This is because the child has a pessimistic lock and rice thinks that if a user has a lock then the user can edit.
+  * Travis Schneeberger on Mon, 25 Jan 2016 17:46:56 -0500 [View Commit](../../commit/764aed4decbb4eb78f3666cbaf4e2053405119b0)
+* Remove unnecessary and invalid error message.
+
+  * When auto-generating periods the following error would be generated erronously.
+  * ```
+  * Error: Intended message with key: This line item contains personnel budget details and there is already a line item on period org.kuali.coeus.common.budget.framework.period.BudgetPeriod@62f67a94,numberOfParticipants=,budgetParentId=,institutionalProposalNumber=,institutionalProposalVersion=,updateUser=quickstart,updateUserSet=false,serialVersionUID=-3519927021539948875,serialVersionUID=1451642350593233282,versionNumber=0,objectId=440794f5-b380-4c2b-98b9-fb488334a426,newCollectionRecord=false,serialVersionUID=5563310175227245001,_persistence_shouldRefreshFetchGroup=false> based on this line item.Cannot apply the changes to later periods. not found.
+  * ```
+
+  * Additionally the apply to later periods on personnel line items was not properly validating the action, althought there were no negative side effects. Now the proper error message will be presented to the user when the person already exists in later periods.
+  * blackcathacker on Mon, 25 Jan 2016 16:01:31 -0500 [View Commit](../../commit/0f884ee66f4295a43afc56afcf313f3af422a431)
+
+##coeus-1601.87
+* No Changes
+
+
+##coeus-1601.86
+* Check submit to sponsor permission before allowing submit to sponsor
+
+  * Previously we were only checking if they could create and edit an institutional proposal before allowing them to submit the proposal to sponsor.
+  * blackcathacker on Mon, 25 Jan 2016 16:18:12 -0500 [View Commit](../../commit/c400e97dec7bab15e5ec1e3729a40de334817d38)
+* IRB-IACUC change validation to accept any character for funding source number and name.
+  * At MIT unable to create and amendment for a protocol and
+  * this is due to validation message The Funding Number (Funding Number) may only consist of visible characters, spaces, or tabs
+  * on migrated protocol where special character exists in funding source details.
+  * Also null allowed in source name but restricted in application.
+  * The above protocol has funding source details with special characters in number and source name is empty.
+  * Changing to any character validation and forced required option as funding source "other" might have
+  * details where only source number is available.
+  * Source name validation is update to check when funding source type code is not Other.
+  * Also updated test.
+  * rmancher on Sat, 23 Jan 2016 10:51:46 -0500 [View Commit](../../commit/249874a5c0174135e17f2e61cdbc2d26807d76fb)
+
+##coeus-1601.85
+* No Changes
+
+
+##coeus-1601.84
+* No Changes
+
+
+##coeus-1601.83
+*  Reject notification
+  * As one of several approvers at a routing stop, I need to be notified if another user has rejected a proposal where I am either primary or alternate approver.
+  * Currently, there is no notification available to provide this service. This means users have to check every notice in their action list.
+  * MIT Coeus notification engine provided this type of message and it is immensely important to the campus business process.
+  * When a proposal is routing, it often routes to a People Flow (routing map) containing a Primary Approver and at least one Secondary Approver. When someone on the People Flow rejects the proposal, an email notification to the Other Approvers listed on the People Flow (but who did not approve the proposal) should be sent to let them know this proposal was already rejected. This email notification should *not *be sent to the Approver who to the action to reject the proposal.
+  * This notification should support the standard ability to customize the Subject Line as well as adding supplemental text to the body of the email.
+  * For example, MIT would customize the email notification subject line to " PI Name's Proposal # has been returned to the Aggregator by another User", and the information in the email will contain the pre-programed details: Proposal #, PI Name, Unit Name, and Proposal Title.
+  * The attached template includes how MIT would customize this email notification for reference.
+  * This issue is related to RESKC-701, another notification MIT utilizes to support routing notifications.
+  * Gayathri Athreya on Sat, 23 Jan 2016 16:33:30 -0700 [View Commit](../../commit/e4b05ca1eecd5099c7f3b638fcffdf7485e247dc)
+* Allow changing of budget category and type separate from object code
+
+  * This has the side effect of making the object code un-editable in the current UI, similar to the KNS version of budget.
+  * blackcathacker on Sun, 24 Jan 2016 19:10:02 -0800 [View Commit](../../commit/fc417d8f3a8809a519d61bb1e90fd5acf84436bf)
+* Set budget start and end dates when opening award budget
+
+  * Otherwise when opening the award budget it will display the obligated dates, but the internal budget dates will still reflect the previous dates causing things like default period and budget printouts to behave incorrectly.
+  * blackcathacker on Sun, 24 Jan 2016 19:56:06 -0800 [View Commit](../../commit/ca54538b20cd10e0f408120b9c2e535a6fbf5e4a)
+
+##coeus-1601.82
+* No Changes
+
+
+##coeus-1601.81
+*  For addressbook it should apply the same logic as like it does for persons. Now, it would look for exempt key person roles, sponsor hierarchy and pck flag logic to see if an addressbook person need to certify or not
+  * Geo Thomas on Mon, 25 Jan 2016 11:52:20 -0500 [View Commit](../../commit/749b0a0221378bd76e3c48ece4dbcea7f069fbe8)
+*  Reverting change and adding bootstrap value for proposalPersonRoleId
+  * Gayathri Athreya on Sat, 23 Jan 2016 20:11:40 -0700 [View Commit](../../commit/4e41c08ce3d7aeaffdf76f6338c90314395f2b4a)
+
+##coeus-1601.80
+* No Changes
+
+
+##coeus-1601.79
+* No Changes
+
+
+##coeus-1601.78
+* No Changes
+
+
+##coeus-1601.77
+* No Changes
+
+
+##coeus-1601.76
+* Revert " upgrading JPA to try to avoid potential ConcurrentModific…"
+  * Douglas Pace on Fri, 22 Jan 2016 11:57:08 -0800 [View Commit](../../commit/52ea3a02511ceb2f95c92445e92eed02bbbc3475)
+
+##coeus-1601.75
+*  Adding ability to change proposal person role after addition. Cannot reproduce the STE mentioned so added test to verify.
+  * Duplicated in res-test1.
+  * Created initiating child proposal #6379 with PI user rhanlon
+  * Created parent #6380. Using Summary/submit screen, confirmed rhanlon was PI in both parent and child.
+  * Key Persons> deleted rhanlon as PI, searched and added Eagle as PI.
+  * Synced to parent.
+  * On Summary/Submit screen: Eagle was listed as Co-i on Parent proposal, and PI on child.
+  * Using the Toolbar> Hierarchy> I tried to unlink the proposal from the parent. I got an STE. see comments.
+  * In a Proposal Hierarchy, the PI on the Child proposal that creates the Parent proposal, becomes the lead PI on the Parent proposal. However, if after creating the Parent proposal, the PI changes and the user goes to the Child Proposal and changes the PI there first and syncs the change to the Parent proposal. The 'old' PI is removed (or role is modified - depending on the change made) from the Parent proposal BUT the new PI that was designated, synced as a Co-Investigator to the Parent proposal. This resulted in the Parent not having a PI - no matter what the user did (everyone appeared as a Co-Investigator or Key Person). We tried deleting and adding people back in and syncing and nothing work.
+  * This happened in Production last week - DBA had to change the Role assignment for the PI in the Database.
+  * Desired Behavior: If there is a PI change on the Child proposal that created the Parent proposal, the system should sync that change to the Parent proposal - assigning the PI role and NOT as Co-Investigator on the Parent proposal.
+  * WORK AROUND: Create a new parent from the corrected lead child proposal.
+  * Steps to Reproduce:
+  * 1.    Create a Proposal (with minimum info to save)
+  * 2.    Add a PI in the Key Personnel section
+  * 3.    Create/add Budget (no need to add any costs - budget just needs to be initiated to create/link hierarchy)
+  * 4.    In the Budget, click the Return to proposal button
+  * 5.    In the Proposal, click the Hierarchy link in the toolbar. In the Hierarchy window select:
+  * a.    Hierarchy Budget Type: Sub Budget
+  * b.    Click the Create Hierarchy button
+  * c.    Note the Parent Proposal number generated
+  * d.    Close out of your proposal
+  * 6.    Go to the Parent Proposal and navigate to the Key Personnel section. You should see the Person you designed as the PI in your Child proposal, appear as the PI in your Parent proposal
+  * 7.    Close out of the Parent proposal
+  * 8.    Navigate back to your Child Proposal and go to the Key Personnel Section
+  * 9.    In the Key Personnel Section, delete the current PI
+  * 10.   Add a different person as the new PI and save
+  * 11.   Click the Hierarchy (C) link in the toolbar. In the Hierarchy window:
+  * a.    Click the Sync Hierarchy button. (You should get a Synchronization successful message)
+  * 12.   Navigate to the Parent Proposal -> Key Personnel section
+  * 13.   You will see that the old PI that you deleted from the Child proposal, was removed from the Parent proposal.
+  * 14.   BUT the new Person you added to the child proposal as the new PI, synced to the Parent as a Co-Investigator. - see Parent Proposal Number 27528 in KC QA
+  * (There is no way from this point on, to get someone to appear as the PI on that Parent Proposal. Other individuals from the any additional child proposals will automatically sync as Co-Investigators or Key Persons.)
+  * The only work-around for this is to unlink and create a new Proposal Hierarchy with the correct PI or have the role assignment changed by DB Admin.
+  * MITKC-2033
+  * ISSUE #2
+  * STE upon trying to unlink the child proposal after changing the PI from Hanlon to Eagle, now Eagle as Co-I in parent and PI in only child:
+  * when-present<#else>when-missing. (These only cover the last step of the expression; to cover the whole expression, use parenthessis: (myOptionVar.foo)!myDefault, (myOptionVar.foo)?? The failing instruction (FTL stack trace): ---------- ==> $
+  * {request.contextPath}
+  * Gayathri Athreya on Thu, 21 Jan 2016 23:21:05 -0700 [View Commit](../../commit/832b53c8c99a525cd846d38e6f886247b8a67e58)
+*  upgrading JPA to try to avoid potential ConcurrentModificationException
+  * Travis Schneeberger on Fri, 22 Jan 2016 12:54:57 -0500 [View Commit](../../commit/4e35b4bfaa0749314e82400c2510afbf94c39101)
+*  Budget Calculation can sometimes cause an STE:
+
+  * java.util.ConcurrentModificationException
+    at java.util.Vector$Itr.checkForComodification(Vector.java:1184)
+    at java.util.Vector$Itr.next(Vector.java:1137)
+    at org.eclipse.persistence.indirection.IndirectList$1.next(IndirectList.java:618)
+    at org.kuali.coeus.common.budget.impl.calculator.BudgetPeriodCalculator.calculate(BudgetPeriodCalculator.java:78)
+    at org.kuali.coeus.common.budget.impl.calculator.BudgetCalculationServiceImpl.calculateBudgetPeriod(BudgetCalculationServiceImpl.java:331)
+    at org.kuali.coeus.common.budget.impl.calculator.BudgetCalculationServiceImpl.calculateBudget(BudgetCalculationServiceImpl.java:127)
+    at org.kuali.coeus.propdev.impl.budget.ProposalBudgetServiceImpl.recalculateBudget(ProposalBudgetServiceImpl.java:187)
+    at org.kuali.coeus.propdev.impl.budget.ProposalBudgetServiceImpl.calculateBudgetOnSave(ProposalBudgetServiceImpl.java:194)
+    at org.kuali.coeus.propdev.impl.budget.core.ProposalBudgetControllerBase.saveBudget(ProposalBudgetControllerBase.java:186)
+    at org.kuali.coeus.propdev.impl.budget.core.ProposalBudgetControllerBase.save(ProposalBudgetControllerBase.java:165)
+    at org.kuali.coeus.propdev.impl.budget.person.ProposalBudgetProjectPersonnelController.applyToLaterPeriods(ProposalBudgetProjectPersonnelController.java:477)
+    at org.kuali.coeus.propdev.impl.budget.person.ProposalBudgetProjectPersonnelController$$FastClassBySpringCGLIB$$5d3b0281.invoke(<generated>)
+    at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+    at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:700)
+    at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150)
+    at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:96)
+    at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:260)
+    at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:94)
+    at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+    at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:633)
+    at org.kuali.coeus.propdev.impl.budget.person.ProposalBudgetProjectPersonnelController$$EnhancerBySpringCGLIB$$eb47e929.applyToLaterPeriods(<generated>)
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+  * Travis Schneeberger on Fri, 22 Jan 2016 11:42:45 -0500 [View Commit](../../commit/044b4deecac9a4c705ab6aa1316a37eec9df281a)
+
+##coeus-1601.73
+* No Changes
+
+
+##coeus-1601.72
+* No Changes
+
+
+##coeus-1601.71
+* Prevent NPE from occuring when permissions helper has not yet been inititialized
+
+  * When changing personnel on an amendment or renewal protocol the following stack trace was generated on save
+  * ```
+*****************Stack Trace-Only shown when not in production****************
+  * java.lang.NullPointerException
+  * at org.kuali.kra.irb.personnel.ProtocolPersonnelAction.preSave(ProtocolPersonnelAction.java:362)
+  * at org.kuali.kra.protocol.ProtocolActionBase.save(ProtocolActionBase.java:285)
+  * at sun.reflect.GeneratedMethodAccessor4448.invoke(Unknown Source)
+  * at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  * at java.lang.reflect.Method.invoke(Method.java:497)
+  * at org.apache.struts.actions.DispatchAction.dispatchMethod(DispatchAction.java:269)
+  * at org.kuali.rice.kns.web.struts.action.KualiAction.dispatchMethod(KualiAction.java:173)
+  * at org.kuali.coeus.sys.framework.controller.KcTransactionalDocumentActionBase.dispatchMethod(KcTransactionalDocumentActionBase.java:168)
+  * at org.kuali.rice.kns.web.struts.action.KualiAction.execute(KualiAction.java:131)
+  * at org.kuali.rice.kns.web.struts.action.KualiDocumentActionBase.execute(KualiDocumentActionBase.java:190)
+  * ```
+  * blackcathacker on Thu, 21 Jan 2016 14:37:43 -0800 [View Commit](../../commit/ca1c4f906e5cb5e781e3a4240c90be4e497adaa4)
+
+##coeus-1601.70
+*  move holding page information from from session scope to request scope when possible.  Prefer request scope when information is available.  While not a complete solution, this minimises the chance that the holding page will navigate to the wrong document when multiple documents are submitted at the same time within the same user session
+  * Travis Schneeberger on Wed, 20 Jan 2016 11:35:04 -0500 [View Commit](../../commit/d297d84e5475451eab7c7d11e6c96fbb1e580376)
+
+##coeus-1601.69
+* No Changes
+
+
+##coeus-1601.68
+* No Changes
+
+
+##coeus-1601.67
+* No Changes
+
+
+##coeus-1601.66
+* STE Award Budget
+  * STE when clicking on budget persons in Award Budget module.
+  * Navigating to personnel tab java.lang.NullPointerException
+  * Rolodex is not populated. Looks like a OJB - JPA lazy load issue.
+  * Fix to fetch relation when not found.
+  * rmancher on Wed, 20 Jan 2016 14:41:52 -0500 [View Commit](../../commit/6a14a75f2020d0564a17405ff082e46147fcd17a)
+
+##coeus-1601.65
+* No Changes
+
+
+##coeus-1601.64
+* No Changes
+
+
+##coeus-1601.63
+*  When searching awards through award module, i am able to edit dates and money in display mode. On some accounts i am able to edit all dates and money in display mode. On most accounts i am able to edit execution date and modification date.
+
+  * Steps to reproduce:
+  * 1.Search award through award module
+  * 2. Open award in display mod
+  * 3. Dates and money are editable
+  * Travis Schneeberger on Mon, 18 Jan 2016 14:57:56 -0500 [View Commit](../../commit/34d7acfb81b2b7d22575d44e323630ab87aee239)
+
+##coeus-1601.62
+* fix period 2 inflation calculation
+
+  * This is not fixed in demo 1 either. And all calculations are impacted in a negative way.
+  * P1 - All salaries are correctly calculating for period 1 to reflect anniversary or regular inflation start date.
+  * P2: Anniversary salary and regular salary inflation are not being inflated in period 2.
+  * P3: 9 and 10 month appointments begin inflation, amounts that should have appeared in p2.
+  * But the 12 month appointments vary; anniversary rate 'caught up' and correct for the period, but the regular inflation salary is at what should have been p2.
+  * P4: inconsistent rate amount applied: no amounts match the expected salary
+  * P's5, 6 & 7: SOME salaries match the projected amount; But the 9 and 10 month Anniversary rates salaries display what was expected for the prior period.
+  * Ps 8, 9, and 10: most of the salary calculations are incorrect, with several examples REDUCING amounts from the prior period.
+  * Joe Williams on Mon, 18 Jan 2016 12:16:43 -0600 [View Commit](../../commit/66db4fd817b8d8f75d2d31f97ff02c2f60e5e3c5)
+
+##coeus-1601.61
+*  Adding error message when rolodex person that needs to certify is added to pd.
+
+  * Key Person screen should present an error message for Address Book personnel when added to proposals in roles requiring proposal certification according to COI Hierarchy, exempt roles maintained in keypersonprojectrole and Supplemental Info screen indicator PCK flag.
+  * This error should also trigger upon, save, copy, PCK selection, or submit for routing.
+  * This message should read:
+  * "Non-Employee,
+  * {Name}
+  * , has been added in a role that requires proposal certification. Creation of an MIT Employee guest account may be needed. Contact kc-help@mit.edu with questions."
+  * Note: this error should work with RESKC-972 Exempt Address book Person PI/Multi from Cert and notify as that remains.
+  * Gayathri Athreya on Fri, 15 Jan 2016 09:28:12 -0700 [View Commit](../../commit/46fabae9c99a59bf6a081d3c7b843946cad2c4bd)
+
+##coeus-1601.60
+* Add flag to disallow T&M when pending award exists
+
+  * When a pending award exists we are currently duplicating transactions across the most recent active and pending award versions. This is change will allow us to disallow T&M documents when the pending award version exists to eliminate this error. The new parameter ALLOW_TM_WHEN_PENDING_AWARD_EXISTS controls this functionality. Currently the default is to allow T&M, but this will likely be removed in the future.
+  * blackcathacker on Thu, 14 Jan 2016 16:01:06 -0800 [View Commit](../../commit/a63d9c822ae0c62e8f40929bd74e2b0ac925897d)
+* Refactor to remove duplicated code and add tests to active pending transcation service
+  * blackcathacker on Thu, 14 Jan 2016 10:56:26 -0800 [View Commit](../../commit/1669505c77f2a957371930c18ecee4d7c73b6c7d)
+
+##coeus-1601.59
+* No Changes
+
+
+##coeus-1601.58
+* No Changes
+
+
+##coeus-1601.57
+* No Changes
+
+
+##coeus-1601.55
+* IRB - Absent members not displaying properly in the Minutes PDF
+  * Scott, Peter C" duplicated, displaying in both the Absentees and the voting members present areas
+  * This case needs a little more work. Tested with schedule 12/17/15
+  * This occurs while adding a non employee (rolodex person).
+  * rmancher on Fri, 15 Jan 2016 09:09:54 -0500 [View Commit](../../commit/2f05842261852485554c4a684ec34cb95fbb14ec)
+*  adding support for new personnel narrative type: NSF_Collaborators
+  * Travis Schneeberger on Thu, 14 Jan 2016 14:08:30 -0500 [View Commit](../../commit/220f48bfeca692c720bd637f44413bedc2b8663a)
+
+##coeus-1601.54
+* No Changes
+
+
+##coeus-1601.53
+*  STE when sync from Parent after adding a PI biosketch attachment to originating child with an non employee.
+  * Create PD Hierarchy.
+  * I went to parent in edit mode.
+  * Went to Key Personnel.
+  * Moved the new Key Person down in the list below the Co-I from child #2.
+  * Saved. Closed
+  * Then I went back to the initiating child where I had just added the Key Person.
+  * I uploaded a Biosketch for that Key Person, a different file from the others, but the same Description "Biosketch" as I had used for the PI's on both children.
+  * I synced from the child, not the parent, and got an STE again. It is slightly different.
+  * I then went to Parent and tried Sync all from there, and received STE as well (Same IllegalArgumentException: Given criteria value cannot be null )
+
+  * java.lang.IllegalArgumentException: Given criteria value cannot be null. at org.kuali.rice.core.api.criteria.CriteriaSupportUtils.determineCriteriaValue(CriteriaSupportUtils.java:152) at org.kuali.rice.core.api.criteria.PredicateFactory.equal(PredicateFactory.java:99) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyDaoJpa.employeePersonInMultipleChildProposals(ProposalHierarchyDaoJpa.java:57) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.employeePersonInMultipleProposals(ProposalHierarchyServiceImpl.java:787) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.syncAllPersonnelAttachments(ProposalHierarchyServiceImpl.java:734) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.synchronizeChildProposal(ProposalHierarchyServiceImpl.java:567) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.synchronizeChild(ProposalHierarchyServiceImpl.java:400) at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:497) at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:317) at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:183) at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation
+  * Travis Schneeberger on Wed, 13 Jan 2016 11:06:32 -0500 [View Commit](../../commit/289fdbf6d73f7eafc4339e8b660ce5987ab4aa0f)
+
+##coeus-1601.52
+* No Changes
+
+
+##coeus-1601.51
+* No Changes
+
+
+##coeus-1601.50
+*  Fix null pointer.
+  * For any status proposal – Migrated or KC-Native proposal - where the sponsor is NSF (000500), STE returned when you select the Print option from the top action bar, an STE is returned.
+  * STE:
+  * Document Id:
+  * 1576742
+  * View Id:
+  * PropDev-DefaultView
+  * Error Message:
+  * The system has encountered an error and is unable to complete your request at this time. Please provide more information regarding this error by completing this Incident Report.
+  * User Feedback:
+  * Enter user feedback here...
+  * Submit Report Retry Cancel
+  * Stacktrace (only in dev mode)
+  * java.lang.NullPointerException at org.kuali.coeus.propdev.impl.print.ProposalDevelopmentPrintController.preparePrintDialog(ProposalDevelopmentPrintController.java:67) at
+  * Gayathri Athreya on Wed, 13 Jan 2016 14:31:45 -0700 [View Commit](../../commit/c3da96feff187743ae65affa24d9dbd6cfc185af)
+
+##coeus-1601.49
+* Update warning message when effective start date has changed during import
+  * blackcathacker on Wed, 13 Jan 2016 11:25:49 -0800 [View Commit](../../commit/3f338bc10ce844edfbe9537dfbcc2adb87cd33b3)
+*  Fixing person search.
+  * looking for an active proposal for Browning Neddeau so she navigated to PD, searched for (first name) Browning from the Person Search and then searched for proposals. Screen shot attached. Results show proposals where Browning does not appear.
+  * This happens with any of the person search fields. Also found another bug. If I type "olgin" into aggregator field and search, I get the following STE
+  * java.lang.IllegalArgumentException: Criteria values cannot be empty. at org.kuali.rice.core.api.criteria.CriteriaSupportUtils.validateValuesForMultiValuedPredicate(CriteriaSupportUtils.java:269)
+  * Same with participant field.
+  * Gayathri Athreya on Wed, 13 Jan 2016 12:13:19 -0700 [View Commit](../../commit/8b05d6cd097da62e6490ab2e9de17777d4e47dfc)
+*  Budget document shows updated when nothing changes
+
+  * I have been able to reproduce this with these steps.
+
+  * 1.) Create Award Budget, Approve and Post.
+  * 2.) Open posted award budget.
+  * 3.) on budget versions tab, click on the open button for the posted budget version. updated date gets updated.
+  * Joe Williams on Wed, 13 Jan 2016 09:21:40 -0600 [View Commit](../../commit/cd26a96c3bcbab1cd6e1060fc135a7071947fd49)
+* Warn user during PD budget import if effective rate start date changes
+
+  * When importing PD budget line items into award, it is possible for the effective start dates of rates to change based on the effective salary dates of persons imported. This change displays a warning to the user when this occurs so they can take approiate action related to rates that may now need to be synced.
+  * blackcathacker on Tue, 12 Jan 2016 16:35:38 -0800 [View Commit](../../commit/1cfa9ec2ae8c8ea46ae887e3cbefea03c6631f80)
+*  Fixing base calculation.
+  * The PD Budget Print > "2 Budget Cumulative Report" & "4 Budget Summary Report" had previously been fixed and passed testing.
+  * Now, several issues have returned.
+  * In both print reports, in the Calculation Methodology "Allocated Administrative Support and Lab Expense Rates and Base" section, the Bases are populating incorrectly.
+  * For LA - Utilities, LA - Salaries, and LA- M&S, the bases should always be the same.
+  * Now, they are printing differently the Salaries base correct and the others each wrong, even though the calculated costs are correct.
+  * See attached print forms with highlighted (identical) population problems.
+  * Gayathri Athreya on Tue, 12 Jan 2016 16:03:17 -0700 [View Commit](../../commit/45f18f9fc478dbedac32f1ae7f817bdbb2c7ec19)
+
+##coeus-1601.48
+*  pending support error
+
+  * When a proposal person doesn't have a valid institutional proposal, log person id for analysis instead of STE.
+  * Joe Williams on Tue, 12 Jan 2016 13:54:23 -0600 [View Commit](../../commit/fed1b05d800eac569ab7d6df85f16a5e4d6b8c0c)
+
+##coeus-1601.47
+* S2S Project-Performance: Updating performing organization does not update org NAME on S2S form
+
+  * If the Performing Organization on a grants.gov proposal is changed, the PerformanceSite_2_0 form is updated to reflect the address and DUNS of the new organization, but the organization name is not updated.
+
+  * Steps to reproduce:
+  * 1) Create a new proposal.
+  * 2) Select a grants.gov opportunity that utilizes the PerformanceSite_2_0 form (seems to be very common)
+  * 3) Go to the Organization and Location page, and click the 'Select Different Organization' button on the Performing Organization tab.
+  * 4) Select an organization other than the applicant organization (which is the default) and save the changes
+  * 5) Go to the S2S -> Forms page and generate a PDF for the PerformanceSite_2_0 form.
+  * 6) The "Project/Performance Site Primary Location" section will list the organization name of the original performing organization, but the DUNS/address/congressional district of the new one.
+  * Joe Williams on Tue, 12 Jan 2016 12:43:31 -0600 [View Commit](../../commit/6a6aea7ba51be9765ff357f08ede6ba295901048)
+
+##coeus-1601.46
+* Fix constantly growing personnel calculated amounts and invalid imports from PD
+
+  * When award budget audit mode is enabled the personnel line item amounts constantly grow after each save or navigation.
+  * blackcathacker on Tue, 12 Jan 2016 10:04:41 -0800 [View Commit](../../commit/d4f831b0568fb911bdc207f5df11a807b626de98)
+*  Fix PD budget import dates
+
+  * When a PD budget is imported into award and the PD budget period falls competely outside of the award budget period the dates would not be corrected and would cause un-correctable business rule errors
+  * blackcathacker on Mon, 11 Jan 2016 12:54:57 -0800 [View Commit](../../commit/07399c74f00b17250036ec7d1b8f169f05b5b03c)
+
+##coeus-1601.45
+* PD: GG form preview list is duplicated (tripled, quadrupled, etc)
+  * Joe Williams on Tue, 12 Jan 2016 10:33:07 -0600 [View Commit](../../commit/2f0bfc5256f98561ec995660e6a3b7d901ed226f)
+
+##coeus-1601.43
+* No Changes
+
+
+##coeus-1601.42
+* No Changes
+
+
+##coeus-1601.41
+*  use schedule date when determining if member is active
+  * Joe Williams on Mon, 11 Jan 2016 17:02:22 -0600 [View Commit](../../commit/3a58c0e1d952ac905c90bf0152f0061696ee76ac)
+*  Award budget totals don't match in different tabs
+
+  * Calculation issue with Budget versions 2+
+  * – enter a second (or third, or fourth) budget version.
+  * – go to summary tab and enter overridden values for Fringe and F&A
+  * – hit save
+  * – go to parameters: Total will not match total on summary tab.
+  * The F&A amount will be the amount you entered
+  * The direct costs will not match
+  * – go to non-personnel tab
+  * Summary of direct/indirect will match parameters, not summary page:
+  * Joe Williams on Mon, 11 Jan 2016 15:25:44 -0600 [View Commit](../../commit/34f6ff806fb6623ed7d4d85b3e3542c650dc7236)
+
+##coeus-1601.40
+* No Changes
+
+
+##coeus-1601.39
+*  PD: STE when I try to generate GG Form Preview
+
+  * Steps to Reproduce:
+  * 1. Create a proposal with min. info to save
+  * 2. In the S2S Opportunity search connect to a GG opportunity (e.g. PA-C-R01)
+  * 3. While in the Opportunity search window, go to the Forms tab and check the Select checkbox for PerformanceSite_2_0 form (the proposal doesn't have much info so this is the only form that will generate at this time) and click the [Create PDF] button. The form preview should generate fine.
+*4. While remaining in the Opportunity Search section, click on the Print link located in the Proposal toolbar. In the Print window > Grants.gov section, the checkbox for the PerformanceSite_2_0 form should be already selected, click the [Create PDF] button. get STE.
+  * Joe Williams on Sat, 9 Jan 2016 21:58:15 -0600 [View Commit](../../commit/8a69f7632173df3ae2132fed3bf0445a5351fdc2)
+
+##coeus-1601.38
+* IRB - Incorrect button displaying when doing a renewal
+
+  * I just performed a renewal without amendment to a protocol and I a button that I don’t recall ever seeing before for renewals…
+  * [Edit]
+  * Users are not supposed to be able to edit renewals…
+  * Joe Williams on Mon, 11 Jan 2016 09:32:22 -0600 [View Commit](../../commit/355e48dc708062f534493b94cc175eacf6e15e87)
+
+##coeus-1601.37
+*  In Proposal Dev, Proposal Hierarchy Parent Budget cost share lines are being duplicated in Institutional Commitments.
+
+  * In Proposal Dev, Proposal Hierarchy Parent Budget cost share lines are being duplicated in Institutional Commitments > Cost Sharing when the Hierarchy > Sync All action is taken at the parent budget level.
+
+  * Each time the sync is performed, additional lines are pulled into the distribution screen, rather than the existing ones being updated (or all deleted then written anew from the child budgets upon sync).
+
+  * This does NOT happen when the Budget > Hierarchy > Sync to parent action is taken from an individual child. However, there are scenarios when it is not feasible to sync individually from each child rather than from the parent, particularly when children are from different units with different aggregators.
+
+*Desired result:*
+  * Syncing All from Hierarchy Parent Budget should not add new rows to those already existing at the parent budget Commitments - Cost Sharing.
+  * Sync All from Parent Budget should remove all existing rows replace with the current rows from each child proposal budget with cost sharing commitments entered.
+
+  * Steps to reproduce:
+
+  * Create a 2 year proposal with basic information
+  * Key person: PI
+  * Create a Budget: add non-personnel line item at $1000, in Details, add same $1000 amount in the Cost Sharing field. Unclick the "Apply Inflation" for the line item.
+  * Autogenerate periods.
+  * On Commitments > Cost Sharing, enter source account as "1234567" in a row for each year for the $1000 direct costs; leave unit number blank and percentage at 0% (MIT does not usually use).
+  * Add an additional row for each period for the F&A amount ($5,600 at in MIT KC WKLy): enter source account as 1402600 (all MIT uses this account for Cost Sharing F&A); leave unit number blank and percentage at 0%
+  * Complete the budget.
+  * Return to the proposal >
+  * Toolbar > Hierarchy > create a parent with this proposal as sub-budget. Make note of the parent proposal number.
+  * Toolbar > Copy > copy this proposal including the budget.
+
+  * In the new proposal > toolbar > budget versions >Open the budget.
+  * In the cost sharing distribution, change the source account for the direct costs lines for each year to "7654321".
+  * Save and mark the budget as for submission and complete. (it is identical to first proposal, except for the Cost sharing direct cost source code).
+  * Make a note of this child #2 proposal number.
+  * Save and close proposal.
+
+  * Open the Parent proposal .
+  * Proposal Details > Toolbar > Hierarchy >  select sub-budget, enter second child proposal number and click Link a child to this Parent> Link a child to this Parent.
+  * Open Budget.
+  * Note Cost Sharing total by year in Periods and Totals.
+  * Go to Commitments > Cost Sharing > Summary. Ensure same as the P&T amounts.
+  * Note number of lines in distribution.
+  * Still in budget -  Toolbar > Hierarchy >  Sync All.
+
+  * Return to Commitments > Cost Sharing -- note that number of lines has increased, but Summary total has remained the same as have P&T total cost sharing.
+
+  * Try to mark Budget Complete -- error regarding need to allocate all cost sharing funds will be received.
+
+  * Turn on Validations - same error will be received.
+
+  * Try Sync All again - it does not fix the problem but brings in yet more duplicate rows.
+  * proposal.
+  * Travis Schneeberger on Mon, 11 Jan 2016 10:38:41 -0500 [View Commit](../../commit/6e7b2ad4075beba81832578f81f1583043b6c57d)
+
+##coeus-1601.36
+*  Fixing personnel attachments.
+  * STE at view of Personnel Attachment files at Hierarchy Parent when files are brought up from child proposals – either on initial create of hierarchy or when second child is linked.
+  * KC Wkly build 1601.07
+  * User = AEH
+  * Child proposal 1 = 30614 (created hierarchy)
+  * Child proposal 2 = 30619
+  * Parent proposal = 30617
+  * Created parent from child 30614 (child contained Proposal, Internal, and 2 Personnel attachments)
+  * Opened parent 30619
+  * Went to Attachments > Personnel
+  * Selected to view file.
+  * Received STE.
+  * Note: in child proposal the personnel attachments are able to be viewed without any problem. At parent, all Proposal and Internal attachments can be viewed with now problem.
+  * Gayathri Athreya on Mon, 11 Jan 2016 07:19:34 -0700 [View Commit](../../commit/8e2b16e1759bd5171dbf3ad2fabe75eb7586c986)
+
+##coeus-1601.35
+* No Changes
+
+
+##coeus-1601.34
+* No Changes
+
+
+##coeus-1601.33
+* PD - View User Attached S2S Forms on copied proposals results in STE
+  * Copied proposal did not include user attached form attachments.
+  * Attachment is lazy loaded. Refreshing prior to copy so that attachment is included
+  * in copied proposal.
+  * rmancher on Sun, 10 Jan 2016 12:33:03 -0500 [View Commit](../../commit/a2248259a3a84f9e227127147922db539bd6a34b)
+* IRB - Absent members not displaying properly in the Minutes PDF
+  * Joe Williams on Fri, 8 Jan 2016 21:00:26 -0600 [View Commit](../../commit/bc9b1494b95d8a8791d296b3c7342e3462ab5497)
+
+##coeus-1601.32
+* No Changes
+
+
+##coeus-1601.31
+* No Changes
+
+
+##coeus-1601.30
+* No Changes
+
+
+##coeus-1601.29
+* PD - STE on Approved and Submitted proposal, Performance Site Locations & Other Organizations tabs > 'Add Congressional District'
+
+  * When a proposal dev record is in the Status Approved and Submitted, there should not be an option to Add Congressional District in any of the sub tabs on the Organization and Location screen.
+  * Currently, when there is a Performance Site Location or Other Organization is entered, the Add Congressional District button is available, and if clicked, modal appears, with an active Add button, which, when clicked, returns an STE.
+  * Joe Williams on Fri, 8 Jan 2016 16:31:58 -0600 [View Commit](../../commit/546abe56807e603e555284016a9987e635e859b5)
+* PD - STE on Summary Submit screen > Personnel > select 'Print All'
+
+  * Steps taken:
+  * Searched for PD 26126 (Approved & Submitted status, Migrated poposal)
+  * From results Action column, selected View
+  * When to Summay/Submit screen > Personnel tab
+  * Selected "Print All" button
+  * Received STE:
+
+  * Document Id: 139613
+  * View Id: PropDev-DefaultView
+
+  * Stacktrace (only in dev mode)
+
+  * java.lang.NullPointerException at org.kuali.coeus.propdev.impl.questionnaire.ProposalDevelopmentModuleQuestionnaireBean.loadKrmsRulesContext(ProposalDevelopmentModuleQuestionnaireBean.java:61) at org.kuali.coeus.propdev.impl.questionnaire.ProposalDevelopmentModuleQuestionnaireBean.getKrmsRulesContextFromBean(ProposalDevelopmentModuleQuestionnaireBean.java:54) at org.kuali.coeus.common.questionnaire.impl.answer.QuestionnaireAnswerServiceImpl.runApplicableRules(QuestionnaireAnswerServiceImpl.java:828) at org.kuali.coeus.common.questionnaire.impl.answer.QuestionnaireAnswerServiceImpl.getPublishedQuestionnaire(QuestionnaireAnswerServiceImpl.java:121) at org.kuali.coeus.common.questionnaire.impl.answer.QuestionnaireAnswerServiceImpl.initAnswerHeaders(QuestionnaireAnswerServiceImpl.java:149) at org.kuali.coeus.common.questionnaire.impl.answer.QuestionnaireAnswerServiceImpl.getQuestionnaireAnswer(QuestionnaireAnswerServiceImpl.java:266) at org.kuali.coeus.common.questionnaire.impl.print.QuestionnaireXmlStream.setQuestionInfoData(QuestionnaireXmlStream.java:779) at org.kuali.coeus.common.questionnaire.impl.print.QuestionnaireXmlStream.getQuestionnaireData(QuestionnaireXmlStream.java:217) at org.kuali.coeus.common.questionnaire.impl.print.QuestionnaireXmlStream.generateXmlStream(QuestionnaireXmlStream.java:148) at
+  * Joe Williams on Fri, 8 Jan 2016 16:01:52 -0600 [View Commit](../../commit/3481d992f29c35623a0b320f3105e92ccf609829)
+*  validating period dates to avoid an exception when linking a child proposal to a parent.
+  * Travis Schneeberger on Fri, 8 Jan 2016 17:00:15 -0500 [View Commit](../../commit/e7a1d76f18d351e9886ff26bc360dfdea0698456)
+* IRB - Duplicated Review Comments in History Tab
+  * Check for the protocol number since we have versioned review comments.
+  * rmancher on Fri, 8 Jan 2016 15:58:29 -0500 [View Commit](../../commit/a5079d31bc4bc38b2e520813a703f3ea168cc4a6)
+*  PD - Notify to certify option should not disappear once certifications are complete
+
+  * Aggregators must be able to resend Notification requests to proposal persons to re-answer certifications correctly.
+  * Joe Williams on Fri, 8 Jan 2016 12:39:14 -0600 [View Commit](../../commit/8bbe11cecffff0f6dc647433008d2fdccf8d88fb)
+
+##coeus-1601.27
+* No Changes
+
+
+##coeus-1601.26
+* No Changes
+
+
+##coeus-1601.25
+* IRB - History Tab>Submission Details missing fields
+  * We need to invoke prepare view as we are checking for permissions in history subpanels
+  * This was removed earlier as part of performance tuning.
+  * This will take care of RESMER-524 as well.
+  * rmancher on Fri, 8 Jan 2016 14:44:41 -0500 [View Commit](../../commit/94e80e2610680f57b6957feb7a71950a696f76fe)
+* Invalid field constraints prevent Award save when amounts are negative
+
+  * When a T&M transaction includes negative amounts and the indirect flag is enabled, incorrect character constraints would prevent an award from being saved.
+  * Additionally fixing saving amounts in the award itself, in particular when the award is new. This ensures the distributable amounts and change values are correct even when entered on the award home screen.
+  * blackcathacker on Fri, 8 Jan 2016 11:39:36 -0800 [View Commit](../../commit/bba272b2366f6413e712ee9965099246db418316)
+
+##coeus-1601.24
+* PD Budget: new validation to enforce Proposal and Budget Start/End dates breaks several business processes
+
+  * The current fix does not allow the flexibility needed for different types of proposal submissions to comply with sponsor requested preparation (e.g. supplement proposals where the entire project period is to be entered in the proposal but the budget is to include on the start and end date covering the supplemental funds spending), or for syncing child proposal budget date changes to a hierarchy.
+
+  * The validation needs to be changed from requiring budget start and end dates to match the proposal start and end dates to instead enforcing that the budget start date falls after the proposal start date and the budget end date falls before the proposal period end date.
+  * The budget start and end dates must both fall within the project period, rather than match exactly.
+  * Joe Williams on Fri, 8 Jan 2016 10:42:43 -0600 [View Commit](../../commit/e323207d16d7eb6a933321b9172842c27cfaf9eb)
+
+##coeus-1601.23
+* PD - Submit S2S button should only be available to users with Submit to Sponsor permission/Propsoal Submission Role
+  * Submit S2S button availability should be tied to Submit to Sponsor permission.
+  * rmancher on Fri, 8 Jan 2016 11:00:49 -0500 [View Commit](../../commit/d3dfd0b8f27c0f6c949e41c38217326b31cabe0f)
+
+##coeus-1601.22
+* No Changes
+
+
+##coeus-1601.21
+* No Changes
+
+
+##coeus-1601.20
+* Attempt to ensure that the Time&Money document status is always updated
+
+  * In some rare cases it appears that the T&M document status is not being updated during the doRouteStatusChange. This is a rare event that we have been unable to reproduce to date. This adds an additional check to verify and if incorrect, fix the document status when the document moves to final.
+  * blackcathacker on Thu, 7 Jan 2016 14:39:04 -0800 [View Commit](../../commit/9514877b7b0845281bff9a260e9c82bffd5fbc6b)
+
+##coeus-1601.19
+*  adding or removing a non-employee from a PD hierarchy causes sync to fail with an STE.
+
+  * java.lang.IllegalArgumentException: Given criteria value cannot be null. at org.kuali.rice.core.api.criteria.CriteriaSupportUtils.determineCriteriaValue(CriteriaSupportUtils.java:152) at org.kuali.rice.core.api.criteria.PredicateFactory.equal(PredicateFactory.java:99) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyDaoJpa.personInMultipleChildProposals(ProposalHierarchyDaoJpa.java:69) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.personInMultipleProposals(ProposalHierarchyServiceImpl.java:776) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.syncDegreeInfo(ProposalHierarchyServiceImpl.java:861) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.syncDegreeInfo(ProposalHierarchyServiceImpl.java:853) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.synchronizeChildProposal(ProposalHierarchyServiceImpl.java:552) at org.kuali.coeus.propdev.impl.hierarchy.ProposalHierarchyServiceImpl.synchronizeChild(ProposalHierarchyServiceImpl.java:392) at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) at
+  * Travis Schneeberger on Thu, 7 Jan 2016 17:16:11 -0500 [View Commit](../../commit/08ae3dd3dce711b92e40fe905e41fa3f7506efcf)
+
+##coeus-1601.18
+*  remove getSupplementProposalType as it is same as continuation. At MIT it renamed as Supplement and so for SupplementChangeCorrected it should use Continuation as proposal type
+  * Geo Thomas on Wed, 6 Jan 2016 14:19:31 -0500 [View Commit](../../commit/66567a0e462fc66ba48e7e20bfbfc5e61815ca9d)
+
+##coeus-1601.17
+* PD: Re-Routing Questionnaire is missing when OSP rejects proposal
+  * When a dev proposal routes and reaches the OSP approval level, and OSP "rejects" the proposal back to the Aggregator, the "Re-Routing Questionnaire" is missing - it's no available for the Aggregator to answer before re-routing the proposal.
+  * We were looking at the node Initiated to figure out whether it is routed for the first time.
+  * This doesn't work.
+  * Changing it to check whether the proposal is rejected / returned to previous.
+  * Verified in MIT QA.
+  * rmancher on Thu, 7 Jan 2016 11:07:18 -0500 [View Commit](../../commit/1548ce67cd700d17da4a7b03dfbd21f40a574010)
+
+##coeus-1601.16
+* Proposals with Leap Year Feb 1 start date mishandle budget autocalculation period start day in non-leap years
+
+  * If a proposal & thus budget has a February 1 start date in a Leap Year, the autocalculate tool mishandles the non-leap year start date for some personnel.
+  * Specifically, if the person has a row that is not assigned start on 2/1, in non-leap years, that row starts on the 2nd of the month.
+  * Joe Williams on Thu, 7 Jan 2016 07:58:53 -0600 [View Commit](../../commit/11fa92c98f95c3960d4334b84f4c94d078d9b368)
+
+##coeus-1601.15
+* Add additional fields to the ip and award summary apis
+
+  * Adds lead unit to both award and ip summary apis.
+  * Adds proposal log proposal number to the ip summary.
+  * Add additional id information for both award and ip in summary and in funding proposal info
+  * blackcathacker on Wed, 6 Jan 2016 16:53:28 -0800 [View Commit](../../commit/8df89753e47c0855017533d2b09e78a483e66fad)
+
+##coeus-1601.14
+*  Create Institute Proposal and canceling via search box results in an STE.
+            selected "Create Institute Proposal" from the KC Home screen via search box.
+            In the resulting "Proposal Log Lookup" window, I selected Cancel as I did NOT want to create a new Institute Proposal.
+            The following STE was returned (in a window with double headers...):
+            Stacktrace (only in dev mode)
+            org.kuali.rice.krad.datadictionary.DataDictionaryException: Unable to find View with id: Kc-LandingPage-RedirectView?forInstitutionalProposal at org.kuali.rice.krad.datadictionary.uif.UifDictionaryIndex.getImmutableViewById(UifDictionaryIndex.java:142) at org.kuali.rice.krad.datadictionary.uif.UifDictionaryIndex.getViewById(UifDictionaryIndex.java:128) at org.kuali.rice.krad.datadictionary.DataDictionaryIndexMapper.getViewById(DataDictionaryIndexMapper.java:280) at org.kuali.rice.krad.datadictionary.DataDictionary.getViewById(DataDictionary.java:671) at org.kuali.rice.krad.service.impl.DataDictionaryServiceImpl.getViewById(DataDictionaryServiceImpl.java:875) at org.kuali.rice.krad.uif.service.impl.ViewServiceImpl.getViewById(ViewServiceImpl.java:56) at org.kuali.rice.krad.web.bind.UifServletRequestDataBinder.bind(UifServletRequestDataBinder.java:199) at org.springframework.web.servlet.mvc.method.annotation.ServletModelAttributeMethodProcessor.bindRequestParameters(ServletModelAttributeMethodProcessor.java:153) at org.springframework.web.method.annotation.ModelAttributeMethodProcessor.resolveArgument(ModelAttributeMethodProcessor.java:106) at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77) at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:157) at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:124) at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) at
+  * Travis Schneeberger on Wed, 6 Jan 2016 15:24:28 -0500 [View Commit](../../commit/5b305be9a7c98230388374fea2abd5c49ae365ae)
+
+##coeus-1601.13
+*  edit existing subaward results in an STE.
+  * Create subaward with required fields
+  * Route to final
+  * Search for Subaward through doc search, open
+  * Click edit
+  * Results in STE:
+
+  * java.lang.NullPointerException
+  * at org.kuali.kra.subaward.service.impl.SubAwardServiceImpl.incrementVersionNumberIfCanceledVersionsExist(SubAwardServiceImpl.java:80)
+  * at org.kuali.kra.subaward.service.impl.SubAwardServiceImpl.createNewSubAwardVersion(SubAwardServiceImpl.java:70)
+  * at org.kuali.kra.subaward.web.struts.action.SubAwardHomeAction.createAndSaveNewSubAwardVersion(SubAwardHomeAction.java:232)
+  * at org.kuali.kra.subaward.web.struts.action.SubAwardHomeAction.editOrVersion(SubAwardHomeAction.java:145)
+  * at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+  * at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+  * at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  * at java.lang.reflect.Method.invoke(Method.java:497)
+  * at org.apache.struts.actions.DispatchAction.dispatchMethod(DispatchAction.java:269)
+  * at org.kuali.rice.kns.web.struts.action.KualiAction.dispatchMethod(KualiAction.java:1
+  * Travis Schneeberger on Wed, 6 Jan 2016 15:50:57 -0500 [View Commit](../../commit/e6db4868ec8537e897d062088a0d3d2358c798c4)
+*  Prop Dev Budget Hierarchy causes STE on Hierarchy Summary screen.
+
+  * Successfully created parent.
+  * Opened parent 30575 in Edit mode.
+  * Opened Budget.
+  * Navigated successfully to all sections of the budget from left nav options through Budget Summary
+  * Selected Hierarchy summary from left nav
+  * Received STE:
+
+  * java.lang.RuntimeException: Exception evaluating expression: #ViewHelper.getProposalStatusForDisplay(#line) at org.kuali.rice.krad.uif.view.DefaultExpressionEvaluator.evaluateExpression(DefaultExpressionEvaluator.java:448) at org.kuali.rice.krad.uif.view.DefaultExpressionEvaluator.evaluatePropertyExpression(DefaultExpressionEvaluator.java:514) at org.kuali.rice.krad.uif.view.DefaultExpressionEvaluator.evaluatePropertyExpressions(DefaultExpressionEvaluator.java:735) at org.kuali.rice.krad.uif.view.DefaultExpressionEvaluator.evaluateExpressionsOnConfigurable(DefaultExpressionEvaluator.java:421) at org.kuali.rice.krad.uif.lifecycle.model.EvaluateExpressionsTask.performLifecycleTask(EvaluateExpressionsTask.java:93) at org.kuali.rice.krad.uif.lifecycle.ViewLifecycleTaskBase.run(ViewLifecycleTaskBase.java:66) at org.kuali.rice.krad.uif.lifecycle.ViewLifecyclePhaseBase.run(ViewLifecyclePhaseBase.java:173) at org.kuali.rice.krad.uif.lifecycle.SynchronousViewLifecycleProcessor.performPhase(SynchronousViewLifecycleProcessor.java:192) at org.kuali.rice.krad.uif.lifecycle.ViewLifecycleBuild.runApplyModelPhase(ViewLifecycleBuild.java:201) at org.kuali.rice.krad.uif.lifecycle.ViewLifecycleBuild.run(ViewLifecycleBuild.java:70) at org.kuali.rice.krad.uif.lifecycle.ViewLifecycle.encapsulateLifecycle(ViewLifecyc
+  * Travis Schneeberger on Wed, 6 Jan 2016 14:57:38 -0500 [View Commit](../../commit/4bce4b55caa60e040b142739f3a79ee372dacd16)
+*  It's not possible to delete a subaward from a PD budget that has any costs associated with it.
+
+  * The steps are as follows:
+  * 1) Create a new proposal.
+  * 2) Create a new detailed budget within the proposal.
+  * 3) Go to the Subaward panel within the budget and click "Add subaward".
+  * 4) Select an organization and click Add Subaward.
+  * 5) Click the Details button on the subaward and fill out the Direct/F&A costs for the subaward, then click "Save Changes".
+  * 6) Back on the Subaward screen, click the Delete button to attempt to remove the subaward.
+  * 7) A blank screen is displayed. (On my dev instance I got a stack trace indicating "integrity constraint (KCSO.FK2_BUDGET_DETAILS) violated")
+  * 8) Navigate back to the proposal and open the budget again. The subaward is still present and has not been deleted.
+  * Travis Schneeberger on Wed, 6 Jan 2016 10:31:16 -0500 [View Commit](../../commit/43eebaedae1cf8b0092f5e3a116215865b008113)
+* Rest service audit logging support
+
+  * Saves all rest changes as JSON to REST_AUDIT_LOG table.
+  * blackcathacker on Tue, 15 Dec 2015 15:35:53 -0800 [View Commit](../../commit/32c656c27f26faf725a41c5898a87aeb9a9709dd)
+
+##coeus-1601.12
+* Add additional information to financial api award endpoint
+
+  * The following information needed to be added to the financial api endpoint
+
+  * ```
+* Award Number
+* Award Lead Unit
+* Project Title
+* Sponsor
+* Prime Sponsor
+* PI
+* Unit Administrator
+* Project Start Date
+* Project End Date
+* Award Status
+* Total Obligated Direct
+* Total Obligated F&A
+* Total Obligated
+* Total Anticipated Direct
+* Total Anticipated F&A
+* Total Anticipated
+* Award Type
+* Account Type
+* CFDA Number
+* Sponsor Award ID
+* F&A Rate Class
+* F&A Rate Type
+* F&A Rate
+* Custom Data
+* Transaction History
+  * ```
+  * blackcathacker on Tue, 5 Jan 2016 17:06:12 -0800 [View Commit](../../commit/e326776fb4c523c554bf09923b449ad5e5b29897)
+
+##coeus-1601.11
+* No Changes
+
+
+##coeus-1601.10
+* No Changes
+
+
+##coeus-1601.9
+*  adding new method to check if proposal is in one of the modifiable stauses and user has enough permissions to edit specific questionnaire
+  * Geo Thomas on Tue, 5 Jan 2016 17:22:52 -0500 [View Commit](../../commit/4603e1671131a2e37e35ce708b1be00ed91348fb)
+*   The subrecipient DUNS number needs to display on screen near the other FAIN information related to Uniform Guidance to ease reporting.
+
+  * The field for subrecpient's display of name was not large enough to accomodate the DUNS as well. Therefore, we should move that field to the bottom of the section so that the area can expand to show the DUNS and subrecipient name in one location. This would seperate the Subrecipient from the Sub Investigator however, so we also require that the sub Investigator move to be directly above the new subrecipient display placement. To do that, we will move the execution date to the former placement of the subrecipient.
+  * Travis Schneeberger on Tue, 5 Jan 2016 17:08:57 -0500 [View Commit](../../commit/03f6a7359bb10b00df251441426ca643d57b0fe8)
+* PD - COI Disclosure Status button and Window should display if logic requires certification
+
+  * This is a business process requirement.
+  * The COI Disclosure status button and window should display if any and all logic triggers the requirement for any proposal person to certify (sponsor hierarchy, PCK flag, proposal types, etc).
+  * The button should display when personnel are added to the proposal.
+  * When opened the window should remain unpopulated unless and until a proposal person answers with a Yes to one of the COI screening questions in proposal certifications maintained in PROP_PERSON_COI_CERTIFY_QID.
+
+  * Currently the COI Disclosure status button will not display until a person has answered a yes to one of the COI screening questions in proposal certifications. Showing no COI Disclosure Status button is confusing as could mean no requirement for certification by logic or by a persons answers. The window should display if logic requires certification by any proposal persons.
+  * Joe Williams on Tue, 5 Jan 2016 09:27:21 -0600 [View Commit](../../commit/1cc5f48ce7de824b8a1c190eb7b2b8f37a2b5b85)
+* PD - Inactive COI Notification based on answers still generating
+
+  * Confirmed the PD notification 10407 "Notification based on answers to the COI screening questions" was not Active in MITQA.
+  * Created PD 30523 added personnel. Backdoor logged in as co-Investigator user mgb who answered Yes to all three COI screening questions. We got the on screen prompt modal instructing user to disclose in Coeus lite. And the attached email notification was generated to mgb stating user must complete a full disclosure before proposal can be routed.
+
+  * Since this notification is not active it should not generate.
+  * Joe Williams on Mon, 4 Jan 2016 14:36:27 -0600 [View Commit](../../commit/530f1b667502df8da65dec64316948448657f4bf)
+
+##coeus-1601.7
+* No Changes
+
+
+##coeus-1601.6
+*  putting the unrecovered f & a negative value warning behind a parameter
+  * Travis Schneeberger on Tue, 5 Jan 2016 16:19:16 -0500 [View Commit](../../commit/4ba5e9b589bf0ced4332270e28c18bc7788a6610)
+* PD Budget - Non-personnel costs > Details have all fields appear editable for PD statuses where they should not
+  * Setting non personnel cost tabs to read only when in view mode.
+  * Also updated rates tab checkbox readonly to display 'Yes'/'No' instead of 'true'/'false' in order to be
+  * consistent with other tabs.
+  * rmancher on Tue, 5 Jan 2016 15:51:04 -0500 [View Commit](../../commit/657ae9963cccae5379afb48deeecb1d4a0302bf7)
+*  Organization Maintenance: Accepted Audit should be a dropdown menu.
+  * Travis Schneeberger on Tue, 5 Jan 2016 11:41:41 -0500 [View Commit](../../commit/95ca842ed84c4e68aa886ee5c9064692c180928d)
+
+##coeus-1601.5
+* No Changes
+
+
+##coeus-1601.4
+*  Program Code field limited to 4 characters. While this may be a correct validation for the NSF forms, the SF 424R&R allows up to 75 characters in Agency Routing Number field 4b where this data is mapping. The limit of 4 characters is an overly restrictive validation for the field in this usage.
+  * Travis Schneeberger on Tue, 5 Jan 2016 11:22:59 -0500 [View Commit](../../commit/0f7317a91858a1f88a1faebad5e074e6eb91a873)
+
+##coeus-1601.3
+* No Changes
+
+
+##coeus-1601.2
+* IRB - STE when saving data in the Personnel tab
+
+  * I'm creating a new protocol in QA, i enter data i add a CoI in the personnel tab and hit "save" and i get the STE below.
+  * If instead of hitting "Save" i navigate to another tab, i.e. "Questionnaire" i also get the STE error
+  * Joe Williams on Mon, 4 Jan 2016 15:34:29 -0600 [View Commit](../../commit/3b2bf814dc409e5385f534910861e303c6e51385)
+* Not able to post second version of budget
+
+  * When an Award Budget has period cost limits and is a second or later version, the transient and missing obligated total causes validation errors during workflow process throwing the award budget into exception routing with the following appearing in the logs
+
+  * ```
+  * ValidationException when validating event: null. Check log entries preceding this error for details. Errors: document.null[0].totalCostLimit=error.period.costlimit.exceed.obligatedtotal[]document.null[1].totalCostLimit=error.period.costlimit.exceed.obligatedtotal[]
+  * ```
+  * blackcathacker on Mon, 4 Jan 2016 12:18:05 -0800 [View Commit](../../commit/bf51ad0771a8d6577306ce53e0af43693df12a2a)
+
+##coeus-1601.1
+*  IP & Award: System is allowing users to edit prior document versions when a later version of the document exists.
+
+  * The system is allowing users to edit prior Institutional and Award document Versions but it does not pull in the data from the latest finalized version.
+
+  * For example, in the Institutional Proposal module, if I edit an IP record - the correct Version number gets assigned regardless of what version I click the [edit] button in. However, I noticed that the information in the newly created version pulls in from the IP version I have clicked the [edit] button in and NOT from the latest finalized IP version that exists. (SAME IS HAPPENING IN THE AWARD).
+
+  * For example, let's assume I have an IP that has a latest finalized Version 3 with title 'Kat - Version 3'. I edit that version to create Version 4 with title 'Kat - Version 4' and finalize that. I then go back to Version 3 and I edit that version, KC will assign the correct Version number (Version 5), however, the title that will pull in will be 'Kat - Version 3' and not 'Kat - Version 4'.
+
+  * If a user jots down a doc number – they won’t look to see if a later version exists so we will run into wrong data being pulled into the IPs and Awards. To avoid this problem, the system should only allow users to EDIT the LATEST FINALIZED VERSION. Prior document versions should NOT have an [edit] button.
+  * Joe Williams on Mon, 4 Jan 2016 10:10:37 -0600 [View Commit](../../commit/2ac2c8af70f6bf9c6752180c3d711977da9c6c86)
+
+##coeus-1512.93
 * No Changes
 
 

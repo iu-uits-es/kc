@@ -109,11 +109,11 @@
 					 </bean>
 					 
 					<bean id="PropDev-Resumbit-SubmitToSponsorButton" parent="Uif-SecondaryActionButton" p:actionLabel="Submit to Sponsor" p:methodToCall="submitToSponsor" p:order="100"
-					 	p:render="@{#actionFlags[#{submitToSponsor}] and !document.developmentProposal.child}" p:onClickScript="jQuery(this).hide();">
+					 	p:render="@{#actionFlags[#{submitToSponsor}] and #editModes['submitToSponsor'] and !document.developmentProposal.child}" p:onClickScript="jQuery(this).hide();">
 					</bean>	
 					
 					<bean parent="Uif-SecondaryActionButton" p:actionLabel="Submit to S2S" p:methodToCall="submitToS2s" p:order="110"
-					 	p:render="@{#actionFlags[#{submitToS2s}] and !document.developmentProposal.child}" p:successCallback="jQuery('#PropDev-OpportunityPage-SubmissionDetailsSection_tab').click()">
+					 	p:render="@{#actionFlags[#{submitToS2s}] and #editModes['submitToSponsor'] and !document.developmentProposal.child}" p:successCallback="jQuery('#PropDev-OpportunityPage-SubmissionDetailsSection_tab').click()">
 					</bean>				
 						
 					<bean parent="Uif-DropdownToggleMenu" p:toggleText="More Actions"  p:align="right" p:order="120">

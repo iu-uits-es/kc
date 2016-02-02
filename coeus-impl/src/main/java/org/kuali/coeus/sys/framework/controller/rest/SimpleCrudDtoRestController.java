@@ -27,8 +27,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.kuali.coeus.common.api.budget.rates.InstituteRateDto;
 import org.kuali.rice.krad.bo.PersistableBusinessObject;
 
 import com.codiform.moo.Moo;
@@ -38,16 +40,6 @@ import com.codiform.moo.curry.Translate;
 public class SimpleCrudDtoRestController<T extends PersistableBusinessObject, R> extends SimpleCrudRestControllerBase<T, R> {
 	
 	private Class<R> dtoObjectClazz;
-	
-	public SimpleCrudDtoRestController() { }
-	
-	public SimpleCrudDtoRestController(
-			Class<T> dataObjectClazz,
-			Class<R> dtoObjectClazz, String primaryKeyColumn,
-			String writePermissionNamespace, String writePermissionName) {
-		super(dataObjectClazz, primaryKeyColumn, writePermissionNamespace, writePermissionName);
-		this.dtoObjectClazz = dtoObjectClazz;
-	}
 
 	@Override
 	protected Object getPrimaryKeyIncomingObject(Object dataObject) {
@@ -102,5 +94,25 @@ public class SimpleCrudDtoRestController<T extends PersistableBusinessObject, R>
 				.map(PropertyDescriptor::getName)
 				.filter(name -> !"class".equals(name))
 				.collect(Collectors.toList());
+	}
+
+	public Class<R> getDtoObjectClazz() {
+		return dtoObjectClazz;
+	}
+
+	public void setDtoObjectClazz(Class<R> dtoObjectClazz) {
+		this.dtoObjectClazz = dtoObjectClazz;
+	}
+
+	@Override
+	protected List<String> getListOfTrackedProperties() {
+		try {
+			return Arrays.asList(Introspector.getBeanInfo(dtoObjectClazz).getPropertyDescriptors()).stream()
+					.map(PropertyDescriptor::getName)
+					.filter(name -> !"class".equals(name))
+					.collect(Collectors.toList());
+		} catch (IntrospectionException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -43,6 +43,13 @@ import static org.kuali.rice.core.api.criteria.PredicateFactory.*;
 public class ProposalHierarchyDaoJpa implements ProposalHierarchyDao {
 
     private static final String PROPOSAL_STATE_QUERY = "SELECT a.proposalState from DevelopmentProposal a where a.proposalNumber = :proposalNumber";
+    private static final String PERSON_ID = "personId";
+    private static final String ROLODEX_ID = "rolodexId";
+    private static final String DEVELOPMENT_PROPOSAL_PROPOSAL_NUMBER = "developmentProposal.proposalNumber";
+    private static final String HIERARCHY_PARENT_PROPOSAL_NUMBER = "hierarchyParentProposalNumber";
+    private static final String PROPOSAL_NUMBER = "proposalNumber";
+    private static final String PROPOSAL_PERSON_DEVELOPMENT_PROPOSAL_PROPOSAL_NUMBER = "proposalPerson.developmentProposal.proposalNumber";
+    private static final String PROPOSAL_PERSON_PROPOSAL_PERSON_NUMBER = "proposalPerson.proposalPersonNumber";
 
     @Autowired
 	@Qualifier("dataObjectService")
@@ -52,24 +59,28 @@ public class ProposalHierarchyDaoJpa implements ProposalHierarchyDao {
     @Qualifier("kcEntityManager")
     private EntityManager entityManager;
 
-    /*
-        select * from EPS_PROP_PERSON_BIO where PROPOSAL_NUMBER IN (
-    select PROPOSAL_NUMBER from EPS_PROPOSAL where HIERARCHY_PROPOSAL_NUMBER =
-    (select HIERARCHY_PROPOSAL_NUMBER from EPS_PROPOSAL where PROPOSAL_NUMBER = '13'))
-    AND PERSON_ID = '10000000018';
-         */
-    public boolean personInMultipleChildProposals(String personId, String hierarchyProposalNumber) {
-        List<String> childProposalNumbers = getHierarchyChildProposalNumbers(hierarchyProposalNumber);
+    @Override
+    public boolean employeePersonInMultipleChildProposals(String personId, String hierarchyProposalNumber) {
+        return personInMultipleChildProposals(equal(PERSON_ID, personId), hierarchyProposalNumber);
+    }
+
+    @Override
+    public boolean nonEmployeePersonInMultipleChildProposals(Integer rolodexId, String hierarchyProposalNumber) {
+        return personInMultipleChildProposals(equal(ROLODEX_ID, rolodexId), hierarchyProposalNumber);
+    }
+
+    protected boolean personInMultipleChildProposals(Predicate personPredicate, String hierarchyProposalNumber) {
+        final List<String> childProposalNumbers = getHierarchyChildProposalNumbers(hierarchyProposalNumber);
         if (childProposalNumbers.isEmpty()) {
             return false;
         }
 
-        QueryByCriteria.Builder builder = QueryByCriteria.Builder.create();
-        List<Predicate> predicates = new ArrayList<>();
-        predicates.add(equal("personId", personId));
-        predicates.add(in("developmentProposal.proposalNumber", childProposalNumbers));
+        final QueryByCriteria.Builder builder = QueryByCriteria.Builder.create();
+        final List<Predicate> predicates = new ArrayList<>();
+        predicates.add(personPredicate);
+        predicates.add(in(DEVELOPMENT_PROPOSAL_PROPOSAL_NUMBER, childProposalNumbers));
 
-        Predicate[] preds = predicates.toArray(new Predicate[predicates.size()]);
+        final Predicate[] preds = predicates.toArray(new Predicate[predicates.size()]);
         builder.setCountFlag(CountFlag.ONLY);
         builder.setPredicates(preds);
 
@@ -77,11 +88,12 @@ public class ProposalHierarchyDaoJpa implements ProposalHierarchyDao {
     }
 
     //select PROPOSAL_NUMBER from EPS_PROPOSAL where HIERARCHY_PROPOSAL_NUMBER =18
+    @Override
     public List<DevelopmentProposal> getHierarchyChildProposals(String parentProposalNumber) {
         QueryByCriteria.Builder builder = QueryByCriteria.Builder.create();
         List<Predicate> predicates = new ArrayList<>();
 
-        predicates.add(equal("hierarchyParentProposalNumber", parentProposalNumber));
+        predicates.add(equal(HIERARCHY_PARENT_PROPOSAL_NUMBER, parentProposalNumber));
 
         Predicate[] preds = predicates.toArray(new Predicate[predicates.size()]);
         builder.setPredicates(preds);
@@ -91,20 +103,31 @@ public class ProposalHierarchyDaoJpa implements ProposalHierarchyDao {
         return results.getResults();
     }
 
+    @Override
     public DevelopmentProposal getDevelopmentProposal(String proposalNumber) {
-        return (dataObjectService.findUnique(DevelopmentProposal.class, QueryByCriteria.Builder.forAttribute("proposalNumber", proposalNumber).build()));
+        return (dataObjectService.findUnique(DevelopmentProposal.class, QueryByCriteria.Builder.forAttribute(PROPOSAL_NUMBER, proposalNumber).build()));
     }
 
     @Override
     public ProposalState getProposalState(String proposalNumber) {
-        return (ProposalState) entityManager.createQuery(PROPOSAL_STATE_QUERY).setParameter("proposalNumber", proposalNumber).getSingleResult();
+        return (ProposalState) entityManager.createQuery(PROPOSAL_STATE_QUERY).setParameter(PROPOSAL_NUMBER, proposalNumber).getSingleResult();
      }
 
-    public List<ProposalPerson> isPersonOnProposal(String proposalNumber, String personId) {
+    @Override
+    public List<ProposalPerson> isEmployeePersonOnProposal(String proposalNumber, String personId) {
+        return isPersonOnProposal(proposalNumber, equal(PERSON_ID, personId));
+    }
+
+    @Override
+    public List<ProposalPerson> isNonEmployeePersonOnProposal(String proposalNumber, Integer rolodexId) {
+        return isPersonOnProposal(proposalNumber, equal(ROLODEX_ID, rolodexId));
+    }
+
+    protected List<ProposalPerson> isPersonOnProposal(String proposalNumber, Predicate personPredicate) {
         QueryByCriteria.Builder builder = QueryByCriteria.Builder.create();
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(equal("developmentProposal.proposalNumber", proposalNumber));
-        predicates.add(equal("personId", personId));
+        predicates.add(equal(DEVELOPMENT_PROPOSAL_PROPOSAL_NUMBER, proposalNumber));
+        predicates.add(personPredicate);
 
         Predicate[] preds = predicates.toArray(new Predicate[predicates.size()]);
         builder.setPredicates(preds);
@@ -125,17 +148,19 @@ public class ProposalHierarchyDaoJpa implements ProposalHierarchyDao {
         return proposalNumbers;
     }
 
+    @Override
     public void deleteDegreeInfo(String proposalNumber, Integer proposalPersonNumber, ProposalPerson person) {
         Map<String, String> param = new HashMap<>();
-        param.put("proposalPerson.developmentProposal.proposalNumber", proposalNumber);
-        param.put("proposalPerson.proposalPersonNumber", proposalPersonNumber.toString());
+        param.put(PROPOSAL_PERSON_DEVELOPMENT_PROPOSAL_PROPOSAL_NUMBER, proposalNumber);
+        param.put(PROPOSAL_PERSON_PROPOSAL_PERSON_NUMBER, proposalPersonNumber.toString());
         getDataObjectService().deleteMatching(ProposalPersonDegree.class, QueryByCriteria.Builder.andAttributes(param).build());
     }
 
+    @Override
     public List<ProposalPersonDegree> getDegreeInformation(String proposalNumber, ProposalPerson person) {
         Map<String, String> param = new HashMap<>();
-        param.put("proposalPerson.developmentProposal.proposalNumber", proposalNumber);
-        param.put("proposalPerson.proposalPersonNumber", person.getProposalPersonNumber().toString());
+        param.put(PROPOSAL_PERSON_DEVELOPMENT_PROPOSAL_PROPOSAL_NUMBER, proposalNumber);
+        param.put(PROPOSAL_PERSON_PROPOSAL_PERSON_NUMBER, person.getProposalPersonNumber().toString());
         return getDataObjectService().findMatching(ProposalPersonDegree.class, QueryByCriteria.Builder.andAttributes(param).build()).getResults();
     }
 

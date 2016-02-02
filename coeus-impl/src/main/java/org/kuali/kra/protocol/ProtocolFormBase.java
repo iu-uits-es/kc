@@ -231,7 +231,20 @@ public abstract class ProtocolFormBase extends KcTransactionalDocumentFormBase i
     }
     
     public PermissionsHelperBase getPermissionsHelper() {
-          return permissionsHelper;
+    	if (permissionsHelper == null) {
+    		try {
+    			this.initializePermission();
+    		} catch (Exception e) {
+    			throw new RuntimeException(e);
+    		}
+    	}
+        return permissionsHelper;
+    }
+    
+    public void resetUserPermissionStates() {
+    	if (permissionsHelper != null) {
+    		permissionsHelper.resetUserStates();
+    	}
     }
     
     
@@ -487,6 +500,10 @@ public abstract class ProtocolFormBase extends KcTransactionalDocumentFormBase i
             status = this.getDocument().getDocumentHeader().getWorkflowDocument().getStatus();
         }
         return StringUtils.equals(status.getCode(), DocumentStatus.SAVED.getCode());
+    }
+
+    public boolean getDisplayEditButton() {
+        return !getProtocolDocument().getProtocol().isRenewalWithoutAmendment();
     }
     
 }

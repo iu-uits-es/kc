@@ -127,6 +127,7 @@ public class ProposalDevelopmentConstants {
         public static final String PROPOSAL_TYPE_CODE_SUPPLEMENT_CHANGE_CORRECTED_PARM = "PROPOSAL_TYPE_CODE_SUPPLEMENT_CHANGE_CORRECTED";
         public static final String PROPOSAL_TYPE_CODE_BUDGET_SOW_UPDATE_PARM = "PROPOSAL_TYPE_CODE_BUDGET_SOW_UPDATE";
         public static final String PROPOSAL_TYPE_CODE_PRE_PROPOSAL_PARM = "PROPOSAL_TYPE_CODE_PRE_PROPOSAL";
+        public static final String ENABLE_KEY_PERSON_VALIDATION_FOR_NON_EMPLOYEE_PERSONNEL = "ENABLE_KEY_PERSON_VALIDATION_FOR_NON_EMPLOYEE_PERSONNEL";
     }
     
     public static class AuthConstants {
@@ -141,6 +142,7 @@ public class ProposalDevelopmentConstants {
     public static class KewConstants {
 
         public static final String PROPOSAL_DEVELOPMENT_DOCUMENT = "ProposalDevelopmentDocument";
+		public static final String AGGREGATORS_REQUEST_FOR_REVIEW_ANNOTATION = "Aggregators Request for Review";
     }
     
     
