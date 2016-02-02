@@ -27,9 +27,11 @@ import org.kuali.coeus.common.framework.auth.perm.KcAuthorizationService;
 import org.kuali.coeus.sys.framework.service.KcServiceLocator;
 import org.kuali.kra.iacuc.actions.IacucProtocolActionRequestService;
 import org.kuali.kra.iacuc.actions.IacucProtocolActionType;
+import org.kuali.kra.iacuc.actions.print.IacucProtocolPrintingService;
 import org.kuali.kra.iacuc.auth.IacucProtocolTask;
 import org.kuali.kra.iacuc.correspondence.IacucProtocolCorrespondence;
 import org.kuali.kra.iacuc.infrastructure.IacucConstants;
+import org.kuali.kra.iacuc.noteattachment.IacucProtocolAttachmentService;
 import org.kuali.kra.iacuc.notification.IacucProtocolNotification;
 import org.kuali.kra.iacuc.notification.IacucProtocolNotificationContext;
 import org.kuali.kra.iacuc.notification.IacucProtocolNotificationRenderer;
@@ -39,6 +41,8 @@ import org.kuali.kra.iacuc.procedures.IacucProtocolProcedureService;
 import org.kuali.kra.infrastructure.Constants;
 import org.kuali.kra.infrastructure.RoleConstants;
 import org.kuali.kra.infrastructure.TaskName;
+import org.kuali.kra.protocol.actions.print.ProtocolPrintingService;
+import org.kuali.kra.protocol.noteattachment.ProtocolAttachmentService;
 import org.kuali.kra.protocol.ProtocolActionBase;
 import org.kuali.kra.protocol.ProtocolBase;
 import org.kuali.kra.protocol.ProtocolFormBase;
@@ -233,7 +237,15 @@ public class IacucProtocolAction extends ProtocolActionBase {
     protected IacucProtocolCorrespondence getProtocolCorrespondence (ProtocolFormBase protocolForm, String forwardName, ProtocolNotificationRequestBeanBase notificationRequestBean, boolean holdingPage) {
         return (IacucProtocolCorrespondence)getProtocolActionRequestService().getProtocolCorrespondence(protocolForm, forwardName, notificationRequestBean, holdingPage);
     }
-    
+
+    protected ProtocolPrintingService getProtocolPrintingService() {
+        return KcServiceLocator.getService(IacucProtocolPrintingService.class);
+    }
+
+    protected ProtocolAttachmentService getProtocolAttachmentService() {
+        return KcServiceLocator.getService(IacucProtocolAttachmentService.class);
+    }
+
     protected IacucProtocolActionRequestService getProtocolActionRequestService() {
         return KcServiceLocator.getService(IacucProtocolActionRequestService.class);
     }
