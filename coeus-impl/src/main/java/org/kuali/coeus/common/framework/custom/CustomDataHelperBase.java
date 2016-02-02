@@ -117,7 +117,6 @@ public abstract class CustomDataHelperBase<T extends DocumentCustomData> impleme
             customAttributeGroups.put(groupName, customAttributeDocumentList);
         }
         customAttributeDocumentList.add(customAttributeDocument.getValue());
-        Collections.sort(customAttributeDocumentList, new CustomAttributeSortIdComparator());
     }
 
     protected boolean isMatch(T documentCustomData, Entry<String, CustomAttributeDocument> customAttributeDocumentEntry) {
@@ -146,8 +145,6 @@ public abstract class CustomDataHelperBase<T extends DocumentCustomData> impleme
 
             }
             customAttributeDocumentList.add(getCustomAttributeDocuments().get(customAttributeDocumentEntry.getValue().getId().toString()));
-            //Collections.sort(customAttributeDocumentList, new LabelComparator());
-            Collections.sort(customAttributeDocumentList, new CustomAttributeSortIdComparator());
         }
     }
 
@@ -160,6 +157,28 @@ public abstract class CustomDataHelperBase<T extends DocumentCustomData> impleme
             buildCustomDataCollectionsOnNewDocument(customAttributeGroups);
         }
         setCustomAttributeGroups(customAttributeGroups);
+        sortCustomDataBySortId();
+    }
+
+    protected void sortCustomDataBySortId() {
+        CustomAttributeSortIdComparator customAttributeDocumentComparator = new CustomAttributeSortIdComparator();
+        List<T> unsortedCustomDataList = new ArrayList<>(getCustomDataList());
+        List<CustomAttributeDocument> sortedCustomAttributeDocuments = new ArrayList<>(getCustomAttributeDocuments().values());
+        Collections.sort(sortedCustomAttributeDocuments, customAttributeDocumentComparator);
+        getCustomDataList().clear();
+
+        for (CustomAttributeDocument customAttributeDocument : sortedCustomAttributeDocuments) {
+            for (T customData : unsortedCustomDataList) {
+                if (customData.getCustomAttributeId().equals(customAttributeDocument.getId())) {
+                    getCustomDataList().add(customData);
+                    break;
+                }
+            }
+        }
+
+        for (List<CustomAttributeDocument> groupDocuments : getCustomAttributeGroups().values()) {
+            Collections.sort(groupDocuments, customAttributeDocumentComparator);
+        }
     }
 
     /**
