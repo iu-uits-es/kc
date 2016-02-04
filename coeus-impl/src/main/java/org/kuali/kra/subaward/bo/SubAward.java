@@ -1181,9 +1181,15 @@ implements Permissionable, SequenceOwner<SubAward>, Negotiable {
 	 * This is the Getter Method for totalObligatedAmount
 	 * @return Returns the totalObligatedAmount.
 	 */
-	public ScaleTwoDecimal getTotalObligatedAmount() {
-		return totalObligatedAmount;
-	}
+    public ScaleTwoDecimal getTotalObligatedAmount() {
+        ScaleTwoDecimal totalObligated = new ScaleTwoDecimal(0.00);
+
+        for(SubAwardAmountInfo i : this.subAwardAmountInfoList) {
+            if (i.getObligatedChange() != null)
+                totalObligated = totalObligated.add(i.getObligatedChange());
+        }
+        return totalObligated;
+    }
 
 	/**.
 	 * This is the Getter Method for lastUpdate
@@ -1213,9 +1219,15 @@ implements Permissionable, SequenceOwner<SubAward>, Negotiable {
 	 * This is the Getter Method for totalAnticipatedAmount
 	 * @return Returns the totalAnticipatedAmount.
 	 */
-	public ScaleTwoDecimal getTotalAnticipatedAmount() {
-		return totalAnticipatedAmount;
-	}
+    public ScaleTwoDecimal getTotalAnticipatedAmount() {
+        ScaleTwoDecimal totalAnticipated = new ScaleTwoDecimal(0.00);
+
+        for(SubAwardAmountInfo i : this.subAwardAmountInfoList) {
+            if (i.getAnticipatedChange() != null)
+                totalAnticipated = totalAnticipated.add(i.getObligatedChange());
+        }
+        return totalAnticipated;
+    }
 
 	/**.
 	 * This is the Setter Method for totalAnticipatedAmount
