@@ -325,7 +325,7 @@ public class NegotiationDaoOjb extends LookupDaoOjb implements NegotiationDao {
         Criteria criteria = getCollectionCriteriaFromMap(new SubAward(), values);
         Criteria negotiationCrit = new Criteria();
         ReportQueryByCriteria subQuery = QueryFactory.newReportQuery(SubAward.class, criteria);
-        subQuery.setAttributes(new String[] {"subAwardId"});
+        subQuery.setAttributes(new String[] {"subAwardCode"});
         negotiationCrit.addIn(ASSOCIATED_DOC_ID_ATTR, subQuery);
         negotiationCrit.addEqualTo(NEGOTIATION_TYPE_ATTR, 
                 getNegotiationService().getNegotiationAssociationType(NegotiationAssociationType.SUB_AWARD_ASSOCIATION).getId());
