@@ -902,14 +902,18 @@
               <bean parent="FieldDefinition" p:attributeName="statusCode" />
               <bean parent="FieldDefinition" p:attributeName="accountNumber" />
               <bean parent="FieldDefinition" p:attributeName="organizationName" />
+              <bean parent="FieldDefinition" p:attributeName="requisitionerName" />
+              <bean parent="FieldDefinition" p:attributeName="requisitionerUnit" />
               <bean parent="FieldDefinition" p:attributeName="startDate" />
               <bean parent="FieldDefinition" p:attributeName="endDate" />
-              <bean parent="FieldDefinition" p:attributeName="subAwardTypeCode" />
-              <bean parent="FieldDefinition" p:attributeName="purchaseOrderNum" />
               <bean parent="FieldDefinition" p:attributeName="title" />
-              <bean parent="FieldDefinition" p:attributeName="requisitionerName" />
+              <bean parent="FieldDefinition" p:attributeName="purchaseOrderNum" />
+              <bean parent="FieldDefinition" p:attributeName="subAwardTypeCode" />
+              <bean parent="FieldDefinition" p:attributeName="vendorNumber" />
               <bean parent="FieldDefinition" p:attributeName="totalObligatedAmount" />
               <bean parent="FieldDefinition" p:attributeName="totalAnticipatedAmount" />
+              <bean parent="FieldDefinition" p:attributeName="totalAmountReleased" />
+              <bean parent="FieldDefinition" p:attributeName="totalAvailableAmount" />
             </list>
           </property>
         </bean>
