@@ -317,7 +317,6 @@ public class MedusaServiceImpl implements MedusaService {
     }
 
     protected void buildGraph(HashMap<Object, List<Object>> graph, SubAward subAward, boolean includeComplianceModules) {
-
         Collection<Award> awards = getAwards(subAward);
         for (Award award : awards) {
             addToGraph(graph, award, subAward, includeComplianceModules);
