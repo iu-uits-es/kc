@@ -1,4 +1,4 @@
-/<%--
+<%--
    - Kuali Coeus, a comprehensive research administration system for higher education.
    -
    - Copyright 2005-2015 Kuali, Inc.
@@ -130,6 +130,8 @@ $jq(document).ready(function() {
     <tr>
     <th>&nbsp;</th>
     <th><kul:htmlAttributeLabel attributeEntry="${activityAttributes.startDate}" readOnly="true" noColon="true"/></th>
+    <th><kul:htmlAttributeLabel attributeEntry="${attachmentAttributes.updateTimestamp}" readOnly="true" noColon="true"/></th>
+    <th><kul:htmlAttributeLabel attributeEntry="${attachmentAttributes.updateUser}" readOnly="true" noColon="true"/></th>
     <th>File</th>
     <th><kul:htmlAttributeLabel attributeEntry="${attachmentAttributes.description}" readOnly="true" noColon="true"/></th>
     <th><kul:htmlAttributeLabel attributeEntry="${activityAttributes.locationId}" readOnly="true" noColon="true"/></th>
@@ -142,6 +144,8 @@ $jq(document).ready(function() {
       <tr>
         <th style="text-align:right;">${ctr.count}</th>
         <td><kul:htmlControlAttribute property="negotiationActivityHelper.allAttachments[${ctr.count-1}].activity.startDate" attributeEntry="${activityAttributes.startDate}" readOnly="true"/></td>
+        <td><fmt:formatDate value="${KualiForm.negotiationActivityHelper.allAttachments[ctr.count-1].updateTimestamp}" pattern="MM/dd/yyyy hh:mm a"/> </td>
+        <td><kul:htmlControlAttribute property="negotiationActivityHelper.allAttachments[${ctr.count-1}].updateUserName" attributeEntry="${attachmentAttributes.updateUser}" readOnly="true"/></td>
         <td><a href="#" class="attachmentLink"><kra:fileicon attachment="${attachment.file}"/><c:out value="${attachment.file.name}"/></a>
         	<html:image property="methodToCall.viewAttachmentFromAllAttachments.attachmentIndex${ctr.count-1}"
    		  				src="${ConfigProperties.kra.externalizable.images.url}tinybutton-view.gif" styleClass="tinybutton" />

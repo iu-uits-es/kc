@@ -27,6 +27,8 @@
       <list>
         <ref bean="NegotiationActivityAttachment-attachmentId" />
         <ref bean="NegotiationActivityAttachment-description"/>
+        <ref bean="NegotiationActivityAttachment-updateTimestamp" />
+        <ref bean="NegotiationActivityAttachment-updateUser"/>
       </list>
     </property>
   </bean>
@@ -82,6 +84,27 @@
     </property>
     <property name="summary" value="Attachment Description" />
     <property name="description" value="Attachment Description" />
+  </bean>
+
+  <bean id="NegotiationActivityAttachment-updateTimestamp" parent="NegotiationActivityAttachment-updateTimestamp-parentBean" />
+  <bean id="NegotiationActivityAttachment-updateTimestamp-parentBean" abstract="true" parent="AttributeReferenceDummy-genericDate">
+    <property name="name" value="updateTimestamp" />
+    <property name="forceUppercase" value="false" />
+    <property name="label" value="Posted Timestamp" />
+    <property name="shortLabel" value="Posted Timestamp" />
+    <property name="required" value="false" />
+    <property name="validationPattern" >
+      <bean parent="DateValidationPattern" />
+    </property>
+    <property name="summary" value="Posted Timestamp" />
+    <property name="description" value="Posted Timestamp" />
+  </bean>
+
+  <bean id="NegotiationActivityAttachment-updateUser" parent="NegotiationActivityAttachment-updateUser-parentBean" />
+  <bean id="NegotiationActivityAttachment-updateUser-parentBean" abstract="true" parent="KraAttributeReferenceDummy-updateUser" >
+    <property name="name" value="updateUser" />
+    <property name="label" value="Uploaded By" />
+    <property name="shortLabel" value="Uploaded By" />
   </bean>
 
 </beans>

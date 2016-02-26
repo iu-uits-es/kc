@@ -64,6 +64,7 @@ public class NegotiationNegotiationAction extends NegotiationAction {
         negotiationForm.getMedusaBean().generateParentNodes();
         negotiationForm.getNegotiationActivityHelper().sortActivities();
         negotiationForm.getNegotiationActivityHelper().generateAllAttachments();
+        negotiationForm.getNegotiationActivityHelper().sortAttachments();
         return actionForward;
     }
     

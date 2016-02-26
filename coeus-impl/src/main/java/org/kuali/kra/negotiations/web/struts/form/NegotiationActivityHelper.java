@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 
 /**
  * Form helper to manage activities and attachments.
@@ -47,6 +49,7 @@ public class NegotiationActivityHelper implements Serializable {
     private ActivitySortingType activitySortingType;
     private AttachmentSortingType attachmentSortingType;
     private List<NegotiationActivityAttachment> allAttachments;
+    private String defaultAttachmentSortCode = "POST";
     
     /**
      * 
@@ -223,19 +226,27 @@ public class NegotiationActivityHelper implements Serializable {
         if (allAttachments == null) {
             generateAllAttachments();
         }
+        sortAttachments();
         return allAttachments;
     }
     
     public void generateAllAttachments() {
-        allAttachments = new ArrayList<NegotiationActivityAttachment>();
+        allAttachments = new CopyOnWriteArrayList<NegotiationActivityAttachment>();
+
         for (NegotiationActivity activity : getForm().getNegotiationDocument().getNegotiation().getActivities()) {
             allAttachments.addAll(activity.getAttachments());
         }
-        if (attachmentSortingType != null) {
+    }
+
+    public void sortAttachments() {
+        if (getAttachmentSortingType() == null) {
+            setAttachmentSortingTypeName(defaultAttachmentSortCode);
+        }
+        else {
             Collections.sort(allAttachments, attachmentSortingType.getComparator());
         }
     }
-    
+
     public void sortActivities() {
         if (getActivitySortingType() != null) {
             Collections.sort(getForm().getNegotiationDocument().getNegotiation().getActivities(), 
