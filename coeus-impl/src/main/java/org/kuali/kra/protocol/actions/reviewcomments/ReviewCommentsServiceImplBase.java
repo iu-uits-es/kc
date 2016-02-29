@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -410,12 +410,14 @@ public abstract class ReviewCommentsServiceImplBase<PRA extends ProtocolReviewAt
     }
 
     public void deleteAllReviewComments(List<CommitteeScheduleMinuteBase> reviewComments, List<CommitteeScheduleMinuteBase> deletedReviewComments) {
-        for (CommitteeScheduleMinuteBase reviewerComment : reviewComments) {
-            if (reviewerComment.getCommScheduleMinutesId() != null) {
-                deletedReviewComments.add(reviewerComment);
+        if (reviewComments != null) {
+            for (CommitteeScheduleMinuteBase reviewerComment : reviewComments) {
+                if (reviewerComment.getCommScheduleMinutesId() != null) {
+                    deletedReviewComments.add(reviewerComment);
+                }
             }
+            reviewComments.clear();
         }
-        reviewComments.clear();
     }
 
     @Override
@@ -980,13 +982,15 @@ public abstract class ReviewCommentsServiceImplBase<PRA extends ProtocolReviewAt
     @Override
     public void deleteAllReviewAttachments(List<PRA> reviewAttachments,
             List<PRA> deletedReviewAttachments) {
-        for (PRA reviewerAttachment : reviewAttachments) {
-            if (reviewerAttachment.getReviewerAttachmentId() != null) {
-                deletedReviewAttachments.add(reviewerAttachment);
-            }
-        }
-        reviewAttachments.clear();
 
+        if (reviewAttachments != null) {
+            for (PRA reviewerAttachment : reviewAttachments) {
+                if (reviewerAttachment.getReviewerAttachmentId() != null) {
+                    deletedReviewAttachments.add(reviewerAttachment);
+                }
+            }
+            reviewAttachments.clear();
+        }
     }
 
     public ProtocolFinderDao getProtocolFinderDao() {

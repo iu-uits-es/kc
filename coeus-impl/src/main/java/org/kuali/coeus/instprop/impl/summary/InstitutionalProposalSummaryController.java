@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  *
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,11 +18,11 @@
  */
 package org.kuali.coeus.instprop.impl.summary;
 
-import com.codiform.moo.Moo;
 import com.codiform.moo.curry.Translate;
 
 import org.kuali.coeus.instprop.impl.api.InstitutionalProposalResults;
-import org.kuali.coeus.sys.framework.summary.SearchResults;
+import org.kuali.coeus.sys.framework.controller.rest.RestController;
+import org.kuali.coeus.sys.framework.rest.SearchResults;
 import org.kuali.kra.institutionalproposal.dao.InstitutionalProposalDao;
 import org.kuali.kra.institutionalproposal.home.InstitutionalProposal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 @Controller()
-public class InstitutionalProposalSummaryController {
+public class InstitutionalProposalSummaryController extends RestController {
 
     @Autowired
     @Qualifier("institutionalProposalDao")

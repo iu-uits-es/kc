@@ -1,3 +1,21 @@
+/*
+ * Kuali Coeus, a comprehensive research administration system for higher education.
+ *
+ * Copyright 2005-2016 Kuali, Inc.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.kuali.coeus.sys.impl.auth;
 
 import java.io.StringWriter;
@@ -36,13 +54,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service("authServicePushService")
 public class AuthServicePushServiceImpl implements AuthServicePushService {
 	
+	private static final Integer NUMBER_OF_USERS_LIMIT = 100000;
+	private static final String LIMIT_PARAM = "limit";
 	private static final String AUTH_USER_PUSH_USE_DEV_PASSWORD = "auth.user.push.use.dev.password";
 	private static final String AUTH_USER_PUSH_DEV_PASSWORD = "auth.user.push.dev.password";
-	private static final RestServiceConstants.RestApiVersions AUTH_USER_API_VERSION = RestServiceConstants.RestApiVersions.VER_1;
 	private static final String USER_ROLE = "user";
 	private static final String ADMIN_ROLE = "admin";
 	private static final Log LOG = LogFactory.getLog(AuthServicePushServiceImpl.class); 
@@ -185,15 +205,16 @@ public class AuthServicePushServiceImpl implements AuthServicePushService {
 	}
 	
 	protected List<AuthUser> getAllAuthServiceUsers() {
-		ResponseEntity<List<AuthUser>> result = restOperations.exchange(getUsersApiUrl(), HttpMethod.GET, 
-				new HttpEntity<String>(authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser(AUTH_USER_API_VERSION)), new ParameterizedTypeReference<List<AuthUser>>() { });
+		String uri = UriComponentsBuilder.fromHttpUrl(getUsersApiUrl()).queryParam(LIMIT_PARAM, NUMBER_OF_USERS_LIMIT).build().encode().toString();
+		ResponseEntity<List<AuthUser>> result = restOperations.exchange(uri, HttpMethod.GET, 
+				new HttpEntity<String>(authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser()), new ParameterizedTypeReference<List<AuthUser>>() { });
 		return result.getBody();
 	}
 	
 	protected void addUserToAuthService(AuthUser newUser, String userPassword) {
 		newUser.setPassword(userPassword);
 		ResponseEntity<String> result = restOperations.exchange(getUsersApiUrl(), HttpMethod.POST, 
-				new HttpEntity<AuthUser>(newUser, authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser(AUTH_USER_API_VERSION)), String.class);
+				new HttpEntity<AuthUser>(newUser, authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser()), String.class);
 		if (result.getStatusCode() != HttpStatus.CREATED) {
 			throw new RestClientException(result.getBody());
 		}
@@ -201,7 +222,7 @@ public class AuthServicePushServiceImpl implements AuthServicePushService {
 	
 	protected void updateUserInAuthService(AuthUser updatedUser, String userId) {
 		ResponseEntity<String> result = restOperations.exchange(getUsersApiUrl() + userId, HttpMethod.PUT, 
-				new HttpEntity<AuthUser>(updatedUser, authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser(AUTH_USER_API_VERSION)), String.class);
+				new HttpEntity<AuthUser>(updatedUser, authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser()), String.class);
 		if (result.getStatusCode() != HttpStatus.OK) {
 			throw new RestClientException(result.getBody());
 		}
@@ -209,7 +230,7 @@ public class AuthServicePushServiceImpl implements AuthServicePushService {
 	
 	protected void removeUserFromAuthService(String userId) {
 		ResponseEntity<String> result = restOperations.exchange(getUsersApiUrl() + userId, HttpMethod.DELETE, 
-				new HttpEntity<AuthUser>(authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser(AUTH_USER_API_VERSION)), String.class);
+				new HttpEntity<AuthUser>(authServiceRestUtilService.getAuthServiceStyleHttpHeadersForUser()), String.class);
 		if (result.getStatusCode() != HttpStatus.NO_CONTENT) {
 			throw new RestClientException(result.getBody());
 		}

@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -58,6 +58,10 @@ public final class JstlFunctions {
 
     public static boolean isGrm() {
         return getConfigurationService().getPropertyValueAsString("spring.profiles.active").contains("grm");
+    }
+
+    public static boolean getConfigValueAsBoolean(String key) {
+        return getConfigurationService().getPropertyValueAsBoolean(key);
     }
 
     /**

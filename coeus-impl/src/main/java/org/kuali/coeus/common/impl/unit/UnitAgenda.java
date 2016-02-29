@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  *
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -63,13 +63,16 @@ class UnitAgenda extends BasicAgenda {
     }
 
     protected boolean appliesToUnit(String agendaQualifierValue, String environmentQualifierValue) {
+        if(environmentQualifierValue == null) {
+            return Boolean.FALSE;
+        }
         for (String environmentUnitNumber : environmentQualifierValue.split(DELIMITER)) {
             List<Unit> unitHierarchyForUnit = getUnitService().getUnitHierarchyForUnit(environmentUnitNumber);
             if (appliesToAnyUnitInHierarchy(agendaQualifierValue, unitHierarchyForUnit)) {
-                return true;
+                return Boolean.TRUE;
             }
         }
-        return false;
+        return Boolean.FALSE;
     }
 
     protected boolean appliesToAnyUnitInHierarchy(String agendaQualifierValue, List<Unit> unitHierarchyForUnit) {

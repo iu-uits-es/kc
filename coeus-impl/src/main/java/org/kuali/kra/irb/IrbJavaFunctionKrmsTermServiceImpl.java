@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@
  */
 package org.kuali.kra.irb;
 
+import org.apache.commons.lang3.StringUtils;
 import org.kuali.kra.irb.actions.ProtocolActionType;
 import org.kuali.kra.irb.actions.amendrenew.ProtocolModule;
 import org.kuali.kra.irb.actions.submit.ProtocolSubmissionType;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class IrbJavaFunctionKrmsTermServiceImpl extends ProtocolJavaFunctionKrmsTermServiceBase implements IrbJavaFunctionKrmsTermService {
+
     @Override
     public Boolean hasProtocolContainsSubjectType(Protocol protocol, String subjectTypeCode) {
         boolean result = false;
@@ -41,6 +43,16 @@ public class IrbJavaFunctionKrmsTermServiceImpl extends ProtocolJavaFunctionKrms
             }
         }
         return result;
+    }
+
+    public Integer getProtocolParticipantTypeCount(Protocol protocol, String participantType) {
+        return protocol.getProtocolParticipants().stream().filter(participant -> isMatchOnParticipantType(participantType, participant)).
+                map(ProtocolParticipant::getParticipantCount).reduce(0, Integer::sum);
+    }
+
+    protected boolean isMatchOnParticipantType(String participantType, ProtocolParticipant participant) {
+        return StringUtils.equals(participant.getParticipantTypeCode(), participantType) ||
+                participant.getParticipantType() != null && StringUtils.equals(participant.getParticipantType().getDescription(), participantType);
     }
 
     @Override

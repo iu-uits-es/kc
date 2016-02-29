@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@ package org.kuali.coeus.sys.framework.controller.rest;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -39,24 +40,29 @@ import org.kuali.kra.infrastructure.PermissionConstants;
 import org.kuali.kra.kim.bo.KcKimAttributes;
 import org.kuali.rice.kim.api.permission.PermissionService;
 import org.kuali.rice.krad.bo.PersistableBusinessObject;
+import org.kuali.rice.krad.data.CompoundKey;
 import org.kuali.rice.krad.service.DictionaryValidationService;
 import org.kuali.rice.krad.service.LegacyDataAdapter;
 import org.kuali.rice.krad.util.MessageMap;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
+import static org.kuali.coeus.sys.framework.util.CollectionUtils.entriesToMap;
 import static org.kuali.coeus.sys.framework.util.CollectionUtils.entry;
 
 public abstract class SimpleCrudRestControllerBase<T extends PersistableBusinessObject, R> extends RestController implements InitializingBean {
+
+	protected static final String DELIMETER = ":";
+
+	protected static final String ALLOW_MULTI_PARM = "_allowMulti";
+	private static final String SCHEMA_PARM = "_schema";
 
 	@Autowired
 	@Qualifier("legacyDataAdapter")
@@ -81,16 +87,18 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 	@Autowired
 	@Qualifier("persistenceVerificationService")
 	private PersistenceVerificationService persistenceVerificationService;
-	
+
+	@Autowired
+	@Qualifier("restAuditLoggerFactory")
+	private RestAuditLoggerFactory restAuditLoggerFactory;
+
 	@Autowired
 	@Qualifier("autoRegisterMapping")
 	private RestSimpleUrlHandlerMapping autoRegisterMapping;
 
 	private boolean registerMapping = true;
-	
-	@Autowired
-	@Qualifier("restAuditLoggerFactory")
-	private RestAuditLoggerFactory restAuditLoggerFactory;
+
+	private BeanWrapper beanWrapper;
 
 	private Class<T> dataObjectClazz;
 	
@@ -125,27 +133,64 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 			throw new RuntimeException("cannot create new data object", e);
 		}
 	}
-	
-	protected abstract Object getPrimaryKeyIncomingObject(R dataObject);
-	
-	@RequestMapping(method=RequestMethod.GET)
-	public @ResponseBody Collection<R> getAll() {
-		assertUserHasReadAccess();
 
-		Collection<T> dataObjects = getAllFromDataStore();
-		if (dataObjects == null || dataObjects.size() == 0) {
-			throw new ResourceNotFoundException("not found");
+	protected Object getPrimaryKeyIncomingObject(R dataObject) {
+		if (isCompoundPrimaryKey()) {
+			final List<String> pkColumns = Arrays.asList(getPrimaryKeyColumn().split(DELIMETER));
+			return new CompoundKey(pkColumns.stream()
+					.map(pk -> {
+						final Object val = getPropertyFromIncomingObject(pk, dataObject);
+						if (val instanceof String && StringUtils.isBlank((String) val)) {
+							throw new ResourceNotFoundException(pk + " is blank.");
+						} else if (val == null) {
+							throw new ResourceNotFoundException(pk + " is not present.");
+						}
+						return entry(pk, val);
+					})
+					.collect(entriesToMap()));
+		} else {
+			return getPropertyFromIncomingObject(getPrimaryKeyColumn(), dataObject);
 		}
-		return translateAllDataObjects(dataObjects);
+	}
+
+	protected String primaryKeyToString(Object pkValues) {
+		final String key;
+		if (pkValues instanceof CompoundKey){
+			final String keyNamesStr = getPrimaryKeyColumn();
+			final List<String> keyNames = Arrays.asList(keyNamesStr.split(DELIMETER));
+			final Map<String, ?> keys = ((CompoundKey) pkValues).getKeys();
+			if (keyNames.size() != keys.size()) {
+				throw new IllegalArgumentException("compoundKey value does not contain the same number key elements in format: " + keyNamesStr);
+			}
+			key = keyNames.stream()
+					.map(name -> keys.get(name).toString())
+					.reduce((t, u) -> t + DELIMETER + u)
+					.get();
+		} else {
+			key = pkValues.toString();
+		}
+		return key;
+	}
+
+	protected abstract Object getPropertyFromIncomingObject(String propertyName, R dataObject);
+
+	@RequestMapping(method=RequestMethod.GET)
+	public @ResponseBody Collection<R> getAll(@RequestParam(required=false) Map<String,String> parameters) {
+		assertUserHasReadAccess();
+		return translateAllDataObjects(doGetAll(parameters));
+	}
+
+	protected Object translateValue(String name, String value) {
+		return beanWrapper.convertIfNecessary(value, beanWrapper.getPropertyType(name));
 	}
 	
 	protected abstract Collection<R> translateAllDataObjects(Collection<T> dataObjects);
 	
-	@RequestMapping(method=RequestMethod.GET, params={"schema"})
+	@RequestMapping(method=RequestMethod.GET, params={SCHEMA_PARM})
 	public @ResponseBody Map<String, Object> getSchema() {
 		assertUserHasReadAccess();
 
-		Map<String, Object> schema = new HashMap<>();
+		final Map<String, Object> schema = new HashMap<>();
 		schema.put("primaryKey", getPrimaryKeyColumn());
 		schema.put("columns", getExposedProperties());
 		return schema;
@@ -159,7 +204,7 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 
 		T dataObject = getFromDataStore(code);
 		if (dataObject == null) {
-			throw new ResourceNotFoundException("not found");
+			throw new ResourceNotFoundException("not found for key " + code);
 		}
 		return convertDataObject(dataObject);
 	}
@@ -172,7 +217,7 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		assertUserHasWriteAccess();
 		T dataObject = getFromDataStore(code);
 		if (dataObject == null) {
-			throw new ResourceNotFoundException("not found");
+			throw new ResourceNotFoundException("not found for key " + code);
 		}
 		RestAuditLogger logger = getAuditLogger();
 		logUpdateToObject(dataObject, dto, logger);
@@ -183,7 +228,38 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		save(dataObject);
 		logger.saveAuditLog();
 	}
-	
+
+	@RequestMapping(method=RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@SuppressWarnings("unchecked")
+	public void update(@Valid @RequestBody Object dto) {
+		assertUserHasWriteAccess();
+
+		if (dto instanceof List) {
+			((List<Object>) dto).stream().map(this::objectToDto).forEach(this::doUpdate);
+		} else {
+			doUpdate(objectToDto(dto));
+		}
+	}
+
+	protected abstract R objectToDto(Object o);
+
+	protected void doUpdate(R dto) {
+		final Object pk = getPrimaryKeyIncomingObject(dto);
+		final T dataObject = getFromDataStore(pk);
+		if (dataObject == null) {
+			throw new ResourceNotFoundException("not found for key " + pk);
+		}
+		RestAuditLogger logger = getAuditLogger();
+		logUpdateToObject(dataObject, dto, logger);
+		updateDataObjectFromInput(dataObject, dto);
+
+		validateBusinessObject(dataObject);
+		validateUpdateDataObject(dataObject);
+		save(dataObject);
+		logger.saveAuditLog();
+	}
+
 	protected RestAuditLogger getAuditLogger() {
 		return restAuditLoggerFactory.getNewAuditLogger(dataObjectClazz, getListOfTrackedProperties());
 	}
@@ -201,16 +277,27 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 	
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
-	public @ResponseBody R add(@Valid @RequestBody R dto) {
+	@SuppressWarnings("unchecked")
+	public @ResponseBody Object add(@Valid @RequestBody Object dto) {
 		assertUserHasWriteAccess();
-		T existingDataObject = getFromDataStore(getPrimaryKeyIncomingObject(dto));
-		if (existingDataObject != null) {
-			throw new UnprocessableEntityException("already exists");
+
+		if (dto instanceof List) {
+			return ((List<Object>) dto).stream().map(this::objectToDto).map(this::doAdd).collect(Collectors.toList());
+		} else {
+			return doAdd(objectToDto(dto));
 		}
-		
+	}
+
+	protected R doAdd(R dto) {
+		final Object code = getPrimaryKeyIncomingObject(dto);
+		T existingDataObject = getFromDataStore(code);
+		if (existingDataObject != null) {
+			throw new UnprocessableEntityException("already exists for key " + code);
+		}
+
 		RestAuditLogger logger = getAuditLogger();
 		T newDataObject = translateInputToDataObject(dto);
-		
+
 		validateBusinessObject(newDataObject);
 		validateInsertDataObject(newDataObject);
 		T savedDataObject = save(newDataObject);
@@ -218,67 +305,128 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		logger.saveAuditLog();
 		return convertDataObject(savedDataObject);
 	}
-	
+
 	@RequestMapping(value="/{code}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public @ResponseBody void delete(@PathVariable String code) {
 		assertUserHasWriteAccess();
-		T existingDataObject = getFromDataStore(code);
+		doDelete(getFromDataStore(code));
+	}
+
+	protected void doDelete(T existingDataObject) {
 		if (existingDataObject == null) {
 			throw new ResourceNotFoundException("not found");
 		}
-		
+
 		RestAuditLogger logger = getAuditLogger();
 		validateDeleteDataObject(existingDataObject);
-		
+
 		delete(existingDataObject);
 		logger.addDeletedItem(existingDataObject);
 		logger.saveAuditLog();
 	}
-	
-	protected boolean validateDeleteDataObject(T dataObject) {
-		MessageMap messages = persistenceVerificationService.verifyRelationshipsForDelete(dataObject, Collections.emptyList());
-		if (messages.hasErrors()) {
-			throw new DataDictionaryValidationException(errorHandlingUtilService.extractErrorMessages(messages));
-		}
-		return true;
+
+	@RequestMapping(method=RequestMethod.DELETE, params={ALLOW_MULTI_PARM})
+	public @ResponseBody void deleteAll(@RequestParam(required=false) Map<String,String> parameters) {
+		assertUserHasWriteAccess();
+		doGetAll(parameters).stream().forEach(this::doDelete);
 	}
 
-	protected boolean validateUpdateDataObject(T dataObject) {
-		final MessageMap messages = persistenceVerificationService.verifyRelationshipsForUpdate(dataObject, Collections.emptyList());
-		if (messages.hasErrors()) {
-			throw new DataDictionaryValidationException(errorHandlingUtilService.extractErrorMessages(messages));
+	protected Collection<T> doGetAll(Map<String, String> parameters) {
+		final Collection<T> dataObjects;
+		final Map<String, Object> searchCriteria = parameters != null ? parameters.entrySet().stream()
+				.filter(e -> getExposedProperties().contains(e.getKey()))
+				.map(entry -> {
+					try {
+						final Object val = translateValue(entry.getKey(), entry.getValue());
+						return entry(entry.getKey(), val);
+					} catch (TypeMismatchException e) {
+						throw new ResourceNotFoundException(e.getMessage());
+					}
+				})
+				.collect(entriesToMap()) : Collections.emptyMap();
+		if (!CollectionUtils.isEmpty(searchCriteria)) {
+			dataObjects = getMatchingFromDataStore(searchCriteria);
+		} else {
+			dataObjects = getAllFromDataStore();
 		}
-		return true;
+
+		if (dataObjects == null || dataObjects.isEmpty()) {
+			throw new ResourceNotFoundException("not found" + (searchCriteria.isEmpty() ? "" : " for search criteria " + searchCriteria));
+		}
+		return dataObjects;
 	}
 
-	protected boolean validateInsertDataObject(T dataObject) {
-		final MessageMap messages = persistenceVerificationService.verifyRelationshipsForInsert(dataObject, Collections.emptyList());
-		if (messages.hasErrors()) {
-			throw new DataDictionaryValidationException(errorHandlingUtilService.extractErrorMessages(messages));
-		}
-		return true;
+	protected void validateDeleteDataObject(T dataObject) {
+		throwIfErrorMessages(persistenceVerificationService.verifyRelationshipsForDelete(dataObject, Collections.emptyList()));
+	}
+
+	protected void validateUpdateDataObject(T dataObject) {
+		throwIfErrorMessages(persistenceVerificationService.verifyRelationshipsForUpdate(dataObject, Collections.emptyList()));
+	}
+
+	protected void validateInsertDataObject(T dataObject) {
+		throwIfErrorMessages(persistenceVerificationService.verifyRelationshipsForInsert(dataObject, Collections.emptyList()));
 	}
 	
 	protected void validateBusinessObject(T dataObject) {
 		if (!dictionaryValidationService.isBusinessObjectValid(dataObject)) {
-			throwErrorMessages();
+			throwIfErrorMessages(getGlobalVariableService().getMessageMap());
 		}
 	}
 
-	protected void throwErrorMessages() {
-		Map<String, List<String>> errors = errorHandlingUtilService.extractErrorMessages(getGlobalVariableService().getMessageMap());
-		if (errors != null && !errors.isEmpty()) {
-			throw new DataDictionaryValidationException(errors);
+	protected void throwIfErrorMessages(MessageMap messageMap) {
+		if (messageMap != null && messageMap.hasErrors()) {
+			Map<String, List<String>> errors = errorHandlingUtilService.extractErrorMessages(messageMap);
+			if (errors != null && !errors.isEmpty()) {
+				throw new DataDictionaryValidationException(errors);
+			}
 		}
 	}
 	
 	protected Collection<T> getAllFromDataStore() {
 		return getLegacyDataAdapter().findAll(getDataObjectClazz());
 	}
-	
+
+	protected Collection<T> getMatchingFromDataStore(Map<String, ?> criteria) {
+		return getLegacyDataAdapter().findMatching(getDataObjectClazz(), criteria);
+	}
+
 	protected T getFromDataStore(Object code) {
-		return getLegacyDataAdapter().findBySinglePrimaryKey(getDataObjectClazz(), code);
+		if (isCompoundPrimaryKey() && code instanceof CompoundKey) {
+			return getLegacyDataAdapter().findByPrimaryKey(getDataObjectClazz(), ((CompoundKey) code).getKeys());
+		} else if (isCompoundPrimaryKey() && code instanceof String) {
+			return getLegacyDataAdapter().findByPrimaryKey(getDataObjectClazz(), getCompoundKeyMap((String)code));
+		} else if (code instanceof String) {
+			if (StringUtils.isBlank((String) code)) {
+				throw new ResourceNotFoundException(getPrimaryKeyColumn() + " is blank.");
+			}
+			return getLegacyDataAdapter().findBySinglePrimaryKey(getDataObjectClazz(), translateValue(getPrimaryKeyColumn(), (String) code));
+		} else {
+			if (code == null) {
+				throw new ResourceNotFoundException(getPrimaryKeyColumn() + " is not present.");
+			}
+
+			return getLegacyDataAdapter().findBySinglePrimaryKey(getDataObjectClazz(), code);
+		}
+	}
+
+	protected Map<String, Object> getCompoundKeyMap(String compoundKey) {
+
+		if (compoundKey.contains(DELIMETER)) {
+			final String[] keyNames = getPrimaryKeyColumn().split(DELIMETER);
+			final String[] keyValues = compoundKey.split(DELIMETER);
+			if (keyNames.length != keyValues.length) {
+				throw new ResourceNotFoundException("compoundKey value does not contain the same number key elements in format: " + getPrimaryKeyColumn());
+			}
+
+			return org.kuali.coeus.sys.framework.util.CollectionUtils.zipMap(keyNames, keyValues).entrySet()
+					.stream()
+					.map(e -> entry(e.getKey(), translateValue(e.getKey(), e.getValue())))
+					.collect(entriesToMap());
+		} else {
+			throw new ResourceNotFoundException("compoundKey value does not contain the same number key elements in format: " + getPrimaryKeyColumn());
+		}
 	}
 
 	protected T save(T dataObject) {
@@ -413,14 +561,15 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 
 	public String getPrimaryKeyColumn() {
 		if (StringUtils.isBlank(primaryKeyColumn)) {
-			List<String> pks = persistenceVerificationService.pkFields(dataObjectClazz);
-			if (pks.size() > 1) {
-				throw new UnsupportedOperationException("compound primary keys are not supported");
-			}
-			primaryKeyColumn = pks.get(0);
+			final List<String> pks = persistenceVerificationService.pkFields(dataObjectClazz);
+			primaryKeyColumn = pks.stream().sorted().reduce((t, u) -> t + DELIMETER + u).get();
 		}
 
 		return primaryKeyColumn;
+	}
+
+	public boolean isCompoundPrimaryKey() {
+		return getPrimaryKeyColumn().contains(DELIMETER);
 	}
 
 	public void setPrimaryKeyColumn(String primaryKeyColumn) {
@@ -433,6 +582,14 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 
 	public void setCamelCasePluralName(String camelCasePluralName) {
 		this.camelCasePluralName = camelCasePluralName;
+	}
+
+	public RestAuditLoggerFactory getRestAuditLoggerFactory() {
+		return restAuditLoggerFactory;
+	}
+
+	public void setRestAuditLoggerFactory(RestAuditLoggerFactory restAuditLoggerFactory) {
+		this.restAuditLoggerFactory = restAuditLoggerFactory;
 	}
 
 	public boolean isRegisterMapping() {
@@ -457,9 +614,9 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 	 * @param singular a singular word
 	 * @return a plural word
      */
-	private String toPlural(String singular) {
+	String toPlural(String singular) {
 
-		//some rice mapped classes end with Bo.  We should remove this.
+		//some rice mapped classes end with Bo.  We should remove this suffix.
 		if (singular.endsWith("Bo")) {
 			singular = singular.substring(0, singular.length() - 2);
 		}
@@ -513,5 +670,8 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 			autoRegisterMapping.setUrlMap(Collections.singletonMap(path, this));
 			autoRegisterMapping.registerHandler(path, this);
 		}
+
+		beanWrapper = new BeanWrapperImpl(dataObjectClazz);
+
 	}
 }

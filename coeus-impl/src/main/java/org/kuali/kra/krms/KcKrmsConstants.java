@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -168,4 +168,5 @@ public final class KcKrmsConstants {
         public static final String VALIDATIONS_ACTION_NAVIGATE_TO_PAGE_ID_ATTRIBUTE = "actionNavigateToPageId";
         public static final String VALIDATIONS_ACTION_NAVIGATE_TO_SECTION_ID_ATTRIBUTE = "actionNavigateToSectionId";
     }
+
 }

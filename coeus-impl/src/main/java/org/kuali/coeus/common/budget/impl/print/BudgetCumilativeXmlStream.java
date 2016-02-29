@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -243,7 +243,7 @@ public class BudgetCumilativeXmlStream extends BudgetBaseStream {
     protected void setBudgetLASalaryForBudgetRateAndBaseForCumulativeReport(List<ReportType> reportTypeList) {
         for (BudgetPeriod budgetPeriod : budget.getBudgetPeriods()) {
                 this.budgetPeriod = budgetPeriod;
-                setBudgetLASalaryForBudgetRateAndBase(reportTypeList);
+                setBudgetLASalaryForBudgetRateAndBase(reportTypeList, new ArrayList<ReportTypeVO>());
 
         }
     }

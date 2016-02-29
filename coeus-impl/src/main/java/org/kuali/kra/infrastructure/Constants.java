@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -35,8 +35,6 @@ public interface Constants {
     public static final String BUSINESS_OBJECT_DAO_NAME = "businessObjectDao";
     public static final String MAINTENANCE_NEW_ACTION = "New";
     
-    public static final String LAST_ACTION_PRINCIPAL_ID = "lastActionPrincipalId";
-
     public static final String KEY_PERSON_ROLE = "KP";
     public static final String PRINCIPAL_INVESTIGATOR_ROLE = "PI";
     public static final String ALL_INVESTIGATORS = "Investigators";

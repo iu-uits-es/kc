@@ -2,7 +2,7 @@
 <!--
    - Kuali Coeus, a comprehensive research administration system for higher education.
    - 
-   - Copyright 2005-2015 Kuali, Inc.
+   - Copyright 2005-2016 Kuali, Inc.
    - 
    - This program is free software: you can redistribute it and/or modify
    - it under the terms of the GNU Affero General Public License as
@@ -611,7 +611,7 @@
           p:propertyName="proposalPersonDegrees"
           p:collectionObjectClass="org.kuali.coeus.propdev.impl.person.ProposalPersonDegree"
           p:layoutManager.renderSequenceField="false"
-          p:addWithDialog="true" p:readOnly="@{!#ViewHelper.renderPersonnelEditForHierarchyProposal(#lp.personId, document.developmentProposal)}">
+          p:addWithDialog="true" p:readOnly="@{!#ViewHelper.renderPersonnelEditForHierarchyProposal(#lp.personId, #lp.rolodexId, document.developmentProposal)}">
         <property name="addWithDialogAction">
             <bean parent="Uif-AddWithDialogAction" p:actionLabel="Add Degree" p:cssClasses="pull-right" p:iconClass="icon-plus"
                   p:render="@{!#parent.readOnly}"/>

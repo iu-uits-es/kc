@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -101,8 +101,7 @@ public class NegotiationActivityRuleImpl implements NegotiationActivityAddRule {
         }
         if (activity.getEndDate() != null && negotiation.getNegotiationEndDate() != null
                 && activity.getEndDate().compareTo(negotiation.getNegotiationEndDate()) > 0) {
-            result = false;
-            getErrorReporter().reportError(END_DATE_PROPERTY, KeyConstants.NEGOTIATION_ACTIVITY_END_AFTER_NEGOTIATION);
+            getErrorReporter().reportWarning(END_DATE_PROPERTY, KeyConstants.NEGOTIATION_ACTIVITY_END_AFTER_NEGOTIATION);
         }
 
         return result;

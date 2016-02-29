@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -64,6 +64,11 @@ public class SepSequenceComplexArtifacts {
             return new ToStringBuilder(this).append("id", id).append("sequenceNumber", sequenceNumber).append("attachments", attachments).toString();
         }
         public String getVersionNameField() { return "foobar"; }
+
+        @Override
+        public String getVersionNameFieldValue() {
+            return null;
+        }
     }
     
     /** an attachment BO that just contains meta-data and references to the rest of the attachment data. */

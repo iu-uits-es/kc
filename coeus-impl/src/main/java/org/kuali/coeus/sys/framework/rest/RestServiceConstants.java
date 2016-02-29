@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,17 +19,6 @@
 package org.kuali.coeus.sys.framework.rest;
 
 public class RestServiceConstants {
-
-	public static enum RestApiVersions {
-		VER_1("1");
-		private String version;
-		private RestApiVersions(String version) {
-			this.version = version;
-		}
-		public String getVersion() {
-			return version;
-		}
-	}
 	
 	public final class Configuration {
 		public static final String AUTH_USERS_URL = "auth.users.url";

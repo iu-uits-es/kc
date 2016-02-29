@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -30,7 +30,6 @@ import org.kuali.kra.maintenance.KraMaintainableImpl;
 import org.kuali.rice.kns.document.MaintenanceDocument;
 import org.kuali.rice.kns.document.MaintenanceDocumentBase;
 import org.kuali.rice.kns.maintenance.Maintainable;
-import org.kuali.rice.kns.service.KNSServiceLocator;
 import org.kuali.rice.kns.util.KNSGlobalVariables;
 import org.kuali.rice.kns.web.struts.form.KualiMaintenanceForm;
 import org.kuali.rice.kns.web.ui.Section;
@@ -64,7 +63,7 @@ public class QuestionMaintainableImpl extends KraMaintainableImpl {
                 Question question = (Question)businessObject;
                 question.setDocumentNumber(getDocumentNumber());
                 if (StringUtils.isNotBlank(((Question) businessObject).getLookupClass())) {
-                    GlobalVariables.getUserSession().addObject(Constants.LOOKUP_CLASS_NAME, (Object) question.getLookupClass());
+                    GlobalVariables.getUserSession().addObject(Constants.LOOKUP_CLASS_NAME, question.getLookupClass());
                 }
        
                 // In order for the questionId to be displayed after a submission of a new question we need to manually create it. 
@@ -91,18 +90,21 @@ public class QuestionMaintainableImpl extends KraMaintainableImpl {
         if (KNSGlobalVariables.getKualiForm() != null && KNSGlobalVariables.getKualiForm() instanceof KualiMaintenanceForm) {
             Question question = (Question)((MaintenanceDocumentBase)((KualiMaintenanceForm)KNSGlobalVariables.getKualiForm()).getDocument()).getDocumentBusinessObject();
             if (StringUtils.isNotBlank(question.getLookupClass())) {
-                if (StringUtils.isBlank((String) GlobalVariables.getUserSession().retrieveObject(Constants.LOOKUP_CLASS_NAME)) && ((((List)GlobalVariables.getUserSession().retrieveObject(Constants.LOOKUP_RETURN_FIELDS))) == null || ((List)GlobalVariables.getUserSession().retrieveObject(Constants.LOOKUP_RETURN_FIELDS)).size() == 0)) {
-                    GlobalVariables.getUserSession().addObject(Constants.LOOKUP_CLASS_NAME, (Object) question.getLookupClass());
+                if (StringUtils.isBlank((String) GlobalVariables.getUserSession().retrieveObject(Constants.LOOKUP_CLASS_NAME)) && (((GlobalVariables.getUserSession().retrieveObject(Constants.LOOKUP_RETURN_FIELDS))) == null || ((List)GlobalVariables.getUserSession().retrieveObject(Constants.LOOKUP_RETURN_FIELDS)).size() == 0)) {
+                    GlobalVariables.getUserSession().addObject(Constants.LOOKUP_CLASS_NAME, question.getLookupClass());
                 }
             }
         }
         
-        return new ArrayList<Section>();
+        return new ArrayList<>();
     }
     
     @Override
     public void doRouteStatusChange(DocumentHeader documentHeader) {
-        clearUnusedFieldValues();
+        executeAsLastActionUser(() -> {
+            clearUnusedFieldValues();
+            return null;
+        });
     }
     
     /**
@@ -118,7 +120,7 @@ public class QuestionMaintainableImpl extends KraMaintainableImpl {
                     question.setDisplayedAnswers(null);
                     question.setMaxAnswers(null);
                     question.setAnswerMaxLength(null);
-                    question.setQuestionMultiChoices(new ArrayList<QuestionMultiChoice>());
+                    question.setQuestionMultiChoices(new ArrayList<>());
                     break;
                 case (int) Constants.QUESTION_RESPONSE_TYPE_YES_NO_NA:
                     question.setLookupClass(null);
@@ -126,28 +128,28 @@ public class QuestionMaintainableImpl extends KraMaintainableImpl {
                     question.setDisplayedAnswers(null);
                     question.setMaxAnswers(null);
                     question.setAnswerMaxLength(null);
-                    question.setQuestionMultiChoices(new ArrayList<QuestionMultiChoice>());
+                    question.setQuestionMultiChoices(new ArrayList<>());
                     break;
                 case (int) Constants.QUESTION_RESPONSE_TYPE_NUMBER:
                     question.setLookupClass(null);
                     question.setLookupReturn(null);
-                    question.setQuestionMultiChoices(new ArrayList<QuestionMultiChoice>());
+                    question.setQuestionMultiChoices(new ArrayList<>());
                     break;
                 case (int) Constants.QUESTION_RESPONSE_TYPE_DATE:
                     question.setLookupClass(null);
                     question.setLookupReturn(null);
                     question.setAnswerMaxLength(null);
-                    question.setQuestionMultiChoices(new ArrayList<QuestionMultiChoice>());
+                    question.setQuestionMultiChoices(new ArrayList<>());
                     break;
                 case (int) Constants.QUESTION_RESPONSE_TYPE_TEXT:
                     question.setLookupClass(null);
                     question.setLookupReturn(null);
-                    question.setQuestionMultiChoices(new ArrayList<QuestionMultiChoice>());
+                    question.setQuestionMultiChoices(new ArrayList<>());
                     break;
                 case (int) Constants.QUESTION_RESPONSE_TYPE_LOOKUP:
                     question.setDisplayedAnswers(null);
                     question.setAnswerMaxLength(null);
-                    question.setQuestionMultiChoices(new ArrayList<QuestionMultiChoice>());
+                    question.setQuestionMultiChoices(new ArrayList<>());
                     break;
                 case (int) Constants.QUESTION_RESPONSE_TYPE_MULTIPLE_CHOICE:
                     question.setDisplayedAnswers(question.getQuestionMultiChoices().size());
@@ -173,7 +175,7 @@ public class QuestionMaintainableImpl extends KraMaintainableImpl {
 
         if (oldQuestion != null && !oldQuestion.getId().equals(newQuestion.getId())) {
             oldQuestion.setSequenceStatus(SEQUENCE_STATUS_ARCHIVED);
-            KNSServiceLocator.getBusinessObjectService().save(oldQuestion);
+            getBusinessObjectService().save(oldQuestion);
         }
 
         super.saveBusinessObject();

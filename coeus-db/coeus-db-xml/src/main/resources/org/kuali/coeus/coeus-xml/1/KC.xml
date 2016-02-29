@@ -2,7 +2,7 @@
 <!--
    - Kuali Coeus, a comprehensive research administration system for higher education.
    - 
-   - Copyright 2005-2015 Kuali, Inc.
+   - Copyright 2005-2016 Kuali, Inc.
    - 
    - This program is free software: you can redistribute it and/or modify
    - it under the terms of the GNU Affero General Public License as
@@ -28,11 +28,7 @@
             <label>KC</label>
 			<parent>KualiDocument</parent>
 			<serviceNamespace>KC</serviceNamespace>
-			<!--Does not work when using param replacement-->
-			<!--<serviceNamespace>${service.namespace}</serviceNamespace>-->
-			<postProcessorName>
-				org.kuali.rice.krad.workflow.postprocessor.KualiPostProcessor
-			</postProcessorName>
+			<postProcessorName>org.kuali.coeus.sys.framework.workflow.KcPostProcessor</postProcessorName>
 		</documentType>
 	</documentTypes>
 </data>

@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,9 @@
 package org.kuali.kra.award.home;
 
 import org.apache.commons.lang3.StringUtils;
-import org.kuali.coeus.award.finance.AwardAccount;
+import org.kuali.coeus.common.api.sponsor.hierarchy.SponsorHierarchyService;
+import org.kuali.coeus.common.framework.custom.CustomDataContainer;
+import org.kuali.coeus.common.framework.custom.DocumentCustomData;
 import org.kuali.coeus.common.framework.keyword.KeywordsManager;
 import org.kuali.coeus.common.framework.keyword.ScienceKeyword;
 import org.kuali.coeus.common.framework.person.KcPerson;
@@ -39,6 +41,7 @@ import org.kuali.coeus.common.framework.auth.SystemAuthorizationService;
 import org.kuali.coeus.common.framework.auth.perm.Permissionable;
 import org.kuali.coeus.sys.framework.model.KcPersistableBusinessObjectBase;
 import org.kuali.coeus.sys.framework.service.KcServiceLocator;
+import org.kuali.kra.SkipVersioning;
 import org.kuali.kra.award.AwardAmountInfoService;
 import org.kuali.kra.award.AwardTemplateSyncScope;
 import org.kuali.kra.award.awardhierarchy.AwardHierarchyService;
@@ -89,12 +92,8 @@ import org.kuali.kra.timeandmoney.service.TimeAndMoneyHistoryService;
 import org.kuali.kra.timeandmoney.transactions.AwardTransactionType;
 import org.kuali.rice.core.api.CoreApiServiceLocator;
 import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
-import org.kuali.rice.core.api.criteria.CountFlag;
-import org.kuali.rice.core.api.criteria.QueryByCriteria;
-import org.kuali.rice.coreservice.framework.parameter.ParameterConstants;
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kim.api.role.Role;
-import org.kuali.rice.krad.data.DataObjectService;
 import org.kuali.rice.krad.service.BusinessObjectService;
 import org.springframework.util.AutoPopulatingList;
 
@@ -104,7 +103,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Award extends KcPersistableBusinessObjectBase implements KeywordsManager<AwardScienceKeyword>, Permissionable,
-        SequenceOwner<Award>, BudgetParent, Sponsorable, Negotiable, Disclosurable {
+        SequenceOwner<Award>, BudgetParent, Sponsorable, Negotiable, CustomDataContainer, Disclosurable {
     public static final String DEFAULT_AWARD_NUMBER = "000000-00000";
     public static final String BLANK_COMMENT = "";
     public static final String ICR_RATE_CODE_NONE = "ICRNONE";
@@ -282,7 +281,7 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
     private transient boolean awardInMultipleNodeHierarchy;
     private transient boolean awardHasAssociatedTandMOrIsVersioned;
 
-    private transient boolean sponsorNihMultiplePi;
+    private transient Boolean sponsorNihMultiplePi;
 
     private transient List<AwardHierarchyTempObject> awardHierarchyTempObjects;
 
@@ -306,9 +305,11 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
     
     private VersionHistorySearchBo versionHistory;
     private transient KcPersonService kcPersonService;
+    private transient SponsorHierarchyService sponsorHierarchyService;
 
     private List<AwardCgb> awardCgbList;
     
+    @SkipVersioning
     private transient Integer indexOfAwardAmountInfoForDisplay;
     private String fainId;
     private Integer fedAwardYear;
@@ -403,11 +404,11 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
         return awardAmountInfos.get(getIndexOfLastAwardAmountInfo());
     }
     
-    public AwardAmountInfo getAwardAmountInfoForDisplay() throws WorkflowException {
+    public AwardAmountInfo getAwardAmountInfoForDisplay() {
     	return awardAmountInfos.get(getIndexOfAwardAmountInfoForDisplay());
     }
 
-    public int getIndexOfAwardAmountInfoForDisplay() throws WorkflowException {
+    public Integer getIndexOfAwardAmountInfoForDisplay() {
     	if (indexOfAwardAmountInfoForDisplay != null) {
     		return indexOfAwardAmountInfoForDisplay;
     	}
@@ -434,7 +435,7 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
         indexOfAwardAmountInfoForDisplay = returnVal;
         return indexOfAwardAmountInfoForDisplay;
     }
-
+    
     public int getIndexOfAwardAmountInfoForDisplayFromTimeAndMoneyDocNumber(String docNum) throws WorkflowException {
         AwardAmountInfo aai = getAwardAmountInfoService().fetchLastAwardAmountInfoForDocNum(this, docNum);
         int returnVal = 0;
@@ -508,6 +509,7 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
 
     public void setSponsorCode(String sponsorCode) {
         this.sponsorCode = sponsorCode;
+        this.setSponsorNihMultiplePi(null);
     }
 
     public String getAccountTypeDescription() {
@@ -1794,6 +1796,11 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
         return awardId == null;
     }
 
+    @Override
+    public List<? extends DocumentCustomData> getCustomDataList() {
+        return getAwardCustomDataList();
+    }
+
     static class ARTComparator implements Comparator<AwardReportTerm>
     {
         
@@ -2012,6 +2019,11 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
         return AWARD_NUMBER;
     }
 
+    @Override
+    public String getVersionNameFieldValue() {
+        return getAwardNumber();
+    }
+
     public ActivityType getActivityType() {
         return activityType;
     }
@@ -2132,7 +2144,11 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
         return getLeadUnit();
     }
 
-    public boolean isSponsorNihMultiplePi() {
+    public Boolean isSponsorNihMultiplePi() {
+        if (sponsorNihMultiplePi == null) {
+            sponsorNihMultiplePi = getSponsorHierarchyService().isSponsorNihMultiplePi(getSponsorCode());
+        }
+
         return sponsorNihMultiplePi;
     }
 
@@ -2345,7 +2361,7 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
         this.syncStatuses = syncStatuses;
     }
 
-    public void setSponsorNihMultiplePi(boolean sponsorNihMultiplePi) {
+    public void setSponsorNihMultiplePi(Boolean sponsorNihMultiplePi) {
         this.sponsorNihMultiplePi = sponsorNihMultiplePi;
     }
 
@@ -2853,4 +2869,15 @@ public class Award extends KcPersistableBusinessObjectBase implements KeywordsMa
 	public KcPerson getInvestigator() {
 		return investigator;
 	}
+
+    public SponsorHierarchyService getSponsorHierarchyService() {
+        if (sponsorHierarchyService == null) {
+            sponsorHierarchyService = KcServiceLocator.getService(SponsorHierarchyService.class);
+        }
+        return sponsorHierarchyService;
+    }
+
+    public void setSponsorHierarchyService(SponsorHierarchyService sponsorHierarchyService) {
+        this.sponsorHierarchyService = sponsorHierarchyService;
+    }
 }

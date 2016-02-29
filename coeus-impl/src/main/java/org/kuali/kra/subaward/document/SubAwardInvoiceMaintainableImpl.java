@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -68,10 +68,13 @@ public class SubAwardInvoiceMaintainableImpl extends KraMaintainableImpl {
     
     @Override
     public void doRouteStatusChange(DocumentHeader documentHeader) {
-        SubAwardAmountReleased invoice = (SubAwardAmountReleased) this.getBusinessObject();
-        invoice.setInvoiceStatus(documentHeader.getWorkflowDocument().getStatus().getCode());
-        invoice.populateAttachment();
-        KNSServiceLocator.getBusinessObjectService().save(invoice);
+        executeAsLastActionUser(() -> {
+            SubAwardAmountReleased invoice = (SubAwardAmountReleased) this.getBusinessObject();
+            invoice.setInvoiceStatus(documentHeader.getWorkflowDocument().getStatus().getCode());
+            invoice.populateAttachment();
+            KNSServiceLocator.getBusinessObjectService().save(invoice);
+            return null;
+        });
     }
 
     protected DateTimeService getDateTimeService() {

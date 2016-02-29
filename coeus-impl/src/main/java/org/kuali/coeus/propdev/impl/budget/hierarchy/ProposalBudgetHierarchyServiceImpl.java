@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -453,6 +453,9 @@ public class ProposalBudgetHierarchyServiceImpl implements ProposalBudgetHierarc
         		iter.remove();
         	}
         }
+
+        parentBudget.setBudgetCostShares(parentBudget.getBudgetCostShares().stream()
+                .filter(costShare -> !costShare.getHierarchyProposalNumber().equals(childProposalNumber)).collect(Collectors.toList()));
 
         for (Iterator<BudgetPerson> iter = parentBudget.getBudgetPersons().iterator(); iter.hasNext(); ) {
         	BudgetPerson person = iter.next();

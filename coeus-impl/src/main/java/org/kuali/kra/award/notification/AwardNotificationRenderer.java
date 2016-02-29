@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -107,13 +107,8 @@ public class AwardNotificationRenderer extends NotificationRendererBase {
             result.put("{SPONSOR_CODE}", StringUtils.EMPTY);
             result.put("{SPONSOR_NAME}", StringUtils.EMPTY);
         }
-        AwardAmountInfo awardAmountInfo = null;
-        try {
-            awardAmountInfo = award.getAwardAmountInfos().get(award.getIndexOfAwardAmountInfoForDisplay());
-        }
-        catch (WorkflowException e) {
-            LOG.warn("Unable to load award amount info information.", e);
-        } 
+        AwardAmountInfo awardAmountInfo = award.getAwardAmountInfos().get(award.getIndexOfAwardAmountInfoForDisplay());
+
         if (awardAmountInfo != null && awardAmountInfo.getFinalExpirationDate() != null) {
             result.put("{FINAL_EXPIRATION_DATE}", dateFormatter.format(awardAmountInfo.getFinalExpirationDate()));
         } else {

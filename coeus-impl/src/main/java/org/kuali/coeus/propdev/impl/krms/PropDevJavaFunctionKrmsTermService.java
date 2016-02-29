@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,12 +18,13 @@
  */
 package org.kuali.coeus.propdev.impl.krms;
 
+import org.kuali.coeus.common.framework.krms.KcKrmsJavaFunctionTermService;
 import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
 
 /**
  * This interface is to declare all methods which are used as KRMS Terms in KC
  */
-public interface PropDevJavaFunctionKrmsTermService {
+public interface PropDevJavaFunctionKrmsTermService extends KcKrmsJavaFunctionTermService {
     public String multiplePI(DevelopmentProposal developmentProposal);
     public String s2sBudgetRule(DevelopmentProposal developmentProposal, String formNames);
     public String monitoredSponsorRule(DevelopmentProposal developmentProposal, String monitoredSponsorHirearchies);

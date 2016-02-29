@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -124,6 +124,7 @@ public abstract class KcAttachmentDataSource extends KcPersistableBusinessObject
 	}
 	
     @Override
+    @PrePersist
     protected void prePersist() {
     	super.prePersist();
     	if (StringUtils.isBlank(uploadUser)) {
@@ -134,5 +135,15 @@ public abstract class KcAttachmentDataSource extends KcPersistableBusinessObject
     	}
     }
 
-
+    @Override
+    @PreUpdate
+    protected void preUpdate() {
+        super.preUpdate();
+        if (StringUtils.isBlank(uploadUser)) {
+            uploadUser = getUpdateUser();
+        }
+        if (uploadTimestamp == null) {
+            uploadTimestamp = getUpdateTimestamp();
+        }
+    }
 }

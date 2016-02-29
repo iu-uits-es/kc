@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -392,11 +392,11 @@ public class BudgetSummaryServiceImpl implements BudgetSummaryService {
     public void adjustStartEndDatesForLineItems(BudgetPeriod budgetPeriod) {
         if ( (budgetPeriod.getOldStartDate() != null && budgetPeriod.getStartDate().compareTo(budgetPeriod.getOldStartDate()) != 0) || 
                 (budgetPeriod.getOldEndDate() != null && budgetPeriod.getEndDate().compareTo(budgetPeriod.getOldEndDate()) != 0) ) {
-            List <BudgetLineItem >budgetLineItems = budgetPeriod.getBudgetLineItems();
+            List <BudgetLineItem > budgetLineItems = budgetPeriod.getBudgetLineItems();
             setupOldStartEndDate(budgetLineItems);
             for(BudgetLineItem budgetLineItem: budgetLineItems) {
-                Date newStartDate = budgetLineItem.getStartDate();
-                Date newEndDate = budgetLineItem.getEndDate();
+                Date newStartDate;
+                Date newEndDate;
                 List <Date> startEndDates = new ArrayList<Date>();
                 startEndDates.add(0, budgetLineItem.getStartDate());
                 startEndDates.add(1, budgetLineItem.getEndDate());

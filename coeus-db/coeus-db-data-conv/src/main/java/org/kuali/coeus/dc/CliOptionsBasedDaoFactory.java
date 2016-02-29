@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,6 +22,8 @@ import org.kuali.coeus.dc.access.kim.*;
 import org.kuali.coeus.dc.common.rice.parameter.ParameterDao;
 import org.kuali.coeus.dc.common.rice.parameter.ParameterDaoImpl;
 import org.kuali.coeus.dc.access.proposal.*;
+import org.kuali.coeus.dc.award.amntinfo.AwardAmountInfoDuplicatesDao;
+import org.kuali.coeus.dc.award.amntinfo.AwardAmountInfoDuplicatesDaoImpl;
 import org.kuali.coeus.dc.common.db.*;
 import org.kuali.coeus.dc.pprole.ProposalPersonRoleDao;
 import org.kuali.coeus.dc.pprole.ProposalPersonRoleDaoImpl;
@@ -156,6 +158,12 @@ public final class CliOptionsBasedDaoFactory {
     
     public SubAwardAmountInfoDao getSubAwardAmountInfoDao() {
     	SubAwardAmountInfoDaoImpl dao = new SubAwardAmountInfoDaoImpl();
+    	dao.setConnectionDaoService(getConnectionDaoService());
+    	return dao;
+    }
+    
+    public AwardAmountInfoDuplicatesDao getAwardAmountInfoDuplicatesDao() {
+    	AwardAmountInfoDuplicatesDaoImpl dao = new AwardAmountInfoDuplicatesDaoImpl();
     	dao.setConnectionDaoService(getConnectionDaoService());
     	return dao;
     }

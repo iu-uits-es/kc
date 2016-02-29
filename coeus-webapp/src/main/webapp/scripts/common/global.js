@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -142,7 +142,7 @@ Kc.Global = Kc.Global || {};
     namespace.attachRedirectHandler = function() {
         $(window).unbind("message.redirect");
         $(window).on("message.redirect", function (event) {
-            if (event.originalEvent.data && event.originalEvent.data.indexOf("redirect:") === 0) {
+            if ((typeof event.originalEvent.data === 'string' || event.originalEvent.data instanceof String) && event.originalEvent.data.indexOf("redirect:") === 0) {
                 var location = event.originalEvent.data.substr(9);
                 window.location.replace(location);
                 return false;

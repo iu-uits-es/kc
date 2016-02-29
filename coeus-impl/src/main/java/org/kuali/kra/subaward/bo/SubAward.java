@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,8 @@
  */
 package org.kuali.kra.subaward.bo;
 
+import org.kuali.coeus.common.framework.custom.CustomDataContainer;
+import org.kuali.coeus.common.framework.custom.DocumentCustomData;
 import org.kuali.coeus.common.framework.org.Organization;
 import org.kuali.coeus.common.framework.org.OrganizationService;
 import org.kuali.coeus.common.framework.person.KcPerson;
@@ -56,7 +58,7 @@ import java.util.stream.Collectors;
  * This class is using for SubAward...
  */
 public class SubAward extends KcPersistableBusinessObjectBase
-implements Permissionable, SequenceOwner<SubAward>, Negotiable {
+implements Permissionable, SequenceOwner<SubAward>, CustomDataContainer, Negotiable {
 
     private static final long serialVersionUID = 1L;
     private static final String ROLODEX_ID_FIELD_NAME = "rolodexId";
@@ -1157,6 +1159,10 @@ implements Permissionable, SequenceOwner<SubAward>, Negotiable {
         return "subAwardCode";
     }
 
+    @Override
+    public String getVersionNameFieldValue() {
+        return subAwardCode;
+    }
 
 
     /**.
@@ -1627,4 +1633,9 @@ implements Permissionable, SequenceOwner<SubAward>, Negotiable {
 				.filter(amountInfo -> !currentAmountInfoIds.contains(amountInfo.getSubAwardAmountInfoId()))
 				.collect(Collectors.toList());
 	}
+
+    @Override
+    public List<? extends DocumentCustomData> getCustomDataList() {
+        return getSubAwardCustomDataList();
+    }
 }

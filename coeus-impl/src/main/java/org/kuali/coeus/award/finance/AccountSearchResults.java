@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,11 +19,11 @@
 package org.kuali.coeus.award.finance;
 
 import com.codiform.moo.annotation.CollectionProperty;
-import org.kuali.coeus.sys.framework.summary.SearchResults;
+import org.kuali.coeus.sys.framework.rest.SearchResults;
 
 import java.util.Collection;
 
-public class AccountSearchResults<T> extends SearchResults{
+public class AccountSearchResults extends SearchResults<AwardAccount> {
 
 
     @CollectionProperty(source="awards")

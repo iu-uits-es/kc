@@ -2,7 +2,7 @@
 <!--
    - Kuali Coeus, a comprehensive research administration system for higher education.
    - 
-   - Copyright 2005-2015 Kuali, Inc.
+   - Copyright 2005-2016 Kuali, Inc.
    - 
    - This program is free software: you can redistribute it and/or modify
    - it under the terms of the GNU Affero General Public License as
@@ -30,6 +30,9 @@
                            http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
     <context:annotation-config />
+    <context:component-scan base-package="org.kuali.kra.irb"/>
+
+    <import resource="classpath:org/kuali/coeus/sys/framework/ImportSimpleCrudRestSpringBeans.xml" />
 
     <bean id="irbModuleConfiguration" parent="irbModuleConfiguration-parentBean" />
     
@@ -66,7 +69,6 @@
         <property name="serviceName" value="institutionalProposalService" />
     </bean>
 
-
     <bean id="protocolCorrespondenceTemplateAuthorizationService" class="org.kuali.kra.irb.correspondence.ProtocolCorrespondenceTemplateAuthorizationServiceImpl">
         <property name="unitAuthorizationService" ref="unitAuthorizationService" />
         <property name="kcPersonService" ref="kcPersonService" />
@@ -77,8 +79,9 @@
         <property name="kcPersonService" ref="kcPersonService" />
     </bean>
 
-
-
+    <bean id="versionHistoryService" class="org.kuali.rice.core.framework.resourceloader.GlobalResourceLoaderServiceFactoryBean">
+        <property name="serviceName" value="versionHistoryService" />
+    </bean>
 
     <!-- Protocol Services -->
     <bean id="protocolReferenceService" class="org.kuali.kra.irb.protocol.reference.ProtocolReferenceServiceImpl">
@@ -1116,6 +1119,11 @@
 		p:localServiceName="iacucCorrespondentDerivedRoleTypeService" 
 		p:serviceInterface="org.kuali.rice.kim.framework.role.RoleTypeService"/>
 
+    <bean id="irbProtocolCustomDataResolverTypeServiceCallback" parent="kcCoreCallbackService"
+          p:callbackService-ref="irbProtocolCustomDataResolverTypeService"
+          p:localServiceName="irbProtocolCustomDataResolverTypeService"
+          p:serviceInterface="org.kuali.rice.krms.framework.type.TermResolverTypeService"/>
+
     <bean id="irbCorrespondentDerivedRoleTypeService"
           class="org.kuali.kra.irb.kim.service.impl.IrbCorrespondentDerivedRoleTypeServiceImpl">
     </bean>
@@ -1127,10 +1135,6 @@
 		
 		
     <bean id="protocolJavaFunctionKrmsTermService" class="org.kuali.kra.protocol.ProtocolJavaFunctionKrmsTermServiceBase" abstract="true">
-    	<property name="businessObjectService" ref="businessObjectService" />
-    	<property name="unitService" ref="unitService" />
-    	<property name="parameterService" ref="parameterService" />
-    	<property name="documentService" ref="documentService" />
         <property name="kcPersonService" ref="kcPersonService" />
     </bean>
 	<bean id="irbProtocolFactBuilderService" class="org.kuali.kra.irb.IrbProtocolFactBuilderServiceImpl">
@@ -1244,10 +1248,6 @@
             </list>
         </property>
     </bean>
-
-    <bean id="autoRegisterMapping" class="org.kuali.coeus.sys.framework.controller.rest.RestSimpleUrlHandlerMapping"/>
-
-    <bean id="simpleCrudMapBasedRestController" class="org.kuali.coeus.sys.framework.controller.rest.SimpleCrudMapBasedRestController" abstract="true" />
 
     <bean parent="simpleCrudMapBasedRestController" p:dataObjectClazz="org.kuali.kra.meeting.CommScheduleActItem" />
     <bean parent="simpleCrudMapBasedRestController" p:dataObjectClazz="org.kuali.kra.meeting.CommScheduleMinuteDoc" />

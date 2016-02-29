@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -608,7 +608,7 @@ public class MedusaServiceImpl implements MedusaService {
         }
         SubAward currentSubAward = (SubAward) getActiveOrCurrentVersion(SubAward.class, subAward.getSubAwardCode());
         if (currentSubAward != null) {
-            getSubAwardService().getAmountInfo(currentSubAward);
+            getSubAwardService().calculateAmountInfo(currentSubAward);
         }
         return currentSubAward == null ? subAward : currentSubAward;
     }

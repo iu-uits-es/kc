@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -85,6 +85,8 @@ import java.util.*;
  * This class is to process all basic services required for AwardBudget
  */
 public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> implements AwardBudgetService {
+	private static final String HIERARCHY_PROPOSAL_NUMBER = "hierarchyProposalNumber";
+	private static final String HIERARCHY_PROPOSAL = "hierarchyProposal";
 	private static final Log LOG = LogFactory.getLog(AwardBudgetServiceImpl.class);
     private final static String BUDGET_VERSION_ERROR_PREFIX = "document.parentDocument.budgetDocumentVersion";
     private static final String INST_PROPOSAL_ID = "instProposalId";
@@ -490,9 +492,8 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         } else {
             awardBudgetDocument = (AwardBudgetDocument) documentService.getNewDocument(AwardBudgetDocument.class);
         }
-
         awardBudgetDocument.getDocumentHeader().setDocumentDescription(documentDescription);
-        
+
         AwardBudgetExt awardBudget = awardBudgetDocument.getAwardBudget();
         awardBudget.setBudgetVersionNumber(budgetVersionNumber);
         awardBudget.setBudgetDocument(awardBudgetDocument);
@@ -508,6 +509,8 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         
         awardBudget.setStartDate(award.getRequestedStartDateInitial());
         awardBudget.setEndDate(award.getRequestedEndDateInitial());
+        defaultPeriodsIfNeeded(awardBudget);
+
         if(awardBudget.getOhRatesNonEditable()){
             awardBudget.setOhRateClassCode(getAwardParameterValue(Constants.AWARD_BUDGET_DEFAULT_FNA_RATE_CLASS_CODE));
             awardBudget.setUrRateClassCode(getAwardParameterValue( Constants.AWARD_BUDGET_DEFAULT_UNDERRECOVERY_RATE_CLASS_CODE));
@@ -515,6 +518,7 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
             awardBudget.setOhRateClassCode(getBudgetParameterValue(Constants.BUDGET_DEFAULT_OVERHEAD_RATE_CODE));
             awardBudget.setUrRateClassCode(getBudgetParameterValue( Constants.BUDGET_DEFAULT_UNDERRECOVERY_RATE_CODE));
         }
+
         awardBudget.setOhRateTypeCode(getBudgetParameterValue( Constants.BUDGET_DEFAULT_OVERHEAD_RATE_TYPE_CODE));
         awardBudget.setModularBudgetFlag(getParameterService().getParameterValueAsBoolean(Budget.class, Constants.BUDGET_DEFAULT_MODULAR_FLAG));
         awardBudget.setAwardBudgetStatusCode(getAwardParameterValue( KeyConstants.AWARD_BUDGET_STATUS_IN_PROGRESS));
@@ -528,11 +532,36 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
                 rebudget = true;
             }
         }
+
         recalculateBudget(awardBudgetDocument.getBudget());
         saveBudgetDocument(awardBudgetDocument,rebudget);
         awardBudgetDocument = (AwardBudgetDocument) documentService.getByDocumentHeaderId(awardBudgetDocument.getDocumentNumber());
 
         return awardBudgetDocument;
+    }
+
+    protected void defaultPeriodsIfNeeded(Budget awardBudget) {
+        if(incorrectBudgetPeriodDates(awardBudget.getBudgetStartDate(), awardBudget.getBudgetEndDate(), awardBudget.getBudgetPeriods())) {
+            awardBudget.getBudgetPeriods().stream().forEach(budgetPeriod -> {
+                                                                budgetPeriod.setOldEndDate(budgetPeriod.getEndDate());
+                                                                budgetPeriod.setOldStartDate(budgetPeriod.getStartDate());
+                                                                });
+
+            awardBudget.getBudgetSummaryService().defaultBudgetPeriods(awardBudget);
+            GlobalVariables.getMessageMap().putWarning(KRADConstants.GLOBAL_ERRORS,
+                    KeyConstants.WARNING_AWARD_BUDGET_PERIODS_DEFAULTED);
+        }
+    }
+
+    protected boolean incorrectBudgetPeriodDates(Date startDate, Date endDate, List<BudgetPeriod> budgetPeriods) {
+        java.sql.Date budgetEndDate = new java.sql.Date(endDate.getTime());
+        java.sql.Date budgetStartDate = new java.sql.Date(startDate.getTime());
+        return budgetPeriods.stream().anyMatch(
+                                                budgetPeriod -> budgetPeriod.getStartDate().before(budgetStartDate)
+                                                                || budgetPeriod.getStartDate().after(budgetEndDate)
+                                                                || budgetPeriod.getEndDate().after(budgetEndDate)
+                                                                || budgetPeriod.getEndDate().before(budgetStartDate)
+                                                );
     }
 
     private String getBudgetParameterValue(String parameter) {
@@ -702,7 +731,8 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         List<BudgetLineItem> lineItems = proposalBudgetPeriod.getBudgetLineItems();
         for (BudgetLineItem budgetLineItem : lineItems) {
             String[] ignoreProperties = {BUDGET_ID, BUDGET_LINE_ITEM_ID, BUDGET_PERIOD_ID, SUBMIT_COST_SHARING_FLAG,
-                    BUDGET_LINE_ITEM_CALCULATED_AMOUNTS, BUDGET_PERSONNEL_DETAILS_LIST, BUDGET_RATE_AND_BASE_LIST, BUDGET_SUB_AWARD};
+                    BUDGET_LINE_ITEM_CALCULATED_AMOUNTS, BUDGET_PERSONNEL_DETAILS_LIST, BUDGET_RATE_AND_BASE_LIST, BUDGET_SUB_AWARD, 
+                    HIERARCHY_PROPOSAL, HIERARCHY_PROPOSAL_NUMBER};
             AwardBudgetLineItemExt awardBudgetLineItem = new AwardBudgetLineItemExt(); 
             BeanUtils.copyProperties(budgetLineItem, awardBudgetLineItem, ignoreProperties);
             awardBudgetLineItem.setLineItemNumber(awardBudget.getNextValue(Constants.BUDGET_LINEITEM_NUMBER));

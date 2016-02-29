@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -162,15 +162,18 @@ public abstract class CommitteeDocumentBase<CD extends CommitteeDocumentBase<CD,
 
     @Override
     public void doRouteStatusChange(DocumentRouteStatusChange statusChangeEvent) {
-        super.doRouteStatusChange(statusChangeEvent);
-        this.setDocStatusCode(statusChangeEvent.getNewRouteStatus());
-        if (isFinal(statusChangeEvent) && this.getCommittee().getSequenceNumber() > 1) {
-            List<CS> newMasterSchedules = getCommitteeService().mergeCommitteeSchedule(this.getCommittee());
-            this.getCommittee().setCommitteeSchedules(newMasterSchedules);
-            getBusinessObjectService().save(this);
-            // finally update all submissions to point to the new committee
-            getCommitteeService().updateCommitteeForProtocolSubmissions(this.getCommittee());
-        }
+        executeAsLastActionUser(() -> {
+            super.doRouteStatusChange(statusChangeEvent);
+            this.setDocStatusCode(statusChangeEvent.getNewRouteStatus());
+            if (isFinal(statusChangeEvent) && this.getCommittee().getSequenceNumber() > 1) {
+                List<CS> newMasterSchedules = getCommitteeService().mergeCommitteeSchedule(this.getCommittee());
+                this.getCommittee().setCommitteeSchedules(newMasterSchedules);
+                getBusinessObjectService().save(this);
+                // finally update all submissions to point to the new committee
+                getCommitteeService().updateCommitteeForProtocolSubmissions(this.getCommittee());
+            }
+            return null;
+        });
     }
     
     protected abstract CommitteeServiceBase<CMT, CS> getCommitteeService();

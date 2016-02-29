@@ -2,7 +2,7 @@
 <!--
    - Kuali Coeus, a comprehensive research administration system for higher education.
    - 
-   - Copyright 2005-2015 Kuali, Inc.
+   - Copyright 2005-2016 Kuali, Inc.
    - 
    - This program is free software: you can redistribute it and/or modify
    - it under the terms of the GNU Affero General Public License as
@@ -152,6 +152,11 @@
             <util:constant static-field="org.kuali.kra.infrastructure.Constants.KC_CORE_SERVICE_NAMESPACE"/>
         </property>
     </bean>
+
+    <bean id="proposalDevelopmentCustomDataResolverTypeServiceCallback" parent="kcCoreCallbackService"
+          p:callbackService-ref="proposalDevelopmentCustomDataResolverTypeService"
+          p:localServiceName="proposalDevelopmentCustomDataResolverTypeService"
+          p:serviceInterface="org.kuali.rice.krms.framework.type.TermResolverTypeService"/>
 
     <bean id="proposalAllUnitAdministratorDerivedRoleTypeServiceCallback" parent="kcCoreCallbackService"
           p:callbackService-ref="proposalAllUnitAdministratorDerivedRoleTypeService"

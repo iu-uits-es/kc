@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,11 +26,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.kuali.coeus.common.api.budget.rates.InstituteRateDto;
+import org.apache.commons.beanutils.WrapDynaBean;
 import org.kuali.rice.krad.bo.PersistableBusinessObject;
 
 import com.codiform.moo.Moo;
@@ -38,32 +38,41 @@ import com.codiform.moo.configuration.Configuration;
 import com.codiform.moo.curry.Translate;
 
 public class SimpleCrudDtoRestController<T extends PersistableBusinessObject, R> extends SimpleCrudRestControllerBase<T, R> {
-	
+
+	private static final String CLASS = "class";
+
 	private Class<R> dtoObjectClazz;
 
 	@Override
-	protected Object getPrimaryKeyIncomingObject(Object dataObject) {
-		return getProperty(dataObject, getPrimaryKeyColumn());
+	protected Object getPropertyFromIncomingObject(String propertyName, Object dataObject) {
+		try {
+			return PropertyUtils.getProperty(dataObject, propertyName);
+		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
-	private Object getProperty(Object o, String prop) {
-        try {
-            return PropertyUtils.getProperty(o, prop);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
 	
 	@Override
 	protected Collection<R> translateAllDataObjects(Collection<T> dataObjects) {
-		return Translate.to(dtoObjectClazz).fromEach(dataObjects);
+		final Collection<R> dtos = Translate.to(dtoObjectClazz).fromEach(dataObjects);
+		dtos.forEach(this::setPrimaryKeyField);
+		return dtos;
 	}
 	
 	@Override
 	protected R convertDataObject(T dataObject) {
-		return Translate.to(dtoObjectClazz).from(dataObject);
+		final R dto = Translate.to(dtoObjectClazz).from(dataObject);
+		setPrimaryKeyField(dto);
+
+		return dto;
 	}
-	
+
+	protected void setPrimaryKeyField(R dto) {
+		if (dto instanceof PrimaryKeyDto) {
+			((PrimaryKeyDto) dto).set_primaryKey(primaryKeyToString(getPrimaryKeyIncomingObject(dto)));
+		}
+	}
+
 	@Override
 	protected T translateInputToDataObject(R input) {
 		Configuration mooConfig = new Configuration();
@@ -92,7 +101,8 @@ public class SimpleCrudDtoRestController<T extends PersistableBusinessObject, R>
 		}
 		return Arrays.asList(beanInfo.getPropertyDescriptors()).stream()
 				.map(PropertyDescriptor::getName)
-				.filter(name -> !"class".equals(name))
+				.filter(name -> !CLASS.equals(name))
+				.filter(name -> !(isPrimaryKeyDto() && PrimaryKeyDto.SYNTHETIC_FIELD_PK.equals(name)))
 				.collect(Collectors.toList());
 	}
 
@@ -109,10 +119,34 @@ public class SimpleCrudDtoRestController<T extends PersistableBusinessObject, R>
 		try {
 			return Arrays.asList(Introspector.getBeanInfo(dtoObjectClazz).getPropertyDescriptors()).stream()
 					.map(PropertyDescriptor::getName)
-					.filter(name -> !"class".equals(name))
+					.filter(name -> !CLASS.equals(name))
+					.filter(name -> !(isPrimaryKeyDto() && PrimaryKeyDto.SYNTHETIC_FIELD_PK.equals(name)))
 					.collect(Collectors.toList());
 		} catch (IntrospectionException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	protected boolean isPrimaryKeyDto() {
+		return PrimaryKeyDto.class.isAssignableFrom(dtoObjectClazz);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	protected R objectToDto(Object o) {
+		if (dtoObjectClazz.isAssignableFrom(o.getClass())) {
+			return (R) o;
+		} else if (o instanceof Map){
+			final WrapDynaBean dynaBean;
+			try {
+				dynaBean = new WrapDynaBean(dtoObjectClazz.newInstance());
+			} catch (InstantiationException|IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+			getExposedProperties().forEach(name -> dynaBean.set(name, ((Map)o).get(name)));
+			return new Moo().translate(dynaBean.getInstance(), dtoObjectClazz);
+		} else {
+			throw new RuntimeException("unknown dto type " + o.getClass().getName());
 		}
 	}
 }

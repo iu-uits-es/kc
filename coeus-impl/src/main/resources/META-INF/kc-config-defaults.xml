@@ -238,7 +238,7 @@
     <param name="kc.schemaspy.enabled">true</param>
 	<param name="kc.monitoring.enabled">true</param>
 	<param name="kc.monitoring.verbose.logging">false</param>
-	<param name="kc.monitoring.exclude.pattern">.*/static/.*|/healthCheck/.*|.*/css/.*|.*/images/.*|.*/help/.*|.*/plugins/.*|.*/themes/.*|.*/rice-contrib/.*|.*/scripts/.*|/schemaspy/.*</param>
+	<param name="kc.monitoring.exclude.pattern">.*/static/.*|/healthCheck/.*|.*/css/.*|.*/images/.*|.*/help/.*|.*/plugins/.*|.*/themes/.*|.*/rice-contrib/.*|.*/scripts/.*|/schemaspy/.*|/legacyCoeusSchemaspy/.*</param>
 	<param name="rice.krad.jpa.global.jpa.vendor.adapter.class">co.kuali.coeus.sys.impl.monitor.MonitoringEclipseLinkJpaVendorAdapter</param>
 
     <param name="kc.rest.admin.username" override="false"></param>
@@ -248,7 +248,9 @@
 	<param name="coi.projects.url">${coi.standalone.base.url}/api/coi/projects</param>
 	<param name="coi.projects.enabled">false</param>
 	<param name="auth.base.url">${application.rest.services.base.url}</param>
-	<param name="auth.users.url">${auth.base.url}/api/users</param>
+	<param name="auth.users.url">${auth.base.url}/api/v1/users</param>
+	<param name="rice.portal.logout.redirectUrl">${application.url}/kc-krad/landingPage</param>
+
 	<param name="auth.rest.urls.regex">.*api.*,.*v1.*</param>
 	<param name="auth.core.enabled">false</param>
 
@@ -258,6 +260,7 @@
 	<param name="mq.redelivery.default.useExponentialBackOff">true</param>
 	<param name="mq.redelivery.default.backOffMultiplier">2</param>
 
+	<param name="mq.datasource.uniqueName">activemq</param>
 	<param name="mq.datasource.minPoolSize">1</param>
 	<param name="mq.datasource.maxPoolSize">20</param>
 	<param name="mq.broker.dataDirectory">activemq-data</param>
@@ -270,4 +273,12 @@
 
 	<param name="kuali.reports.base.url">${application.rest.services.base.url}</param>
 	<param name="kuali.reports.url">${kuali.reports.base.url}/reports/#/index</param>
+
+	<!-- for grm legacy coeus schemaspy config -->
+	<param name="legacy.coeus.kc.schemaspy.enabled">false</param>
+	<param name="legacy.coeus.datasource.url"></param>
+	<param name="legacy.coeus.datasource.username"></param>
+	<param name="legacy.coeus.datasource.password"></param>
+	<param name="legacy.coeus.datasource.ojb.platform">Oracle9i</param>
+	<param name="legacy.coeus.datasource.driver.name">${datasource.driver.name.${legacy.coeus.datasource.ojb.platform}}</param>
 </config>

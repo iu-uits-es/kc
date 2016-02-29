@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  *
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,6 +21,9 @@ package org.kuali.coeus.sys.impl.persistence;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.ojb.broker.metadata.ClassNotPersistenceCapableException;
 import org.kuali.coeus.sys.framework.persistence.KcPersistenceStructureService;
 import org.kuali.coeus.sys.framework.persistence.PersistenceVerificationService;
 import org.kuali.coeus.sys.framework.util.CollectionUtils;
@@ -47,11 +50,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.kuali.coeus.sys.framework.util.CollectionUtils.entriesToMap;
 import static org.kuali.coeus.sys.framework.util.CollectionUtils.entry;
+import static org.kuali.coeus.sys.framework.util.CollectionUtils.nullSafeEntriesToMap;
 
 @Component("persistenceVerificationService")
 public class PersistenceVerificationServiceImpl implements PersistenceVerificationService {
+
+    private static final Log LOG = LogFactory.getLog(PersistenceVerificationServiceImpl.class);
 
     @Autowired
     @Qualifier("businessObjectService")
@@ -178,7 +183,7 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
                             Map<String, Object> criteria = Collections.singletonMap(entry.getValue().getParentToChildReferences().get(field), getProperty(bo, field));
                             if (!criteria.isEmpty() &&  getBusinessObjectService().countMatching(entry.getValue().getRelatedClass(),
                                     criteria) == 0) {
-                                errors.putError(entry.getValue().getParentAttributeName(), RiceKeyConstants.ERROR_EXISTENCE, getRelationshipDescriptor(entry.getValue().getParentClass()));
+                                errors.putError(entry.getValue().getParentAttributeName(), RiceKeyConstants.ERROR_EXISTENCE, getRelationshipDescriptor(entry.getValue().getRelatedClass()));
                             }
                         });
             }
@@ -221,12 +226,12 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
 
                     final Map<String, Object> criteria = relationship.getAttributeRelationships().stream()
                             .map(attr -> entry(attr.getChildAttributeName(), getProperty(bo, attr.getParentAttributeName())))
-                            .collect(entriesToMap());
+                            .collect(nullSafeEntriesToMap());
 
                     if (!criteria.isEmpty() && getDataObjectService().findMatching(relationship.getRelatedType(),
                             QueryByCriteria.Builder.andAttributes(criteria).setCountFlag(CountFlag.ONLY).build()).getTotalRowCount() == 0) {
 
-                        relationship.getAttributeRelationships().forEach(rel -> errors.putError(rel.getParentAttributeName(), KeyConstants.ERROR_DELETION_BLOCKED,
+                        relationship.getAttributeRelationships().forEach(rel -> errors.putError(rel.getParentAttributeName(), RiceKeyConstants.ERROR_EXISTENCE,
                                 getRelationshipDescriptor(relationship.getRelatedType())));
                     }
                 });
@@ -242,7 +247,7 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
                 .forEach(relationship -> {
             final Map<String, Object> criteria = relationship.getParentToChildReferences().entrySet().stream()
                     .map(entry -> entry(entry.getKey(), getProperty(bo, entry.getValue())))
-                    .collect(entriesToMap());
+                    .collect(nullSafeEntriesToMap());
 
             if (!criteria.isEmpty() && getBusinessObjectService().countMatching(relationship.getParentClass(), criteria) > 0) {
                 errors.putError(KRADConstants.GLOBAL_ERRORS, KeyConstants.ERROR_DELETION_BLOCKED, getRelationshipDescriptor(relationship.getParentClass()));
@@ -264,12 +269,16 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
                 .forEach(relationship -> {
             final Map<String, Object> criteria = relationship.getPrimitiveAttributes().stream()
                     .map(attr -> entry(attr.getSourceName(), getProperty(bo, attr.getTargetName())))
-                    .collect(entriesToMap());
+                    .collect(nullSafeEntriesToMap());
 
-            if (!criteria.isEmpty() && getBusinessObjectService().countMatching(relationship.getSourceClass(), criteria) > 0) {
-                errors.putError(KRADConstants.GLOBAL_ERRORS, KeyConstants.ERROR_DELETION_BLOCKED,
-                        getRelationshipDescriptor(relationship.getSourceClass()));
-            }
+                try {
+                    if (!criteria.isEmpty() && getBusinessObjectService().countMatching(relationship.getSourceClass(), criteria) > 0) {
+                        errors.putError(KRADConstants.GLOBAL_ERRORS, KeyConstants.ERROR_DELETION_BLOCKED,
+                                getRelationshipDescriptor(relationship.getSourceClass()));
+                    }
+                } catch (ClassNotPersistenceCapableException e) {
+                    LOG.debug(bo.getClass().getName() + " has a relationship to a non-persistable class " + relationship.getSourceClass(), e);
+                }
         });
         return errors;
     }
@@ -289,7 +298,7 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
                 .forEach(relationship -> {
             final Map<String, Object> criteria = relationship.getValue().getAttributeRelationships().stream()
                     .map(attr -> entry(attr.getParentAttributeName(), getProperty(bo, attr.getChildAttributeName())))
-                    .collect(entriesToMap());
+                    .collect(nullSafeEntriesToMap());
 
             if (!criteria.isEmpty() && getDataObjectService().findMatching(relationship.getKey(),
                     QueryByCriteria.Builder.andAttributes(criteria).setCountFlag(CountFlag.ONLY).build()).getTotalRowCount() > 0) {

@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,12 @@
  */
 package org.kuali.kra.award.service;
 
-public interface AwardJavaFunctionKrmsTermService {
+import org.kuali.coeus.common.framework.krms.KcKrmsJavaFunctionTermService;
+import org.kuali.kra.award.home.Award;
 
+public interface AwardJavaFunctionKrmsTermService extends KcKrmsJavaFunctionTermService {
+    public Boolean awardPersonnelTotalEffort(Award award, String effortToMatch);
+    public Boolean awardPersonnelCalendarEffort(Award award, String effortToMatch);
+    public Boolean awardCommentsRule(Award award, String comments, String commentTypeCode);
+    public Boolean hasSpecialReviewOfType(Award award, String specialReviewTypeCode);
 }

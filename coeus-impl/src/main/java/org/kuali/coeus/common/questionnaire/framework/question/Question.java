@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -387,6 +387,11 @@ public class Question extends KcPersistableBusinessObjectBase implements Compara
 
     public String getVersionNameField() {
         return QuestionnaireConstants.QUESTION_SEQEQUENCE_ID;
+    }
+
+    @Override
+    public String getVersionNameFieldValue() {
+        return questionSeqId.toString();
     }
 
     public void incrementSequenceNumber() {

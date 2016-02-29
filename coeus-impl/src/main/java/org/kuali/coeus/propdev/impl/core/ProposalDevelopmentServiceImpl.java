@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -102,7 +102,8 @@ public class ProposalDevelopmentServiceImpl implements ProposalDevelopmentServic
         DevelopmentProposal developmentProposal = proposalDevelopmentDocument.getDevelopmentProposal();
 
         // Unit number chosen, set Applicant Organization
-        if (developmentProposal.getOwnedByUnitNumber() != null && applicantOrganization.getOrganization() == null) {
+        if (developmentProposal.getOwnedByUnitNumber() != null &&
+                (applicantOrganization == null || applicantOrganization.getOrganization() == null)) {
             // get Lead Unit details
             developmentProposal.refreshReferenceObject("ownedByUnit");
             String applicantOrganizationId = developmentProposal.getOwnedByUnit().getOrganizationId();

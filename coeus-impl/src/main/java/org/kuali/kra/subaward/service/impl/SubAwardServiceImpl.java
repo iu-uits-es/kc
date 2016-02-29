@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -123,7 +123,7 @@ public class SubAwardServiceImpl implements SubAwardService {
         this.sequenceAccessorService = sequenceAccessorService;
     }
 
-    public SubAward getAmountInfo(SubAward subAward) {
+    public SubAward calculateAmountInfo(SubAward subAward) {
 
         List<SubAwardAmountInfo> subAwardAmountInfoList = subAward.getAllSubAwardAmountInfos();
         List<SubAwardAmountReleased> subAwardAmountReleasedList = subAward.getSubAwardAmountReleasedList();
@@ -234,7 +234,7 @@ public class SubAwardServiceImpl implements SubAwardService {
         values.put(SUB_AWARD_ID, subAwardId);
         List<SubAward> subAwards = (List<SubAward>) getBusinessObjectService().findMatching(SubAward.class, values);
         SubAward subAward = subAwards.get(0);
-        getAmountInfo(subAward);
+        calculateAmountInfo(subAward);
         return subAward;
     }
 

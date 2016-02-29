@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,11 +18,16 @@
  */
 package org.kuali.coeus.common.budget.impl.core.category;
 
-public class BudgetCategoryDto {
+import com.codiform.moo.annotation.Ignore;
+import org.kuali.coeus.sys.framework.controller.rest.PrimaryKeyDto;
+
+public class BudgetCategoryDto implements PrimaryKeyDto {
 
 	private String code;
 	private String budgetCategoryTypeCode;
 	private String description;
+	@Ignore
+	private String _primaryKey;
 	
 	public String getCode() {
 		return code;
@@ -41,5 +46,15 @@ public class BudgetCategoryDto {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public String get_primaryKey() {
+		return _primaryKey;
+	}
+
+	@Override
+	public void set_primaryKey(String _primaryKey) {
+		this._primaryKey = _primaryKey;
 	}
 }
