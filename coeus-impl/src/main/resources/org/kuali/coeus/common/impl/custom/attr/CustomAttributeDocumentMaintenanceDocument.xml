@@ -33,20 +33,20 @@
     <property name="lockingKeys">
       <list>
         <value>id</value>
-        <value>documentTypeName</value> 
+        <value>documentTypeName</value>
       </list>
     </property>
     <property name="allowsRecordDeletion" value="true" />
-    
-    
-    
-    
+
+
+
+
     <property name="documentAuthorizerClass" value="org.kuali.rice.kns.document.authorization.MaintenanceDocumentAuthorizerBase"/>
-    
-    
+
+
   </bean>
 
-<!-- Maintenance Section Definitions -->
+  <!-- Maintenance Section Definitions -->
 
 
   <bean id="CustomAttributeDocumentMaintenanceDocument-EditCustomAttributeDocument" parent="CustomAttributeDocumentMaintenanceDocument-EditCustomAttributeDocument-parentBean"/>
@@ -61,6 +61,7 @@
         <bean parent="MaintainableFieldDefinition" p:name="required"/>
         <bean parent="MaintainableFieldDefinition" p:name="typeName"/>
         <bean parent="MaintainableFieldDefinition" p:name="active"/>
+        <bean parent="MaintainableFieldDefinition" p:name="sortId"/>
         <bean parent="MaintainableFieldDefinition" p:name="versionNumber"/>
       </list>
     </property>
