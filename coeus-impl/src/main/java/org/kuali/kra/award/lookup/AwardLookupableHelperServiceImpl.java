@@ -24,10 +24,11 @@ import org.kuali.coeus.common.framework.person.KcPersonService;
 import org.kuali.coeus.common.framework.rolodex.Rolodex;
 import org.kuali.coeus.common.framework.unit.Unit;
 import org.kuali.kra.award.contacts.AwardPerson;
+import org.kuali.kra.award.dao.AwardLookupDao;
 import org.kuali.kra.award.document.AwardDocument;
 import org.kuali.kra.award.document.authorization.AwardDocumentAuthorizer;
 import org.kuali.kra.award.home.Award;
-import org.kuali.kra.award.dao.AwardLookupDao;
+import org.kuali.kra.award.home.fundingproposal.AwardFundingProposal;
 import org.kuali.kra.lookup.KraLookupableHelperServiceImpl;
 import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.kim.api.identity.Person;
@@ -42,6 +43,7 @@ import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.UrlFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class provides Award lookup support
@@ -62,6 +64,7 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
     public static final String OSP_ADMIN_TYPE_CODE_VALUE = "2";
     public static final String PRINCIPAL_ID = "principalId";
     public static final String PRINCIPAL_NAME = "principalName";
+    public static final String IP_NUMBER_FIELD = "fundingProposals.proposal.proposalNumber";
 
 
     private transient KcPersonService kcPersonService;
@@ -83,7 +86,17 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         setBackLocation(fieldValues.get(KRADConstants.BACK_LOCATION));
         setDocFormKey(fieldValues.get(KRADConstants.DOC_FORM_KEY));
         setReferencesToRefresh(fieldValues.get(KRADConstants.REFERENCES_TO_REFRESH));
-        
+
+        if (StringUtils.isNotBlank(fieldValues.get(IP_NUMBER_FIELD))) {
+            List<String> awardNumbers =
+                    getBusinessObjectService().findMatching(AwardFundingProposal.class, Collections.singletonMap("proposal.proposalNumber", fieldValues.get(IP_NUMBER_FIELD)))
+                    .stream()
+                    .map(afp -> afp.getAward().getAwardNumber())
+                    .collect(Collectors.toList());
+            fieldValues.put("awardNumber", StringUtils.join(awardNumbers, '|'));
+            fieldValues.remove(IP_NUMBER_FIELD);
+        }
+
         List<Award> unboundedResults = (List<Award>)getAwardLookupDao().getAwardSearchResults(fieldValues, usePrimaryKeys);
         
         List<Award> filteredResults = new ArrayList<Award>();
