@@ -1,7 +1,7 @@
 /*
  * Kuali Coeus, a comprehensive research administration system for higher education.
  * 
- * Copyright 2005-2015 Kuali, Inc.
+ * Copyright 2005-2016 Kuali, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@
  */
 package org.kuali.kra.award.lookup;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kuali.coeus.common.framework.person.KcPerson;
 import org.kuali.coeus.common.framework.person.KcPersonService;
@@ -82,25 +83,28 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         }
 
         boolean usePrimaryKeys = getLookupService().allPrimaryKeyValuesPresentAndNotWildcard(Award.class, fieldValues);
-        
+
         setBackLocation(fieldValues.get(KRADConstants.BACK_LOCATION));
         setDocFormKey(fieldValues.get(KRADConstants.DOC_FORM_KEY));
         setReferencesToRefresh(fieldValues.get(KRADConstants.REFERENCES_TO_REFRESH));
 
         if (StringUtils.isNotBlank(fieldValues.get(IP_NUMBER_FIELD))) {
-            List<String> awardNumbers =
+            String awardNumbers =
                     getBusinessObjectService().findMatching(AwardFundingProposal.class, Collections.singletonMap("proposal.proposalNumber", fieldValues.get(IP_NUMBER_FIELD)))
-                    .stream()
-                    .map(afp -> afp.getAward().getAwardNumber())
-                    .collect(Collectors.toList());
-            fieldValues.put("awardNumber", StringUtils.join(awardNumbers, '|'));
+                            .stream()
+                            .map(afp -> afp.getAward().getAwardNumber())
+                            .collect(Collectors.joining("|"));
+            if (StringUtils.isBlank(awardNumbers)) {
+                return new ArrayList<>();
+            }
+            fieldValues.put("awardNumber", awardNumbers);
             fieldValues.remove(IP_NUMBER_FIELD);
         }
 
         List<Award> unboundedResults = (List<Award>)getAwardLookupDao().getAwardSearchResults(fieldValues, usePrimaryKeys);
-        
+
         List<Award> filteredResults = new ArrayList<Award>();
-        
+
         filteredResults = (List<Award>) filterForPermissions(unboundedResults);
         if (unboundedResults instanceof CollectionIncomplete) {
             filteredResults = new CollectionIncomplete<Award>(
@@ -162,7 +166,7 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         }
         return rows;
     }
-                 
+
     /**
      * Sets the KC Person Service.
      * @param kcPersonService the kc person service
@@ -183,7 +187,7 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         if (propertyName.equals(UNIT_NUMBER)) {
             inquiryUrl = getUnitNumberInquiryUrl(award);
         } else if (propertyName.equals(PI_NAME)) {
-            inquiryUrl = getPrincipalInvestigatorNameInquiryUrl(award);            
+            inquiryUrl = getPrincipalInvestigatorNameInquiryUrl(award);
         } else if(propertyName.equals(OSP_ADMIN_NAME)) {
             inquiryUrl = getOspAdminNameInquiryUrl(award);
         }
@@ -210,7 +214,7 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         htmlData.setHref(href);
         return htmlData;
     }
-    
+
     protected AnchorHtmlData getMedusaLink(Award award, Boolean readOnly) {
         AnchorHtmlData htmlData = new AnchorHtmlData();
         htmlData.setDisplayText(MEDUSA);
@@ -223,11 +227,11 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         parameters.put("docOpenedFromAwardSearch", "true");
         parameters.put("placeHolderAwardId", award.getAwardId().toString());
         String href  = UrlFactory.parameterizeUrl("../"+getHtmlAction(), parameters);
-        
+
         htmlData.setHref(href);
         return htmlData;
-    }    
-    
+    }
+
     protected AnchorHtmlData getCopyLink(Award award, Boolean readOnly) {
         AnchorHtmlData htmlData = new AnchorHtmlData();
         htmlData.setDisplayText("copy");
@@ -240,11 +244,11 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         parameters.put("docOpenedFromAwardSearch", "true");
         parameters.put("placeHolderAwardId", award.getAwardId().toString());
         String href  = UrlFactory.parameterizeUrl("../"+getHtmlAction(), parameters);
-        
+
         htmlData.setHref(href);
         return htmlData;
     }
-    
+
     protected HtmlData getOspAdminNameInquiryUrl(Award award) {
         KcPerson ospAdministrator = award.getOspAdministrator();
         if (ospAdministrator != null) {
@@ -261,8 +265,8 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
         if (principalInvestigator != null) {
             if (StringUtils.isNotBlank(principalInvestigator.getPersonId())) {
                 try {
-                final KcPerson inqBo = this.kcPersonService.getKcPersonByPersonId(principalInvestigator.getPersonId());
-                inquiryUrl = super.getInquiryUrl(inqBo, PERSON_ID);
+                    final KcPerson inqBo = this.kcPersonService.getKcPersonByPersonId(principalInvestigator.getPersonId());
+                    inquiryUrl = super.getInquiryUrl(inqBo, PERSON_ID);
                 }
                 catch (IllegalArgumentException e) {
                     LOG.info("getPrincipalInvestigatorNameInquiryUrl(Award award): ignoring missing person/entity: "
@@ -275,7 +279,7 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
                     inquiryUrl = super.getInquiryUrl(inqBo, ROLODEX_ID);
                 }
             }
-            
+
         }
         return inquiryUrl;
     }
@@ -291,10 +295,10 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
     protected String getHtmlAction() {
         return "awardHome.do";
     }
-    
+
     /**
      * @see org.kuali.kra.lookup.KraLookupableHelperServiceImpl#createdEditHtmlData(org.kuali.rice.krad.bo.BusinessObject)
-     * 
+     *
      * Edit is not supported for Award lookup, so we'll just no-op
      */
     @Override
@@ -306,7 +310,7 @@ public class AwardLookupableHelperServiceImpl extends KraLookupableHelperService
     protected String getDocumentTypeName() {
         return "AwardDocument";
     }
-    
+
     @Override
     protected String getKeyFieldName() {
         return "awardId";
