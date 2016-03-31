@@ -277,7 +277,6 @@ public class NegotiationServiceImpl implements NegotiationService {
                 beans.add(bean);
             }
         }
-        Collections.sort(beans);
         
         // now set the effective dates and calculate the location days.
         Date previousStartDate = null;
