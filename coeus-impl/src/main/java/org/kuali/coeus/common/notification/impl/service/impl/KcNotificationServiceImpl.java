@@ -19,16 +19,7 @@
 package org.kuali.coeus.common.notification.impl.service.impl;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -52,6 +43,7 @@ import org.kuali.coeus.common.notification.impl.service.KcNotificationService;
 import org.kuali.coeus.sys.framework.model.KcPersistableBusinessObjectBase;
 import org.kuali.coeus.sys.framework.service.KcServiceLocator;
 import org.kuali.kra.infrastructure.Constants;
+import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.api.datetime.DateTimeService;
 import org.kuali.rice.core.api.exception.RiceIllegalArgumentException;
 import org.kuali.rice.core.api.membership.MemberType;
@@ -191,8 +183,14 @@ public class KcNotificationServiceImpl implements KcNotificationService {
             String message = notification.getMessage();
             Collection<NotificationRecipient.Builder> notificationRecipients = getNotificationRecipients(context);
 
-            sendNotification(contextName, subject, message, notificationRecipients);
-            sendEmailNotification(subject, message, notificationRecipients, context.getEmailAttachments());
+            NotificationType notificationType = notification.getNotificationType();
+            if(!notificationType.isEmailOnly()) {
+                sendNotification(contextName, subject, message, notificationRecipients);
+                sendEmailNotification(subject, message, notificationRecipients, context.getEmailAttachments());
+            } else {
+                sendEmailOnlyNotification(notificationType.getFromAddress(), getRecipientEmailAddresses(notificationRecipients),
+                        subject, message, context.getEmailAttachments());
+            }
         }
     }
     
@@ -204,9 +202,16 @@ public class KcNotificationServiceImpl implements KcNotificationService {
         Set<NotificationRecipient.Builder> notificationRecipients = getNotificationRecipients(notificationTypeRecipients, context);
         Set<String> emailRecipients = getEmailRecipients(notificationTypeRecipients);
 
-        sendNotification(contextName, subject, message, notificationRecipients);
-        sendEmailNotification(subject, message, notificationRecipients, context.getEmailAttachments());
-        sendEmailNotification(getKcEmailService().getDefaultFromAddress(), emailRecipients, subject, message, context.getEmailAttachments());
+        NotificationType notificationType = notification.getNotificationType();
+        if(!notificationType.isEmailOnly()) {
+            sendNotification(contextName, subject, message, notificationRecipients);
+            sendEmailNotification(subject, message, notificationRecipients, context.getEmailAttachments());
+            sendEmailNotification(getKcEmailService().getDefaultFromAddress(), emailRecipients, subject, message, context.getEmailAttachments());
+        } else {
+            sendEmailOnlyNotification(notificationType.getFromAddress(), getRecipientEmailAddresses(notificationRecipients),
+                    subject, message, context.getEmailAttachments());
+            sendEmailOnlyNotification(notificationType.getFromAddress(), emailRecipients, subject, message, context.getEmailAttachments());
+        }
     }
     
     @Override
@@ -534,7 +539,17 @@ public class KcNotificationServiceImpl implements KcNotificationService {
                                                      message, true, attachments);
         }
     }
-    
+
+    private void sendEmailOnlyNotification(String fromAddress, Set<String> toAddresses, String subject, String message, List<EmailAttachment> attachments) {
+        if(StringUtils.isEmpty(fromAddress)) {
+            fromAddress = getKcEmailService().getDefaultFromAddress();
+        }
+        if (areEmailOnlyNotificationsEnabled()) {
+            Set<String> filteredAddresses = this.filterAddresses(toAddresses);
+            getKcEmailService().sendEmailWithAttachments(fromAddress, filteredAddresses, subject, null, null, message, true, attachments);
+        }
+    }
+
     private Set<String> getRecipientEmailAddresses(Collection<NotificationRecipient.Builder> recipients) {
         Set<String> emailAddresses = new HashSet<String>();
         
@@ -594,6 +609,43 @@ public class KcNotificationServiceImpl implements KcNotificationService {
         
         return emailEnabled;
     }
+
+    private boolean areEmailOnlyNotificationsEnabled() {
+        boolean emailEnabled = false;
+
+        try {
+            emailEnabled = parameterService.getParameterValueAsBoolean(Constants.KC_GENERIC_PARAMETER_NAMESPACE,
+                    Constants.KC_ALL_PARAMETER_DETAIL_TYPE_CODE, "EMAIL_ONLY_NOTIFICATIONS_ENABLED");
+        } catch (Exception e) {
+            LOG.warn("Email Notifications parameter not configured, defaulting to disabled.");
+        }
+
+        return emailEnabled;
+    }
+
+    /**
+     * Filters a set of email addresses based on contents of the EMAIL_ONLY_NOTIFICATIONS_TESTING_WHITELIST application
+     * parameter if being ran on a non-production environment.
+     */
+    private Set<String> filterAddresses(Set<String> toAddresses) {
+        if (ConfigContext.getCurrentContextConfig().isProductionEnvironment()) {
+            return toAddresses;
+        } else {
+            try {
+                String emailWhiteListString = parameterService.getParameterValueAsString(Constants.KC_GENERIC_PARAMETER_NAMESPACE,
+                        Constants.KC_ALL_PARAMETER_DETAIL_TYPE_CODE, "EMAIL_ONLY_NOTIFICATIONS_TESTING_WHITELIST");
+                String[] emailWhiteListArray = StringUtils.split(emailWhiteListString, ',');
+                Set<String> emailWhiteList = new HashSet<String>(Arrays.asList(emailWhiteListArray));
+                Set<String> intersection = new HashSet<String>(toAddresses);
+                intersection.retainAll(emailWhiteList);
+                return intersection;
+            } catch (Exception e) {
+                LOG.warn("Email Notifications Whitelist parameter not configured, defaulting to disabled.");
+                return new HashSet<String>();
+            }
+        }
+    }
+
 
     private void fillinNotificationObject(KcNotification notification, NotificationContext context, List<NotificationTypeRecipient> notificationTypeRecipients) {
         fillinNotificationObject(notification, context);

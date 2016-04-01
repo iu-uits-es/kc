@@ -41,6 +41,8 @@ public class NotificationType extends KcPersistableBusinessObjectBase implements
     private String description;
     private String subject;
     private String message;
+    private boolean emailOnly;
+    private String fromAddress;
     private boolean promptUser;
     private boolean active;
     
@@ -127,6 +129,22 @@ public class NotificationType extends KcPersistableBusinessObjectBase implements
 
     public void setNotificationTypeRecipients(List<NotificationTypeRecipient> notificationTypeRecipients) {
         this.notificationTypeRecipients = notificationTypeRecipients;
+    }
+
+    public boolean isEmailOnly() {
+        return emailOnly;
+    }
+
+    public void setEmailOnly(boolean emailOnly) {
+        this.emailOnly = emailOnly;
+    }
+
+    public String getFromAddress() {
+        return fromAddress;
+    }
+
+    public void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
     }
 
     @Override

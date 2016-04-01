@@ -41,6 +41,8 @@
                 <ref bean="NotificationType-promptUser" />
                 <ref bean="NotificationType-active" />
                 <ref bean="NotificationType-versionNumber" />
+                <ref bean="NotificationType-fromAddress" />
+                <ref bean="NotificationType-emailOnly" />
             </list>
         </property>
     </bean>
@@ -316,5 +318,38 @@
             </list>
         </property>
     </bean>
-    
+
+    <bean id="NotificationType-fromAddress" parent="NotificationType-fromAddress-parentBean" />
+
+    <bean abstract="true" id="NotificationType-fromAddress-parentBean" parent="AttributeDefinition">
+        <property name="name" value="fromAddress" />
+        <property name="forceUppercase" value="false" />
+        <property name="label" value="From Address" />
+        <property name="shortLabel" value="From Address" />
+        <property name="maxLength" value="60" />
+        <property name="validationPattern">
+            <bean parent="EmailAddressValidationPattern" />
+        </property>
+        <property name="control">
+            <bean parent="TextControlDefinition" p:size="40" />
+        </property>
+        <property name="summary" value="From Address" />
+        <property name="description" value="From Address" />
+    </bean>
+
+    <bean id="NotificationType-emailOnly" parent="NotificationType-emailOnly-parentBean" />
+    <bean id="NotificationType-emailOnly-parentBean" abstract="true"
+          parent="AttributeDefinition">
+        <property name="name" value="emailOnly" />
+        <property name="forceUppercase" value="false" />
+        <property name="label" value="Email Only" />
+        <property name="shortLabel" value="Email Only" />
+        <property name="maxLength" value="1" />
+        <property name="control">
+            <bean parent="CheckboxControlDefinition" />
+        </property>
+        <property name="summary" value="Email Only" />
+        <property name="description" value="Email Only" />
+    </bean>
+
 </beans>
