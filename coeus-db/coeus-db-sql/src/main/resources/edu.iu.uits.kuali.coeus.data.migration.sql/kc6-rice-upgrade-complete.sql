@@ -1832,3 +1832,41 @@ values ('RES-BOOT2110', 'RES-BOOT1032');
 -----------------------------------------------------------------------------------------
 -- 1603 Rice DML
 -----------------------------------------------------------------------------------------
+-- V1603_001__add_read_sponsor_hierarchy_to_user.sql
+INSERT INTO KRIM_PERM_T (PERM_ID,PERM_TMPL_ID,NMSPC_CD,NM,DESC_TXT,ACTV_IND,OBJ_ID,VER_NBR)
+VALUES ('RES-BOOT1000',(SELECT PERM_TMPL_ID FROM KRIM_PERM_TMPL_T WHERE NMSPC_CD = 'KC-SYS' AND NM = 'Read Class'),'KC-COMMON','Read SponsorHierarchy','Read SponsorHierarchy in the KC system','Y',sys_guid(),1);
+
+INSERT INTO KRIM_PERM_ATTR_DATA_T (ATTR_DATA_ID,PERM_ID,KIM_TYP_ID,KIM_ATTR_DEFN_ID,ATTR_VAL,OBJ_ID,VER_NBR)
+VALUES ('RES-BOOT1000','RES-BOOT1000',(SELECT KIM_TYP_ID FROM KRIM_TYP_T WHERE NMSPC_CD = 'KC-SYS' AND NM = 'Class Name'),(SELECT KIM_ATTR_DEFN_ID FROM KRIM_ATTR_DEFN_T WHERE NMSPC_CD = 'KC-SYS' AND NM = 'className'),'org.kuali.coeus.common.framework.sponsor.hierarchy.SponsorHierarchy',sys_guid(),1);
+
+INSERT INTO KRIM_ROLE_PERM_T (ROLE_PERM_ID, OBJ_ID, VER_NBR, ROLE_ID, PERM_ID, ACTV_IND)
+VALUES ('RES-BOOT1000', sys_guid(), 1, (SELECT ROLE_ID FROM KRIM_ROLE_T WHERE ROLE_NM = 'User' AND NMSPC_CD='KUALI'), 'RES-BOOT1000', 'Y');
+
+-- V1603_002__RESKC-1044.sql
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-PD','Document','ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE',SYS_GUID(),1,'CONFG','0','When enabled, this parameter displays the disclosure status from the COI module. This is different from PROP_PERSON_COI_STATUS_FLAG and both should not be enabled at the same time.','A','KC');
+
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-AWARD','Document','ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE',SYS_GUID(),1,'CONFG','0','When enabled, this parameter displays the disclosure status from the COI module.','A','KC');
+
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-IP','Document','ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE',SYS_GUID(),1,'CONFG','0','When enabled, this parameter displays the disclosure status from the COI module.','A','KC');
+
+-- V1603_005__RESKC-949.sql
+update krcr_parm_t set PARM_DESC_TXT = 'Flag to turn on/off COI disclosure status on proposal development. This is different from KC-PD ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE and both should not be enabled at the same time.' where parm_nm = 'PROP_PERSON_COI_STATUS_FLAG' and nmspc_cd = 'KC-GEN';
+
+update krcr_parm_t set VAL = 'N' where PARM_NM = 'ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE' and NMSPC_CD = 'KC-PD';
+
+update krcr_parm_t set VAL = 'N' where PARM_NM = 'ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE' and NMSPC_CD = 'KC-AWARD';
+
+update krcr_parm_t set VAL = 'N' where PARM_NM = 'ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE' and NMSPC_CD = 'KC-IP';
+
+-- V1603_010__ArgValuesDescriptionParam.sql
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-GEN','All','ARG_VALUE_VALUES_FINDER_PREFER_DESCRIPTION',sys_guid(),1,'CONFG','1',
+	'When set to 1 or Y this parameter will cause Argument Values to display the description, when available, on the argument values dropdown instead of the value in PD and questionnaires. When set to 0 or N the drodown for argument values will always display the value.',
+	'A','KC');
+
+-----------------------------------------------------------------------------------------
+-- 1604 Rice DML
+-----------------------------------------------------------------------------------------
