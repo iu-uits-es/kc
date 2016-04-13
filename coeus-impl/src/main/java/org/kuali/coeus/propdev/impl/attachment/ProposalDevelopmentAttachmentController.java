@@ -20,16 +20,21 @@ package org.kuali.coeus.propdev.impl.attachment;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.kuali.coeus.common.framework.print.AttachmentDataSource;
+import org.kuali.coeus.common.framework.print.PrintableAttachment;
 import org.kuali.coeus.propdev.impl.abstrct.ProposalAbstract;
 import org.kuali.coeus.propdev.impl.core.*;
 import org.kuali.coeus.propdev.impl.notification.ProposalDevelopmentNotificationContext;
 import org.kuali.coeus.propdev.impl.notification.ProposalDevelopmentNotificationRenderer;
 import org.kuali.coeus.propdev.impl.person.attachment.AddPersonnelAttachmentEvent;
+import org.kuali.coeus.propdev.impl.person.attachment.ProposalPersonBiography;
+import org.kuali.coeus.sys.api.model.KcFile;
+import org.kuali.coeus.sys.framework.controller.KcTransactionalDocumentActionBase;
 import org.kuali.coeus.sys.framework.gv.GlobalVariableService;
 import org.kuali.kra.infrastructure.Constants;
-import org.kuali.coeus.propdev.impl.person.attachment.ProposalPersonBiography;
 import org.kuali.rice.core.api.datetime.DateTimeService;
 import org.kuali.rice.krad.bo.Note;
+import org.kuali.rice.krad.file.FileMeta;
 import org.kuali.rice.krad.service.KualiRuleService;
 import org.kuali.rice.krad.uif.UifConstants;
 import org.kuali.rice.krad.uif.UifParameters;
@@ -42,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,9 +55,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Controller
 public class ProposalDevelopmentAttachmentController extends ProposalDevelopmentControllerBase {
@@ -180,7 +188,7 @@ public class ProposalDevelopmentAttachmentController extends ProposalDevelopment
         if (StringUtils.isNotEmpty(selectedLine)) {
             ProposalPersonBiography tmpBiography = new ProposalPersonBiography();
             form.getProposalDevelopmentAttachmentHelper().setSelectedLineIndex(selectedLine);
-            PropertyUtils.copyProperties(tmpBiography,form.getDevelopmentProposal().getPropPersonBio(Integer.parseInt(selectedLine)));
+            PropertyUtils.copyProperties(tmpBiography, form.getDevelopmentProposal().getPropPersonBio(Integer.parseInt(selectedLine)));
             form.getProposalDevelopmentAttachmentHelper().setBiography(tmpBiography);
         }
 
@@ -195,7 +203,7 @@ public class ProposalDevelopmentAttachmentController extends ProposalDevelopment
         if (StringUtils.isNotEmpty(selectedLine)) {
             ProposalAbstract tmpAbstract = new ProposalAbstract();
             form.getProposalDevelopmentAttachmentHelper().setSelectedLineIndex(selectedLine);
-            PropertyUtils.copyProperties(tmpAbstract,form.getDevelopmentProposal().getProposalAbstract(Integer.parseInt(selectedLine)));
+            PropertyUtils.copyProperties(tmpAbstract, form.getDevelopmentProposal().getProposalAbstract(Integer.parseInt(selectedLine)));
             form.getProposalDevelopmentAttachmentHelper().setProposalAbstract(tmpAbstract);
         }
 
@@ -290,7 +298,7 @@ public class ProposalDevelopmentAttachmentController extends ProposalDevelopment
     public ModelAndView addInstituteAttachment(@ModelAttribute("KualiForm") ProposalDevelopmentDocumentForm form) throws Exception {
         Narrative narrative = form.getProposalDevelopmentAttachmentHelper().getInstituteAttachment();
         initializeNarrative(narrative, form);
-        form.getDevelopmentProposal().getInstituteAttachments().add(0,narrative);
+        form.getDevelopmentProposal().getInstituteAttachments().add(0, narrative);
         form.getProposalDevelopmentAttachmentHelper().reset();
 
         return getRefreshControllerService().refresh(form);
@@ -428,6 +436,8 @@ public class ProposalDevelopmentAttachmentController extends ProposalDevelopment
         } else {
             getGlobalVariableService().getMessageMap().merge(messages);
         }
+        form.getDevelopmentProposal().getInstituteAttachments().set(selectedLineIndex, narrative);
+        form.getProposalDevelopmentAttachmentHelper().reset();
         return super.save(form);
     }
 
@@ -548,6 +558,33 @@ public class ProposalDevelopmentAttachmentController extends ProposalDevelopment
         form.setNarrativeUserRightsSelectedAttachment(selectedLine);
         form.getActionParameters().put(ProposalDevelopmentConstants.KradConstants.ATTACHMENT_TYPE, ProposalDevelopmentConstants.KradConstants.INSTITUTE_ATTACHMENT);
         return getModelAndViewService().showDialog(ProposalDevelopmentConstants.KradConstants.PROP_DEV_ATTACHMENT_PAGE_VIEW_EDIT_RIGHT_DIALOG, true, form);
+    }
+
+    @Transactional @RequestMapping(value = "/proposalDevelopment", params={"methodToCall=downloadAllNarratives"})
+    public void downloadAllNarratives(@ModelAttribute("KualiForm") final ProposalDevelopmentDocumentForm form, BindingResult result,
+                                      HttpServletRequest request, HttpServletResponse response) throws Exception {
+        final String collectionPath = form.getActionParamaterValue(UifParameters.SELECTED_COLLECTION_PATH);
+        Collection<Object> collection = ObjectPropertyUtils.getPropertyValue(form, collectionPath);
+        List<AttachmentDataSource> allAttachments = new ArrayList<AttachmentDataSource>();
+
+        for (Object object : collection) {
+            if(object instanceof KcFile) {
+                KcFile attachment = (KcFile) object;
+
+                AttachmentDataSource newADS = new PrintableAttachment();
+                newADS.setData(attachment.getData());
+                if (attachment instanceof FileMeta) {
+                    newADS.setType(((FileMeta) attachment).getContentType());
+                }
+                else {
+                    newADS.setType(attachment.getType());
+                }
+                newADS.setName(attachment.getName());
+                allAttachments.add(newADS);
+            }
+        }
+        (new KcTransactionalDocumentActionBase()).downloadAllAttachments(allAttachments, response,
+                form.getProposalDevelopmentDocument().getDevelopmentProposal().getProposalNumber() + "-Proposal_Attachments.zip");
     }
 
     public LegacyNarrativeService getLegacyNarrativeService() {
