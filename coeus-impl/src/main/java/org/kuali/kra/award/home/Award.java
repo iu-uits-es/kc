@@ -93,10 +93,7 @@ import org.kuali.kra.timeandmoney.document.TimeAndMoneyDocument;
 import org.kuali.kra.timeandmoney.service.TimeAndMoneyHistoryService;
 import org.kuali.kra.timeandmoney.transactions.AwardTransactionType;
 import org.kuali.rice.core.api.CoreApiServiceLocator;
-<<<<<<< HEAD
 import org.kuali.coeus.sys.api.model.ScaleTwoDecimal;
-=======
->>>>>>> RESSUP-1385
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kim.api.role.Role;
 import org.kuali.rice.krad.service.BusinessObjectService;
