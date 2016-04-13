@@ -60,7 +60,7 @@ public enum ActivitySortingType {
 class StartDateComparator implements Comparator<NegotiationActivity> {
     @Override
     public int compare(NegotiationActivity o1, NegotiationActivity o2) {
-        return o1.getStartDate().compareTo(o2.getStartDate());
+        return o2.getStartDate().compareTo(o1.getStartDate());
     }
 }
 class ActivityTypeComparator implements Comparator<NegotiationActivity> {
