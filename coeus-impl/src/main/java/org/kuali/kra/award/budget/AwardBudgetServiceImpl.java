@@ -137,18 +137,14 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
     }
 
     public AwardBudgetDocument copyBudgetVersion(AwardBudgetDocument budgetDocument, boolean onlyOnePeriod) throws WorkflowException {
-        AwardDocument awardDocument = (AwardDocument)budgetDocument.getBudget().getBudgetParent().getDocument();
-		String parentDocumentNumber = awardDocument.getDocumentNumber();
-        budgetDocument.toCopy();
-        awardDocument.getDocumentHeader().setDocumentNumber(parentDocumentNumber);
-        awardDocument.setDocumentNumber(parentDocumentNumber);
-        if(budgetDocument.getBudget() == null) {
-            throw new RuntimeException("Not able to find any Budget Version associated with this document");
-        }
         Budget budget = budgetDocument.getBudget();
-        AwardBudgetExt copiedBudget = (AwardBudgetExt) copyBudgetVersion(budget,onlyOnePeriod);
+        AwardDocument awardDocument = (AwardDocument)budgetDocument.getBudget().getBudgetParent().getDocument();
+        AwardBudgetExt copiedBudget = copyAwardBudget(budgetDocument, onlyOnePeriod, budget, awardDocument);
         budgetDocument.getBudgets().add(copiedBudget);
-        budgetDocument = (AwardBudgetDocument) documentService.saveDocument(budgetDocument);
+
+        fixStartAndEndDatesAndPeriods(((AwardBudgetExt) budget).getAward(), copiedBudget);
+
+        budgetDocument = (AwardBudgetDocument) getDocumentService().saveDocument(budgetDocument);
         
         Map<String, Object> objectMap = new HashMap<>();
         fixProperty(budget, SET_BUDGET_ID, Long.class, budgetDocument.getBudget().getBudgetId(), objectMap);
@@ -158,6 +154,23 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         AwardDocument savedAwardDocument = (AwardDocument)budgetDocument.getBudget().getBudgetParent().getDocument();
         savedAwardDocument.refreshBudgetDocumentVersions();
     	return budgetDocument;
+    }
+
+    protected void fixStartAndEndDatesAndPeriods(Award award, AwardBudgetExt copiedBudget) {
+        copiedBudget.setStartDate(award.getRequestedStartDateInitial());
+        copiedBudget.setEndDate(award.getRequestedEndDateInitial());
+        defaultPeriodsIfNeeded(copiedBudget);
+    }
+
+    protected AwardBudgetExt copyAwardBudget(AwardBudgetDocument budgetDocument, boolean onlyOnePeriod, Budget budget, AwardDocument awardDocument) throws WorkflowException {
+        String parentDocumentNumber = awardDocument.getDocumentNumber();
+        budgetDocument.toCopy();
+        awardDocument.getDocumentHeader().setDocumentNumber(parentDocumentNumber);
+        awardDocument.setDocumentNumber(parentDocumentNumber);
+        if(budgetDocument.getBudget() == null) {
+            throw new RuntimeException("Not able to find any Budget Version associated with this document");
+        }
+        return (AwardBudgetExt) copyBudgetVersion(budget,onlyOnePeriod);
     }
 
     public Budget copyBudgetVersionSuper(Budget budget, boolean onlyOnePeriod){
@@ -451,7 +464,7 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
 			awardDocument.getAward().getCurrentVersionBudgets().add(budget);
 			awardDocument.getAward().getBudgets().add(budget);
             try {
-                budgetDocument = (AwardBudgetDocument) documentService.saveDocument(budgetDocument);
+                budgetDocument = (AwardBudgetDocument) getDocumentService().saveDocument(budgetDocument);
             } catch (WorkflowException e) {
                 throw new RuntimeException(e);
             }
@@ -476,8 +489,7 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
 
     protected AwardBudgetDocument createNewBudgetDocument(String documentDescription, Award award,boolean rebudget)
             throws WorkflowException {
-        boolean success = new AwardBudgetVersionRule().processAddBudgetVersion(
-                new AddBudgetVersionEvent(BUDGET_VERSION_ERROR_PREFIX, award, documentDescription));
+        boolean success = isValidBudgetVersion(documentDescription, award);
         if (!success) {
             return null;
         }
@@ -490,7 +502,7 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
             awardBudgetDocument =  copyBudgetVersion(postedBudgetDocument);
             copyObligatedAmountToLineItems(awardBudgetDocument,obligatedChangeAmount);
         } else {
-            awardBudgetDocument = (AwardBudgetDocument) documentService.getNewDocument(AwardBudgetDocument.class);
+            awardBudgetDocument = (AwardBudgetDocument) getDocumentService().getNewDocument(AwardBudgetDocument.class);
         }
         awardBudgetDocument.getDocumentHeader().setDocumentDescription(documentDescription);
 
@@ -535,9 +547,14 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
 
         recalculateBudget(awardBudgetDocument.getBudget());
         saveBudgetDocument(awardBudgetDocument,rebudget);
-        awardBudgetDocument = (AwardBudgetDocument) documentService.getByDocumentHeaderId(awardBudgetDocument.getDocumentNumber());
+        awardBudgetDocument = (AwardBudgetDocument) getDocumentService().getByDocumentHeaderId(awardBudgetDocument.getDocumentNumber());
 
         return awardBudgetDocument;
+    }
+
+    protected boolean isValidBudgetVersion(String documentDescription, Award award) throws WorkflowException {
+        return new AwardBudgetVersionRule().processAddBudgetVersion(
+                new AddBudgetVersionEvent(BUDGET_VERSION_ERROR_PREFIX, award, documentDescription));
     }
 
     protected void defaultPeriodsIfNeeded(Budget awardBudget) {
@@ -1027,17 +1044,17 @@ public class AwardBudgetServiceImpl extends AbstractBudgetService<Award> impleme
         for (BudgetPeriod budgetPeriod : awardBudgetPeriods) {
             removeBudgetSummaryPeriodCalcAmounts(budgetPeriod);
         }
-        awardBudgetCalculationService.calculateBudget(budget);
-        awardBudgetCalculationService.calculateBudgetSummaryTotals(budget);
+        getAwardBudgetCalculationService().calculateBudget(budget);
+        getAwardBudgetCalculationService().calculateBudgetSummaryTotals(budget);
     }
     public void recalculateBudgetPeriod(Budget budget,BudgetPeriod budgetPeriod) {
         removeBudgetSummaryPeriodCalcAmounts(budgetPeriod);
-        awardBudgetCalculationService.calculateBudgetPeriod(budget, budgetPeriod);
+        getAwardBudgetCalculationService().calculateBudgetPeriod(budget, budgetPeriod);
     }
 
     public void calculateBudgetOnSave(Budget budget) {
-    	awardBudgetCalculationService.calculateBudget(budget);
-    	awardBudgetCalculationService.calculateBudgetSummaryTotals(budget);
+        getAwardBudgetCalculationService().calculateBudget(budget);
+        getAwardBudgetCalculationService().calculateBudgetSummaryTotals(budget);
         budget.getBudgetPeriods().stream()
                 .map(period -> (AwardBudgetPeriodExt) period)
                 .forEach(period -> {

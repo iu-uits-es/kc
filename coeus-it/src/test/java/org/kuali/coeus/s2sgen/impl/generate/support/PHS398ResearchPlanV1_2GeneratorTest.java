@@ -22,21 +22,10 @@ import org.kuali.coeus.common.framework.type.ProposalType;
 import org.kuali.coeus.propdev.impl.core.ProposalDevelopmentDocument;
 import org.kuali.coeus.propdev.impl.core.DevelopmentProposal;
 import org.kuali.coeus.propdev.impl.attachment.Narrative;
-import org.kuali.coeus.propdev.impl.attachment.NarrativeAttachment;
-import org.kuali.coeus.propdev.impl.attachment.NarrativeType;
-import org.kuali.rice.core.api.util.ClassLoaderUtils;
-import org.kuali.rice.krad.data.DataObjectService;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.kuali.coeus.sys.framework.service.KcServiceLocator.getService;
-public class PHS398ResearchPlanV1_2GeneratorTest extends
-		S2STestBase {
+public class PHS398ResearchPlanV1_2GeneratorTest extends S2STestBase {
 
 	@Override
 	protected String getFormGeneratorName() {
@@ -51,35 +40,12 @@ public class PHS398ResearchPlanV1_2GeneratorTest extends
         ProposalType type = new ProposalType();
         type.setCode("5");
         developmentProposal.setProposalType(type);
-		Narrative narrative = new Narrative();
-		List<Narrative> naList = new ArrayList<Narrative>();
-		NarrativeAttachment narrativeAttachment = new NarrativeAttachment();
+		List<Narrative> naList = new ArrayList<>();
 
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(ClassLoaderUtils.getDefaultClassLoader());
-        Resource resource = resourceLoader.getResource(S2STestConstants.ATT_PACKAGE + "/exercise1.pdf");
-		InputStream inStream = resource.getInputStream();
-		BufferedInputStream bis = new BufferedInputStream(inStream);
-		byte[] narrativePdf = new byte[bis.available()];
-		narrativeAttachment.setData(narrativePdf);
+		Narrative narrative1 = createNarrative("20");
 
-		narrative.setDevelopmentProposal(document.getDevelopmentProposal());
-		narrative.setModuleNumber(1);
-		narrative.setModuleSequenceNumber(1);
-		narrative.setModuleStatusCode("C");
-		narrative.setNarrativeTypeCode("20");
-		narrative.setNarrativeAttachment(narrativeAttachment);
-		narrative.setObjectId("12345678890abcd");
-		narrative.setName("exercise1");
-		NarrativeType narrativeType = new NarrativeType();
-        narrativeType.setCode("1");
-        narrativeType.setAllowMultiple(false);
-        narrativeType.setSystemGenerated(false);
-		narrativeType.setDescription("Testing for Project Attachment");
-        getService(DataObjectService.class).save(narrativeType);
-		narrative.setNarrativeType(narrativeType);
-        narrative.setNarrativeTypeCode("1");
-		naList.add(narrative);
-		narrative.setNarrativeAttachment(null);
+		narrative1.setDevelopmentProposal(document.getDevelopmentProposal());
+		naList.add(narrative1);
 		developmentProposal.setNarratives(naList);
 		document.setDevelopmentProposal(developmentProposal);
 	}

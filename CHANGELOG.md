@@ -1,6 +1,360 @@
 
 
 ##CURRENT
+* No Changes
+
+
+##coeus-1603.48
+* Revert "Add affil and emp info for admin and make Superuser defaul…"
+  * Travis Schneeberger on Fri, 25 Mar 2016 14:57:58 -0400 [View Commit](../../commit/70a1cb249394c1ac529dc866b409fb3b510582ef)
+* RESKC-1227: Multiple fixes for PHS398CoverPageSupplement 3.0.
+
+  * 1. Multiple issues to correct with the Stem Cell question branch:
+  * a. Question ID 5 are stem cells used, is a parent ALWAYS ask question, but is currently still a child of Question ID 3 (phase 3 clinical trial) and thus only renders if the user answers Y to ID 5. Please correct this so it Always presents.
+  * b. Question ID 142 needs to be reverted to it's prior state (text and 20 answer limit) so it continues to support its appearance in the S2S Questionnaire. Kuali prior stem cell answer q is ID7; 142 was used by Legacy Coeus.
+  * c. New Question ID 149 should assigned to manage the 200 answer response for listing the registration numbers of stem cell lines. ALSO; this question should only present if the answer to QID 6 = Y.
+  * Stem Cell Question branch revised as follows:
+  * ALWAYS ASK	5	Does the proposed project involve human embryonic stem cells?
+  * IF YES	6	Can a specific stem cell line be referenced at this time? If stem cells will be used, but a specific line cannot be referenced at the time of application submission, include a statement that one from the registry will be used.
+  * IF YES	*149	*List the registration number of the specific cell line(s) from the stem cell registry found at: http://stemcells.nih.gov/research/registry/
+  * Travis Schneeberger on Fri, 25 Mar 2016 14:54:03 -0400 [View Commit](../../commit/8aa7fa0e1d6538e55d61db0f7e8b3b34981a5f13)
+
+##coeus-1603.47
+* RESKC-1238: Fixing NullPointerException from Questionnaire print.
+
+  * 1) lookup a Questionnaire from doc search
+  * 2) open the Questionnaire
+  * 3) click the print button
+  * A NullPointerException occurs
+  * Travis Schneeberger on Thu, 24 Mar 2016 15:50:01 -0400 [View Commit](../../commit/ab13cca7cc4fc3b4be2bbd55caae07fdff1703ad)
+* RESKC-1234: fixing valid narratives forms entries for nsf cover page forms
+  * Travis Schneeberger on Thu, 24 Mar 2016 10:33:45 -0400 [View Commit](../../commit/8692ce822a36d38ee12164cfa804a9069dd4da9d)
+
+##coeus-1603.46
+* No Changes
+
+
+##coeus-1603.45
+* RESKC-1233:PropDev YNQ conversion script
+
+  * A new Java based data conversion that will convert historical YNQ into questionnaires.
+  * blackcathacker on Tue, 22 Mar 2016 13:30:27 -0700 [View Commit](../../commit/1b128c6901389c6faf4bb562826d56858966d87d)
+* RESKC-1221: Fix view protocol submission link in schedule.
+
+  * Issue occurs in IRB and IACUC
+  * Submit a protocol to a schedule
+  * Edit the schedule the protocol was submitted to
+  * Open Submitted Protocols list
+  * click View for the protocol
+
+  * Result: Get error when trying to view a protocol from a schedule:
+  * java.lang.IndexOutOfBoundsException: Index: 8, Size: 0
+  * at java.util.ArrayList.rangeCheck(ArrayList.java:653)
+  * at java.util.ArrayList.get(ArrayList.java:429)
+  * Gayathri Athreya on Tue, 22 Mar 2016 13:41:54 -0700 [View Commit](../../commit/aa8ad815b378bb72eb95b0b32bbe90155b7d9ebe)
+
+##coeus-1603.44
+* No Changes
+
+
+##coeus-1603.43
+* No Changes
+
+
+##coeus-1603.42
+* RESKC-1227: Multiple fixes for PHS398CoverPageSupplement 3.0.
+
+  * 1. Multiple issues to correct with the Stem Cell question branch:
+  * a. Question ID 5 are stem cells used, is a parent ALWAYS ask question, but is currently still a child of Question ID 3 (phase 3 clinical trial) and thus only renders if the user answers Y to ID 5. Please correct this so it Always presents.
+  * b. Question ID 142 needs to be reverted to it's prior state (text and 20 answer limit) so it continues to support its appearance in the S2S Questionnaire. Kuali prior stem cell answer q is ID7; 142 was used by Legacy Coeus.
+  * c. New Question ID 149 should assigned to manage the 200 answer response for listing the registration numbers of stem cell lines. ALSO; this question should only present if the answer to QID 6 = Y.
+  * Stem Cell Question branch revised as follows:
+  * ALWAYS ASK	5	Does the proposed project involve human embryonic stem cells?
+  * IF YES	6	Can a specific stem cell line be referenced at this time? If stem cells will be used, but a specific line cannot be referenced at the time of application submission, include a statement that one from the registry will be used.
+  * IF YES	*149	*List the registration number of the specific cell line(s) from the stem cell registry found at: http://stemcells.nih.gov/research/registry/
+  * Travis Schneeberger on Tue, 22 Mar 2016 12:21:54 -0400 [View Commit](../../commit/60deffcbc8c64c6794c55206c2681d0732a06424)
+
+##coeus-1603.41
+* No Changes
+
+
+##coeus-1603.40
+* No Changes
+
+
+##coeus-1603.39
+* RESKC-1232: Fix award budget date issue.
+
+  * Award budget created and posted with those dates.
+  * Award & T&M Modified end date to reduce scope: finalized with 12/01/2017 end date.
+  * User tries to create a new award budget: gets a stack trace error when clicking the new button in budget versions tab.
+  * java.lang.NullPointerException
+  * at java.util.Calendar.setTime(Calendar.java:1770)
+  * at org.kuali.coeus.common.budget.impl.summary.BudgetSummaryServiceImpl.generateBudgetPeriods(BudgetSummaryServiceImpl.java:180)
+  * at org.kuali.coeus.common.budget.impl.summary.BudgetSummaryServiceImpl.defaultBudgetPeriods(BudgetSummaryServiceImpl.java:209)
+  * at org.kuali.kra.award.budget.AwardBudgetServiceImpl.defaultPeriodsIfNeeded(AwardBudgetServiceImpl.java:567)
+  * Gayathri Athreya on Mon, 21 Mar 2016 10:19:23 -0700 [View Commit](../../commit/b51c78034f6d52710f5c6862988196c4a27f1a4b)
+* RESKC-1226: NSF forms - the 1.6 cover page is not usable as it has been released.
+  * 1. NSF cover page 1-6 Questionnaire ID 1012 :question to check the disclosure of lobbying activities is not mapping to the form. (it appears to have the same Question ID (103) as the Funding Mechanism question that was also added for this form version.
+  * 2. The system has an error validation requiring  Data Management Plan attachment (narrative id 146). This attachment is NOT mandatory. (I tried changing the status to not mandatory in the Valid Narrative Forms maintenance doc: but this functionality is broken.)
+  * 3. The system has an error validation requiring the Mentoring Plan attachment (narrative ID 147) This attachment is NOT mandatory and will cause submission to ERROR at the sponsor. (Again; could not change to not mandatory in the Valid Narrative Forms maintenance doc).
+  * Travis Schneeberger on Mon, 21 Mar 2016 11:17:58 -0400 [View Commit](../../commit/cb7b918c58e72306961c74a06949255118143e58)
+
+##coeus-1603.38
+* RESKC-937: S2S Form D: PHS 398 Research Training program Plan 3.0 update for 2016
+  * Travis Schneeberger on Mon, 21 Mar 2016 08:36:40 -0400 [View Commit](../../commit/559c6ac354469b48790838bf4c640358c231c632)
+
+##coeus-1603.37
+* No Changes
+
+
+##coeus-1603.36
+* No Changes
+
+
+##coeus-1603.35
+* No Changes
+
+
+##coeus-1603.34
+* RESKC-1217: fix the valid_narr_forms records for narrative type 23 and 44.
+  * Travis Schneeberger on Thu, 17 Mar 2016 12:54:03 -0400 [View Commit](../../commit/be95be966552c2894461bfb0f87068662e475e3f)
+
+##coeus-1603.33
+* RESKC-1219: Fixing online review and assign reviewers for protocol.
+
+  * Online Review tab does not display after a protocol is submitted and assigned reviewers.
+  * Steps
+  * Create protocol
+  * Submit protocol as Exempt
+  * Select committee but not a schedule
+  * -Issue One Result: You should be able to select reviewers but they are not appearing as part of the submit screen unless you have selected a schedule.
+  * -Expected: A schedule should not be required for selecting reviewers if the review type is exempt (or expedited). Expedited is behaving correctly.
+  * Submit the protocol without the schedule
+  * Then assign a reviewer via Assign Reviewers action
+  * -Issue Two result: The review assignment is saved but the Review tab does not appear. See screen shot
+  * -Expected: The protocol review tab should appear
+  * Note: If you add a schedule via Modify Submission Request at this point, then the OLR tab will appear
+  * Gayathri Athreya on Wed, 16 Mar 2016 13:28:02 -0700 [View Commit](../../commit/eb23deebdc60fdbc48cf95c13ee10f70a1f7c92f)
+
+##coeus-1603.32
+* No Changes
+
+
+##coeus-1603.31
+* RESKC-1218:Add parameter to control whether arg value dropdowns display the description or the value
+
+  * Currently if an arg value entry has a description the description is displayed in the dropdown and the value is only used for persistence. This change adds a new parameter 'ARG_VALUE_VALUES_FINDER_PREFER_DESCRIPTION' that allows you to change this behavior to more closer match how IP and Award arg value lookups behave, and only display the value instead of the description.
+  * blackcathacker on Wed, 16 Mar 2016 12:23:06 -0700 [View Commit](../../commit/eb3bac0c93a38542882bea15fbee3057d3b975bb)
+
+##coeus-1603.29
+* RESKC-1213: make 'always ask' questions not have parent questions or conditions for questionnaire -1
+  * Travis Schneeberger on Tue, 15 Mar 2016 18:27:48 -0400 [View Commit](../../commit/b0ff601b87b848cfff0dc3d895ea4ed8a2bd862d)
+
+##coeus-1603.28
+* No Changes
+
+
+##coeus-1603.27
+* No Changes
+
+
+##coeus-1603.25
+* RESKC-904: Changing the script to address the issue in oracle, which restricts to alter the column to decrease its scale precision
+  * Geo Thomas on Tue, 15 Mar 2016 15:12:59 -0400 [View Commit](../../commit/c5e9617b0091faa154e9653734b5ead9520a6976)
+
+##coeus-1603.24
+* Fix negotiation days calculation.
+  * Gayathri Athreya on Mon, 14 Mar 2016 11:21:41 -0700 [View Commit](../../commit/d949eb2fbd8a838375d954549770aed57bebc758)
+* RESKC-1204: When user clicks on Protocol history tab, it was fetching all the amendments and renewals for that protocol many times. Changed DAO service to fetch amendments and renewals in one call. Moved sorting the list from java to database. Added cache for holding amendements and renewals for each protocol for two minutes. Fixed jsp tags where it was calling getter of amendementRenewal in a loop unnecessarily. As part of this optimization, removed the section of displaying proposal summary for each amendment. User can always look at each amendments and renewal details by clicking on the link next to the summary and open entire protocol in a new window
+  * Geo Thomas on Wed, 9 Mar 2016 15:35:18 -0500 [View Commit](../../commit/61c5278864cbf30c8c0b25dcba8389388a78d50a)
+
+##coeus-1603.23
+* RESKC-935: Supporting new form: PHS398_CoverPageSupplement_3_0-V3.0
+  * Travis Schneeberger on Thu, 10 Mar 2016 13:40:20 -0500 [View Commit](../../commit/b6e3dff84822eec34a850ad825f628ec31e388df)
+
+##coeus-1603.22
+* RESKC-904:Fixed obligated amounts datatype.
+
+  * In the Award Budget, the user must budget to exactly match the Obligated Total in order to submit the budget.
+  * Currently, the system displays the Obligated Total rounded to whole dollar values in several fields:
+  * > in the Non-Personnel Budget Overview
+  * > rebudget >  line item detail if cents were in original item.
+
+  * In Res demo 1: Award 000295-00001
+  * Award budget versions screen displays the actual Obligated 144,638.69
+  * Non-Personnel Budget Overview displays 144,639
+  * (my expenses were full dollar amounts, so I did not see the rounding in the obligated column in the line item detail, but I expect this to be consistent with MIT's report.)
+
+  * Desired Result: NONE of the Obligated total fields in Award Budget should round: they should ALWAYS display the exact value as this is the target amount the users must reach.
+
+  * In an example budget, the obligated amount from Version 1 in the first screenshot (MITKC 2231a) does not match the obligated amount in Version 2 in the second screen shot (MITKC 2231b)
+  * Version 1  award budget non-personnel tab displays "1686.00" for obligated amount (ROUNDED)
+  * Version 2 award budget non-personnel tab displays for obligated amt 1685.51. (Actual obligated amount)
+
+  * Calculations are correct, display is wrong. There should NOT be rounding.
+  * Gayathri Athreya on Fri, 11 Mar 2016 13:31:15 -0700 [View Commit](../../commit/a1a337460ed4e84811fe362875aee4c52b5e1904)
+
+##coeus-1603.21
+* No Changes
+
+
+##coeus-1603.20
+* RESKC-1206:Display prime sponsor name as well as code in read-only
+  * blackcathacker on Thu, 10 Mar 2016 11:06:14 -0800 [View Commit](../../commit/25182c4e2b53b85b028f36ec3740b4414d613ca8)
+
+##coeus-1603.19
+* No Changes
+
+
+##coeus-1603.18
+* RESKC-1205:Special review protocol number needs to accomodate spaces
+
+  * Customer requirement from converted data that protocol numbers need to accept spaces in the in special review.
+  * blackcathacker on Wed, 9 Mar 2016 16:19:05 -0800 [View Commit](../../commit/2dcddf65b57c02837fe98a41d1ea023bf5beca23)
+
+##coeus-1603.17
+* RESKC-1008: Allow utf-8 characters for budget notes.
+
+  * Steps to reproduce:
+  * Create a proposal with basic info to save.
+  * Create a new budget version - detailed or summary.
+  * Go to Budget Notes.
+  * In the Notes field, PASTE in some text from a MSWord doc with some special formatting like curly quotes, curly apostrophes, or em-dashes.
+  * Immediately click Periods & Totals from the left navigation menu.
+  * You will see the validation message here.
+  * Select Budget version from top menu bar, select Actions > Mark Budget complete for this budget.
+  * Close budget (by closing browser window if necessary).
+  * Open proposal to edit. Go to Summary Submit screen. Select [Submit For Review]
+  * Result: the validation error message appears.
+
+  * DESIRED RESULTS:
+  * 1. Eliminate the Error. Budget Notes are not utilized in S2S submissions where special text is a problem, so any entries should be allowed as long as they are compatible with the database. There is no need to validate this so strictly. Warn the user: "*Pasted in text may include formatting that will not appear, please use plain text or manually type in the notes. *"
+  * 2. Alternative: reduce it to a warning.
+  * Gayathri Athreya on Tue, 8 Mar 2016 15:58:07 -0700 [View Commit](../../commit/96d84d2156438f057df5ddaceb827fb450480c95)
+
+##coeus-1603.16
+* RESKC-1203: Adding award budget integration tests
+  * Gayathri Athreya on Tue, 8 Mar 2016 12:41:40 -0700 [View Commit](../../commit/746c1b8a3a5978a51c53fc8867bcf762cada5bf4)
+
+##coeus-1603.14
+* No Changes
+
+
+##coeus-1603.13
+* RESKC-1132: Fixed proposal development document when recalled.
+
+  * Proposal Status is "Approval Pending" instead of "Revisions Requested" on proposals recalled during routing
+  * Proposal Routed for approval and was Recalled before the Investigator approved.
+  * When in the same session, the submit status changed to save and the document became editable, user navigated to the key personnel section, searched for and added a multi-pi. selected the person certifications and noticed that answers to questions were not editable.
+  * Left proposal and searched for proposal in proposal search.
+  * Can edit some areas of proposal persons (such as commons name) but cannot certify the newly added multipi. Document status shows as approval pending and submit screen shows as saved (not routing)
+  * Route log shows that the initiator recalled the proposal
+  * yet the proposal is not entirely editable and the document status is incorrectly approval pending
+  * To reproduce:
+  * Searched for Proposal enroute that was awaiting PI approval
+  * Clicked Edit from Search Results
+  * Went to Submit on left Nav
+  * Recalled
+  * added Recall reason
+  * navigated to key persons
+  * added key person to Multi PI role
+  * Closed.
+  * Searched for PD again
+  * Edit proposal
+  * proposal shows as approval in progress and is not completely editable
+  * Gayathri Athreya on Thu, 3 Mar 2016 10:24:52 -0700 [View Commit](../../commit/3031eaca41c3fbf7263df0513234d63e442e68cd)
+* RESKC-1203: Recalculating budget periods if posted budget exists.
+
+  * On an award we are not able to create a new budget revision because it gives us an error "Period 2 end date cannot exceed project end date" But we can not change this in any way. The project was shortened after the previous budget was posted but now it will not allow us to rebudget using the new date. Please advise as how we should accomplish this and why this is a problem.
+steps to reproduce
+  * Create an award,
+  * create an award budget,
+  * approve, post.
+  * Via T&M document,
+  * change award dates
+  * now try to create a new budget, get error message.
+  * Gayathri Athreya on Mon, 7 Mar 2016 11:13:17 -0700 [View Commit](../../commit/ee0194982794b2a0da563e91ac8f76fc25ac8e15)
+
+##coeus-1603.12
+* moving scripts
+  * Gayathri Athreya on Fri, 4 Mar 2016 14:46:53 -0700 [View Commit](../../commit/55687de35384a0856cb2765ff20f4ce64a55a1bc)
+* RESKC-949: Making minor display related changes that were requested.
+  * Gayathri Athreya on Fri, 4 Mar 2016 09:02:13 -0700 [View Commit](../../commit/07d87ef90d8a5b54ce4a8237e3c64f8c7421a881)
+
+##coeus-1603.11
+* No Changes
+
+
+##coeus-1603.10
+* RESKC-949: Minor change to prevent STE when KC cannot connect to coi.
+  * Gayathri Athreya on Thu, 3 Mar 2016 10:12:40 -0700 [View Commit](../../commit/9ae6da7febf197b5a1632990f05a718d425e0152)
+
+##coeus-1603.9
+* putting back the same fix Rajeev did for RESKC-805. Its not showing review comments for continuing review submitted protocols. For this, review comments should be taken from minutes which happens on amendments and renewals
+  * Geo Thomas on Thu, 3 Mar 2016 15:43:16 -0500 [View Commit](../../commit/111e318169285a803af37057cf0ab216740212bf)
+
+##coeus-1603.8
+* No Changes
+
+
+##coeus-1603.6
+* No Changes
+
+
+##coeus-1603.5
+* No Changes
+
+
+##coeus-1603.4
+* RESKC-936: add new narrative types for: S2S Form D: PHS 398 Research Plan 3.0 form update for 2016
+  * Travis Schneeberger on Tue, 1 Mar 2016 15:48:04 -0500 [View Commit](../../commit/c6f265ae3df8fb5f9a56f013db07ebb60d0270f0)
+
+##coeus-1603.3
+* RESKC-949: Adding disclosure status to award and IP personnel.
+  * As a researcher or admin responsible for a project, I can see the COI disclosure status of project person to determine if the project can move forward or if project personnel need disclosures for the project to proceed.
+  * General Acceptance Criteria:
+  * See subtasks.
+  * Configurable in monolith so it is only displayed in a module if desired by the school.
+  * For each project person, display the latest status of the annual disclosure that includes that project.
+  * if the project is not on annnual yet, display "Not yet disclosed"
+  * if a project is not required to disclose display "Not Required"
+  * Gayathri Athreya on Wed, 2 Mar 2016 08:36:23 -0700 [View Commit](../../commit/689936b6f1cf5c43d739a723ed6b6f9e21c0ea69)
+* RESKC-949: Adding coi disclosure status to Prop dev personnel.
+  * As a researcher or admin responsible for a project, I can see the COI disclosure status of project person to determine if the project can move forward or if project personnel need disclosures for the project to proceed.
+  * General Acceptance Criteria:
+  * See subtasks.
+  * Configurable in monolith so it is only displayed in a module if desired by the school.
+  * For each project person, display the latest status of the annual disclosure that includes that project.
+  * if the project is not on annnual yet, display "Not yet disclosed"
+  * if a project is not required to disclose display "Not Required"
+  * Gayathri Athreya on Tue, 1 Mar 2016 14:46:47 -0700 [View Commit](../../commit/d0a7e608a03980f0613b3f3ec1e6995692ed82f9)
+
+##coeus-1603.2
+* No Changes
+
+
+##coeus-1603.1
+* No Changes
+
+
+##coeus-1602.72
+* No Changes
+
+
+##coeus-1602.71
+* No Changes
+
+
+##coeus-1602.70
+* added permissions to user needed for coi sponsor checking
+  * Joe Williams on Mon, 29 Feb 2016 09:07:05 -0600 [View Commit](../../commit/32d88f30944325d1262459d63ea7db9be0feda1f)
+* Revert "added permissions to user needed for coi sponsor checking"
+  * Travis Schneeberger on Mon, 29 Feb 2016 10:00:07 -0500 [View Commit](../../commit/3e015b0ae57764c66161a1177a54d7ef5e47b3f7)
+* added permissions to user needed for coi sponsor checking
+  * Joe Williams on Thu, 25 Feb 2016 16:20:01 -0600 [View Commit](../../commit/d7e6c0c1bfb180ecc3b03ab764ad4c19c88927f0)
+
+##coeus-1602.69
 * Fix Oracle KRMS
   * Gayathri Athreya on Fri, 26 Feb 2016 14:46:14 -0700 [View Commit](../../commit/4a2cc83ce546ae967d13a195dc6282acae12181c)
 

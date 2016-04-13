@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.kuali.coeus</groupId>
     <artifactId>coeus</artifactId>
-    <version>1602.70-SNAPSHOT</version>
+    <version>1603.50-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Kuali Coeus</name>
     <description>
@@ -68,7 +68,7 @@
         <cas-client-core.version>3.3.3</cas-client-core.version>
         <cglib.version>3.1</cglib.version>
         <coeus-api-all.version>1602.0001</coeus-api-all.version>
-        <coeus-s2sgen.version>1602.0002</coeus-s2sgen.version>
+        <coeus-s2sgen.version>1603.0009</coeus-s2sgen.version>
         <commons-beanutils.version>1.8.3-kuali-4</commons-beanutils.version>
         <commons-codec.version>1.10</commons-codec.version>
         <commons-collections.version>3.2.2</commons-collections.version>
@@ -94,7 +94,7 @@
         <hamcrest.version>1.3</hamcrest.version>
         <itext.version>2.1.7</itext.version>
         <jackson.version>1.9.13</jackson.version>
-        <javamelody-core.version>1.58.0</javamelody-core.version>
+        <javamelody-core.version>1.59.0</javamelody-core.version>
         <javax.mail.version>1.5.2</javax.mail.version>
         <javax.persistence.version>2.1.0</javax.persistence.version>
         <jaxb-impl.version>2.2.6</jaxb-impl.version>
@@ -110,7 +110,7 @@
         <moo-mvel.version>2.0</moo-mvel.version>
         <mysql.groupId>mysql</mysql.groupId>
         <mysql.artifactId>mysql-connector-java</mysql.artifactId>
-        <mysql.version>5.1.37</mysql.version>
+        <mysql.version>5.1.38</mysql.version>
         <mvel.version>2.2.4.Final</mvel.version>
         <opencsv.version>2.3</opencsv.version>
         <opensaml.version>2.6.1</opensaml.version>
@@ -122,7 +122,7 @@
         <pdfbox.version>1.8.6</pdfbox.version>
         <quartz.version>1.8.4</quartz.version>
         <schemaspy.version>1508.0162</schemaspy.version>
-        <rice.version>2.5.3.1601.0002-kualico</rice.version>
+        <rice.version>2.5.3.1603.0001-kualico</rice.version>
         <servlet.version>3.0.1</servlet.version>
         <slf4j.version>1.7.13</slf4j.version>
         <spring.version>3.2.13.RELEASE</spring.version>
@@ -186,7 +186,7 @@
         <failsafe.failIfNoTests>false</failsafe.failIfNoTests>
         <failsafe.forkCount>1</failsafe.forkCount>
         <failsafe.reuseForks>true</failsafe.reuseForks>
-	    <failsafe.memOpts>-Xmx1536m</failsafe.memOpts>
+        <failsafe.memOpts>-Xmx1536m</failsafe.memOpts>
         <failsafe.argLine>${failsafe.memOpts} ${javaagent.arg}</failsafe.argLine>
         <failsafe.aggregate>true</failsafe.aggregate>
         <failsafe.skipITs>true</failsafe.skipITs>
@@ -591,7 +591,6 @@
                 <groupId>${db.groupId}</groupId>
                 <artifactId>${db.artifactId}</artifactId>
                 <version>${db.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Required for jdk7 -->
@@ -1914,7 +1913,7 @@
                 <build.spring.profiles.active>grm</build.spring.profiles.active>
 
                 <rsmart.cx.token.auth.version>1507.1</rsmart.cx.token.auth.version>
-                <rsmart.hr.rest.version>1602.0004</rsmart.hr.rest.version>
+                <rsmart.hr.rest.version>1603.0004</rsmart.hr.rest.version>
                 <kc-sql.version>1601.0002</kc-sql.version>
 
                 <scm.connection>scm:git:git://github.com/kualico/kc.git</scm.connection>
@@ -2028,6 +2027,50 @@
             </properties>
             <dependencyManagement>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.persistence</groupId>
+                        <artifactId>org.eclipse.persistence.oracle</artifactId>
+                        <version>${org.eclipse.persistence.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
+        <profile>
+            <id>include-mysql-driver</id>
+            <activation>
+                <property>
+                    <name>!grm.off</name>
+                </property>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>${mysql.groupId}</groupId>
+                        <artifactId>${mysql.artifactId}</artifactId>
+                        <version>${mysql.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
+        <profile>
+            <id>include-oracle-driver</id>
+            <activation>
+                <property>
+                    <name>!grm.off</name>
+                </property>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>${oracle.groupId}</groupId>
+                        <artifactId>${oracle.artifactId}</artifactId>
+                        <version>${oracle.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
                     <dependency>
                         <groupId>org.eclipse.persistence</groupId>
                         <artifactId>org.eclipse.persistence.oracle</artifactId>
@@ -2475,7 +2518,7 @@
         <connection>${scm.connection}</connection>
         <developerConnection>${scm.developerConnection}</developerConnection>
         <url>${scm.url}</url>
-        <tag>coeus-1512.46-SNAPSHOT</tag>
+        <tag>coeus-1603.25</tag>
   </scm>
 
     <distributionManagement>

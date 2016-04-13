@@ -128,6 +128,7 @@
 			</tr>
 			</c:if>
 
+            <c:set var="displayCoiDisclosureStatus" value="${KualiForm.displayCoiDisclosureStatus}" />
 			<c:forEach var="institutionalProposalContact" items="${KualiForm.document.institutionalProposalList[0].sortedProjectPersons}" varStatus="institutionalProposalContactRowStatus">
 				<tr>
 					<th class="infoline" scope="row" rowspan="4">
@@ -137,7 +138,7 @@
 	                	<input type="hidden" name="institutionalproposal_person.identifier_${institutionalProposalContactRowStatus.index}" value="${institutionalProposalContact.contact.identifier}" />
 	                	<div align="center">
 	                		${institutionalProposalContact.fullName}&nbsp;
-	                		<c:choose>
+                                <c:choose>
 		                		<c:when test="${institutionalProposalContact.employee}">
 		                			<kul:directInquiry boClassName="org.kuali.coeus.common.framework.person.KcPerson" inquiryParameters="institutionalproposal_person.identifier_${institutionalProposalContactRowStatus.index}:personId" anchor="${tabKey}" />
 		                		</c:when>
@@ -186,7 +187,18 @@
 						</div>
 	                </td>
 	            </tr>
-	            
+                <c:choose>
+                    <c:when test="${displayCoiDisclosureStatus}">
+                <tr>
+                    <td colspan="1" nowrap class="tab-subhead">
+                        Coi Disclosure Status:
+                    </td>
+                    <td colspan="5" nowrap class="tab-subhead">
+                        ${institutionalProposalContact.disclosureStatus}
+                    </td>
+                </tr>
+                    </c:when>
+                </c:choose>
 	            <tr>
 	            	<td colspan="6">
 	            		<kra-ip:institutionalProposalProjectPersonnelPersonDetails institutionalProposalContact="${institutionalProposalContact}" institutionalProposalContactRowStatusIndex="${institutionalProposalContactRowStatus.index}" />

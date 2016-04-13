@@ -46,32 +46,12 @@ public class PHS398ResTrainProgPlanV1_0GeneratorTest extends S2STestBase {
         ProposalType type = new ProposalType();
         type.setCode("5");
         document.getDevelopmentProposal().setProposalType(type);
-        Narrative narrative = new Narrative();
-        List<Narrative> naList = new ArrayList<Narrative>();
-        NarrativeAttachment narrativeAttachment = new NarrativeAttachment();
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(ClassLoaderUtils.getDefaultClassLoader());
-        Resource resource = resourceLoader.getResource(S2STestConstants.ATT_PACKAGE + "/exercise1.pdf");
-        InputStream inStream = resource.getInputStream();
-        BufferedInputStream bis = new BufferedInputStream(inStream);
-        byte[] narrativePdf = new byte[bis.available()];
-        narrativeAttachment.setData(narrativePdf);
-        narrative.setDevelopmentProposal(document.getDevelopmentProposal());
-        narrative.setModuleNumber(1);
-        narrative.setModuleSequenceNumber(1);
-        narrative.setModuleStatusCode("C");
-        narrative.setNarrativeAttachment(narrativeAttachment);
-        narrative.setObjectId("12345678890abcd");
-        narrative.setName("exercise1");
-        NarrativeType narrativeType = new NarrativeType();
-        narrativeType.setCode("1");
-        narrativeType.setAllowMultiple(false);
-        narrativeType.setSystemGenerated(false);
-        narrativeType.setDescription("Testing for Project Attachment");
-        getService(DataObjectService.class).save(narrativeType);
-        narrative.setNarrativeType(narrativeType);
-        narrative.setNarrativeTypeCode("1");
-        naList.add(narrative);
-        narrative.setNarrativeAttachment(null);
+        List<Narrative> naList = new ArrayList<>();
+
+        Narrative narrative1 = createNarrative("1");
+
+        narrative1.setDevelopmentProposal(document.getDevelopmentProposal());
+        naList.add(narrative1);
         document.getDevelopmentProposal().setNarratives(naList);
         
     }
