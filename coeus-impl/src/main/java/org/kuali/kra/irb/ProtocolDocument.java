@@ -76,7 +76,7 @@ import org.kuali.rice.krms.api.engine.Facts.Builder;
  * Protocol and ProtocolDocument can have a 1:1 relationship.
  */
 @SuppressWarnings("unchecked")
-@NAMESPACE(namespace=Constants.MODULE_NAMESPACE_PROTOCOL)
+@NAMESPACE(namespace=Constants.MODULE_NAMESPACE_IRB)
 @COMPONENT(component=ParameterConstants.DOCUMENT_COMPONENT)
 public class ProtocolDocument extends ProtocolDocumentBase { 
     
@@ -321,7 +321,8 @@ public class ProtocolDocument extends ProtocolDocumentBase {
         for (ProtocolActionBase action: getProtocol().getProtocolActions()) {
             if (ProtocolActionType.APPROVED.equals(action.getProtocolActionTypeCode()) ||
                 ProtocolActionType.EXPEDITE_APPROVAL.equals(action.getProtocolActionTypeCode()) ||
-                ProtocolActionType.GRANT_EXEMPTION.equals(action.getProtocolActionTypeCode().equals(ProtocolActionType.APPROVED))) {
+                ProtocolActionType.GRANT_EXEMPTION.equals(action.getProtocolActionTypeCode()) ||
+                ProtocolActionType.RESPONSE_APPROVAL.equals(action.getProtocolActionTypeCode())) {
                 result = action;
             }
         }
@@ -392,7 +393,7 @@ public class ProtocolDocument extends ProtocolDocumentBase {
     }
 
     public void populateContextQualifiers(Map<String, String> qualifiers) {
-        qualifiers.put("namespaceCode", Constants.MODULE_NAMESPACE_PROTOCOL);
+        qualifiers.put("namespaceCode", Constants.MODULE_NAMESPACE_IRB);
         qualifiers.put("name", KcKrmsConstants.IrbProtocol.IRB_PROTOCOL_CONTEXT);
     }
 

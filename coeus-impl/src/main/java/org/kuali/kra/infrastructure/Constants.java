@@ -96,7 +96,7 @@ public interface Constants {
 
     public static final String SPONSOR_HIERARCHY_ROUTING = "Routing";
 
-    public static final String MODULE_NAMESPACE_PROTOCOL = "KC-PROTOCOL"; 
+    public static final String MODULE_NAMESPACE_IRB = "KC-PROTOCOL";
     public static final String MODULE_DOC_ROLE_NAMESPACE_PROTOCOL = "KC-PROTOCOL-DOC"; 
     public static final String PARAMETER_MODULE_PROTOCOL_REFERENCEID1 = "irb.protocol.referenceID1";
     public static final String PARAMETER_MODULE_PROTOCOL_REFERENCEID2 = "irb.protocol.referenceID2";
@@ -928,5 +928,6 @@ public interface Constants {
     String COI_PROJECTS_DISCLOSURE_STATUS_URL = "coi.projects.disclosure.status.url";
     String AUTHORIZATION_HEADER = "Authorization";
     String BEARER_TOKEN = "Bearer ";
+    String SUB_AWARD_CODE = "subAwardCode";
 }
 

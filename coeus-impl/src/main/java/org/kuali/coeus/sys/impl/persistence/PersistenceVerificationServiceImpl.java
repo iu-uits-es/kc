@@ -38,6 +38,7 @@ import org.kuali.rice.krad.data.provider.ProviderRegistry;
 import org.kuali.rice.krad.datadictionary.BusinessObjectEntry;
 import org.kuali.rice.krad.datadictionary.PrimitiveAttributeDefinition;
 import org.kuali.rice.krad.datadictionary.RelationshipDefinition;
+import org.kuali.rice.krad.exception.ClassNotPersistableException;
 import org.kuali.rice.krad.service.BusinessObjectService;
 import org.kuali.rice.krad.service.DataDictionaryService;
 import org.kuali.rice.krad.util.KRADConstants;
@@ -178,12 +179,16 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
             final Map<String, org.kuali.rice.krad.bo.DataObjectRelationship> relationships = getKcPersistenceStructureService().getRelationshipMetadata(bo.getClass(), field);
             if (relationships != null) {
                 relationships.entrySet().stream()
-                        .filter(entry -> !ignoredRelationships.contains(entry.getValue().getRelatedClass()))
-                        .forEach(entry -> {
-                            Map<String, Object> criteria = Collections.singletonMap(entry.getValue().getParentToChildReferences().get(field), getProperty(bo, field));
-                            if (!criteria.isEmpty() &&  getBusinessObjectService().countMatching(entry.getValue().getRelatedClass(),
-                                    criteria) == 0) {
-                                errors.putError(entry.getValue().getParentAttributeName(), RiceKeyConstants.ERROR_EXISTENCE, getRelationshipDescriptor(entry.getValue().getRelatedClass()));
+                        .filter(relationship -> !ignoredRelationships.contains(relationship.getValue().getRelatedClass()))
+                        .forEach(relationship -> {
+                            /*Ignore the null values because they may not be required and the DD validation
+                            in the next step will catch it if needed*/
+                            if (getProperty(bo, field) != null) {
+                                Map<String, Object> criteria = Collections.singletonMap(relationship.getValue().getParentToChildReferences().get(field), getProperty(bo, field));
+                                if (!criteria.isEmpty() && getBusinessObjectService().countMatching(relationship.getValue().getRelatedClass(),
+                                        criteria) == 0) {
+                                    errors.putError(relationship.getValue().getParentAttributeName(), RiceKeyConstants.ERROR_EXISTENCE, getRelationshipDescriptor(relationship.getValue().getRelatedClass()));
+                                }
                             }
                         });
             }
@@ -267,20 +272,23 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
         ddRelationships.stream()
                 .filter(relationship -> !ignoredRelationships.contains(relationship.getSourceClass()))
                 .forEach(relationship -> {
-            final Map<String, Object> criteria = relationship.getPrimitiveAttributes().stream()
-                    .map(attr -> entry(attr.getSourceName(), getProperty(bo, attr.getTargetName())))
-                    .collect(nullSafeEntriesToMap());
-
-                try {
-                    if (!criteria.isEmpty() && getBusinessObjectService().countMatching(relationship.getSourceClass(), criteria) > 0) {
-                        errors.putError(KRADConstants.GLOBAL_ERRORS, KeyConstants.ERROR_DELETION_BLOCKED,
-                                getRelationshipDescriptor(relationship.getSourceClass()));
+                    final Map<String, Object> criteria = relationship.getPrimitiveAttributes().stream()
+                            .map(attr -> entry(attr.getSourceName(), getProperty(bo, attr.getTargetName())))
+                            .collect(nullSafeEntriesToMap());
+                    try {
+                        if (!criteria.isEmpty() && areAllColumnsInCriteriaMapped(criteria.keySet(), relationship.getSourceClass()) && getBusinessObjectService().countMatching(relationship.getSourceClass(), criteria) > 0) {
+                            errors.putError(KRADConstants.GLOBAL_ERRORS, KeyConstants.ERROR_DELETION_BLOCKED,
+                                    getRelationshipDescriptor(relationship.getSourceClass()));
+                        }
+                    } catch (ClassNotPersistenceCapableException | ClassNotPersistableException e) {
+                        LOG.debug(bo.getClass().getName() + " has a relationship to a non-persistable class " + relationship.getSourceClass(), e);
                     }
-                } catch (ClassNotPersistenceCapableException e) {
-                    LOG.debug(bo.getClass().getName() + " has a relationship to a non-persistable class " + relationship.getSourceClass(), e);
-                }
-        });
+                });
         return errors;
+    }
+
+    protected boolean areAllColumnsInCriteriaMapped(Set<String> keySet, Class<?> clazz) {
+        return persistableFields(clazz).containsAll(keySet);
     }
 
     protected MessageMap verifyKradDataRelationshipsForDelete(Object bo, Collection<Class<?>> ignoredRelationships) {
@@ -320,7 +328,12 @@ public class PersistenceVerificationServiceImpl implements PersistenceVerificati
     private Object getProperty(Object o, String prop) {
         try {
             return PropertyUtils.getProperty(o, prop);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        }
+        catch( NoSuchMethodException e) {
+            // anonymous access
+            return null;
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }

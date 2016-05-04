@@ -18,14 +18,27 @@
  */
 package org.kuali.coeus.sys.framework.controller.rest;
 
+import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.xml.namespace.QName;
 
 import com.google.common.base.CaseFormat;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.kuali.coeus.sys.framework.config.KcConfigurer;
+import org.kuali.coeus.sys.framework.controller.rest.CustomEditors.CustomSqlDateEditor;
+import org.kuali.coeus.sys.framework.controller.rest.CustomEditors.CustomSqlTimestampEditor;
 import org.kuali.coeus.sys.framework.controller.rest.audit.RestAuditLogger;
 import org.kuali.coeus.sys.framework.controller.rest.audit.RestAuditLoggerFactory;
 import org.kuali.coeus.sys.framework.gv.GlobalVariableService;
@@ -34,22 +47,28 @@ import org.kuali.coeus.sys.framework.rest.DataDictionaryValidationException;
 import org.kuali.coeus.sys.framework.rest.ResourceNotFoundException;
 import org.kuali.coeus.sys.framework.rest.UnauthorizedAccessException;
 import org.kuali.coeus.sys.framework.rest.UnprocessableEntityException;
+import org.kuali.coeus.sys.framework.service.KcServiceLocator;
 import org.kuali.coeus.sys.framework.validation.ErrorHandlingUtilService;
 import org.kuali.kra.infrastructure.Constants;
 import org.kuali.kra.infrastructure.PermissionConstants;
 import org.kuali.kra.kim.bo.KcKimAttributes;
+import org.kuali.rice.core.framework.config.module.ModuleConfigurer;
 import org.kuali.rice.kim.api.permission.PermissionService;
-import org.kuali.rice.krad.bo.PersistableBusinessObject;
 import org.kuali.rice.krad.data.CompoundKey;
+import org.kuali.rice.krad.service.DataDictionaryService;
 import org.kuali.rice.krad.service.DictionaryValidationService;
 import org.kuali.rice.krad.service.LegacyDataAdapter;
 import org.kuali.rice.krad.util.MessageMap;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -57,12 +76,14 @@ import org.springframework.web.bind.annotation.*;
 import static org.kuali.coeus.sys.framework.util.CollectionUtils.entriesToMap;
 import static org.kuali.coeus.sys.framework.util.CollectionUtils.entry;
 
-public abstract class SimpleCrudRestControllerBase<T extends PersistableBusinessObject, R> extends RestController implements InitializingBean {
+public abstract class SimpleCrudRestControllerBase<T, R> extends RestController implements InitializingBean, BeanNameAware {
 
-	protected static final String DELIMETER = ":";
-
-	protected static final String ALLOW_MULTI_PARM = "_allowMulti";
+	private static final String DELIMETER = ":";
+	private static final String ALLOW_MULTI_PARM = "_allowMulti";
 	private static final String SCHEMA_PARM = "_schema";
+	private static final String BLUEPRINT_PARM = "_blueprint";
+	protected static final String SYNTHETIC_FIELD_PK = "_primaryKey";
+	private static final Log LOG = LogFactory.getLog(SimpleCrudRestControllerBase.class);
 
 	@Autowired
 	@Qualifier("legacyDataAdapter")
@@ -96,6 +117,21 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 	@Qualifier("autoRegisterMapping")
 	private RestSimpleUrlHandlerMapping autoRegisterMapping;
 
+	@Autowired
+	@Qualifier("dataDictionaryService")
+	private DataDictionaryService dataDictionaryService;
+
+	@Value("classpath:org/kuali/coeus/sys/framework/controller/rest/SimpleCrudRestControllerBlueprintTemplate.md")
+	private Resource blueprintTemplate;
+
+	//this is all of the module configurers for the kc monolith.  It is used to get the base servlet path for the
+	//module this bean belongs to.  Set this as object type so spring doesn't try to do special Collection wiring
+	@Autowired
+	@Qualifier("moduleConfigurers")
+	private Object moduleConfigurers;
+
+	private String beanName;
+
 	private boolean registerMapping = true;
 
 	private BeanWrapper beanWrapper;
@@ -118,6 +154,138 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 
 	private String camelCasePluralName;
 
+	@RequestMapping(method=RequestMethod.GET)
+	public @ResponseBody Collection<R> getAll(@RequestParam(required=false) Map<String,String> parameters) {
+		assertUserHasReadAccess();
+		return translateAllDataObjects(doGetAll(parameters));
+	}
+
+	@RequestMapping(method=RequestMethod.GET, params={SCHEMA_PARM})
+	public @ResponseBody Map<String, Object> getSchema() {
+		return getSchemaMap();
+	}
+
+	public Map<String, Object> getSchemaMap() {
+
+		final Map<String, Object> schema = new HashMap<>();
+		schema.put("primaryKey", getPrimaryKeyColumn());
+		schema.put("columns", getExposedProperties());
+		return schema;
+	}
+
+	@RequestMapping(value="/{code}", method=RequestMethod.GET)
+	public @ResponseBody R get(@PathVariable String code) {
+		assertUserHasReadAccess();
+
+		T dataObject = getFromDataStore(code);
+		if (dataObject == null) {
+			throw new ResourceNotFoundException("not found for key " + code);
+		}
+		return convertDataObjectToDto(dataObject);
+	}
+
+	@RequestMapping(method=RequestMethod.GET, params={BLUEPRINT_PARM})
+	public @ResponseBody Resource getBlueprint(HttpServletResponse response) {
+
+		response.setContentType("text/markdown");
+		response.setHeader("Content-Disposition", "attachment;filename=" + CaseFormat.UPPER_CAMEL.converterTo(CaseFormat.LOWER_HYPHEN).convert(this.getCamelCasePluralName()) + ".md");
+
+		return getBlueprintResource();
+	}
+
+	public Resource getBlueprintResource() {
+		String templateText;
+		try {
+			templateText = IOUtils.toString(blueprintTemplate.getInputStream(), "UTF-8"); ;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		templateText = templateText.replaceAll("\\$\\{resourceName\\}", WordUtils.capitalizeFully(CaseFormat.UPPER_CAMEL.converterTo(CaseFormat.LOWER_HYPHEN).convert(this.getCamelCasePluralName()).replaceAll("-", " ")));
+		templateText = templateText.replaceAll("\\$\\{endpoint\\}", "/" + getModuleMapping() + getPath());
+		templateText = templateText.replaceAll("\\$\\{sampleKey\\}", "(key)");
+		templateText = templateText.replaceAll("\\$\\{sampleMatchCriteria\\}", getListOfTrackedProperties().stream().map(prop -> ("+ " + prop + " (optional) - " + getPropertyDescription(prop))).collect(Collectors.joining("\n    ", "", "\n")));
+		templateText = templateText.replaceAll("\\$\\{sampleResource1\\}", Stream.concat(getExposedProperties().stream(), Stream.of(SYNTHETIC_FIELD_PK)).collect(Collectors.joining("\": \"(val)\",\"", "{\"", "\": \"(val)\"}")));
+		templateText = templateText.replaceAll("\\$\\{sampleResource2\\}", Stream.concat(getExposedProperties().stream(), Stream.of(SYNTHETIC_FIELD_PK)).collect(Collectors.joining("\": \"(val)\",\"", "{\"", "\": \"(val)\"}")));
+		try {
+			templateText = templateText.replaceAll("\\$\\{sampleSchema\\}", new ObjectMapper().writeValueAsString(getSchemaMap()));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return new ByteArrayResource(templateText.getBytes(Charset.forName("UTF-8")));
+	}
+
+	@RequestMapping(value="/{code}", method=RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void update(@PathVariable String code, @Valid @RequestBody R dto) {
+		assertUserHasWriteAccess();
+		T dataObject = getFromDataStore(code);
+		if (dataObject == null) {
+			throw new ResourceNotFoundException("not found for key " + code);
+		}
+		RestAuditLogger logger = getAuditLogger();
+		logUpdateToObject(dataObject, dto, logger);
+		updateDataObjectFromDto(dataObject, dto);
+
+		validateBusinessObject(dataObject);
+		validateUpdateDataObject(dataObject);
+		save(dataObject);
+		logger.saveAuditLog();
+	}
+
+	@RequestMapping(method=RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@SuppressWarnings("unchecked")
+	public void update(@Valid @RequestBody Object dto) {
+		assertUserHasWriteAccess();
+
+		if (dto instanceof List) {
+			((List<Object>) dto).stream().map(this::convertObjectToDto).forEach(this::doUpdate);
+		} else {
+			doUpdate(convertObjectToDto(dto));
+		}
+	}
+
+	@RequestMapping(method=RequestMethod.POST)
+	@ResponseStatus(HttpStatus.CREATED)
+	@SuppressWarnings("unchecked")
+	public @ResponseBody Object add(@Valid @RequestBody Object dto) {
+		assertUserHasWriteAccess();
+
+		if (dto instanceof List) {
+			return ((List<Object>) dto).stream().map(this::convertObjectToDto).map(this::doAdd).collect(Collectors.toList());
+		} else {
+			return doAdd(convertObjectToDto(dto));
+		}
+	}
+
+	@RequestMapping(value="/{code}", method=RequestMethod.DELETE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(@PathVariable String code) {
+		assertUserHasWriteAccess();
+		doDelete(getFromDataStore(code));
+	}
+
+	@RequestMapping(method=RequestMethod.DELETE, params={ALLOW_MULTI_PARM})
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteAll(@RequestParam(required=false) Map<String,String> parameters) {
+		assertUserHasWriteAccess();
+		doGetAll(parameters).stream().forEach(this::doDelete);
+	}
+
+	protected abstract R convertDataObjectToDto(T dataObject);
+
+	protected abstract R convertObjectToDto(Object o);
+
+	protected abstract T convertDtoToDataObject(R input);
+
+	protected abstract Object getPropertyValueFromDto(String propertyName, R dto);
+
+	protected abstract void updateDataObjectFromDto(T dataObject, R dto);
+
+	protected abstract List<String> getExposedProperties();
+
+	protected abstract List<String> getListOfTrackedProperties();
+
 	protected Map.Entry<String, String> getWritePermission() {
 		return entry(writePermissionTemplateNamespace, writePermissionTemplateName);
 	}
@@ -139,7 +307,7 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 			final List<String> pkColumns = Arrays.asList(getPrimaryKeyColumn().split(DELIMETER));
 			return new CompoundKey(pkColumns.stream()
 					.map(pk -> {
-						final Object val = getPropertyFromIncomingObject(pk, dataObject);
+						final Object val = getPropertyValueFromDto(pk, dataObject);
 						if (val instanceof String && StringUtils.isBlank((String) val)) {
 							throw new ResourceNotFoundException(pk + " is blank.");
 						} else if (val == null) {
@@ -149,8 +317,62 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 					})
 					.collect(entriesToMap()));
 		} else {
-			return getPropertyFromIncomingObject(getPrimaryKeyColumn(), dataObject);
+			return getPropertyValueFromDto(getPrimaryKeyColumn(), dataObject);
 		}
+	}
+
+	protected String getPropertyDescription(String propertyName) {
+		if (isAttrDefined(propertyName)) {
+			final String desc = dataDictionaryService.getAttributeDescription(getDataObjectClazz(), propertyName);
+			final String summary = dataDictionaryService.getAttributeSummary(getDataObjectClazz(), propertyName);
+			final String label = dataDictionaryService.getAttributeLabel(getDataObjectClazz(), propertyName);
+			final String shortLabel = dataDictionaryService.getAttributeLabel(getDataObjectClazz(), propertyName);
+
+			final Integer max = dataDictionaryService.getAttributeMaxLength(getDataObjectClazz().getName(), propertyName);
+			final Integer min = dataDictionaryService.getAttributeMinLength(getDataObjectClazz().getName(), propertyName);
+
+			final String maxInclusive = dataDictionaryService.getAttributeInclusiveMax(getDataObjectClazz().getName(), propertyName);
+			final String minExclusive = dataDictionaryService.getAttributeExclusiveMin(getDataObjectClazz().getName(), propertyName);
+
+			final String description = appendPeriod(StringUtils.isNotBlank(desc) ? desc :
+					StringUtils.isNotBlank(summary) ? summary :
+							StringUtils.isNotBlank(label) ? label : StringUtils.isNotBlank(shortLabel) ? shortLabel : "");
+
+			final String maxLengthDescription = appendPeriod(max != null ? "Maximum length is " + max : "");
+			final String maxValueDescription = appendPeriod(StringUtils.isNoneBlank(maxInclusive) ? "Maximum inclusive value is " + maxInclusive : "");
+
+			final String minLengthDescription = appendPeriod(min != null ? "Minimum length is " + min : "");
+			final String minValueDescription = appendPeriod(StringUtils.isNoneBlank(minExclusive) ? "Minimum enclusive value is " + minExclusive : "");
+
+			return description + prependSpace(maxLengthDescription) +
+					prependSpace(minLengthDescription) + prependSpace(maxValueDescription) +
+					prependSpace(minValueDescription);
+		}
+		return "";
+	}
+
+	protected boolean isAttrDefined(String propertyName) {
+		try {
+			//some rice BOs are causing an exception while accessing the data dictionary
+			return dataDictionaryService.isAttributeDefined(getDataObjectClazz(), propertyName);
+		} catch (RuntimeException e) {
+			LOG.info(getDataObjectClazz().getName() + "." + propertyName + " not defined in the data dictionary because of an exception.", e);
+			return false;
+		}
+	}
+
+	protected String appendPeriod(String s) {
+		if (StringUtils.isNotBlank(s) && !StringUtils.endsWith(StringUtils.trim(s), ".")) {
+			return StringUtils.trim(s) + ".";
+		}
+		return s;
+	}
+
+	protected String prependSpace(String s) {
+		if (StringUtils.isNotBlank(s)) {
+			return " " + StringUtils.trim(s);
+		}
+		return s;
 	}
 
 	protected String primaryKeyToString(Object pkValues) {
@@ -172,77 +394,19 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		return key;
 	}
 
-	protected abstract Object getPropertyFromIncomingObject(String propertyName, R dataObject);
-
-	@RequestMapping(method=RequestMethod.GET)
-	public @ResponseBody Collection<R> getAll(@RequestParam(required=false) Map<String,String> parameters) {
-		assertUserHasReadAccess();
-		return translateAllDataObjects(doGetAll(parameters));
-	}
+    protected boolean isPrimitive(String name) {
+        return beanWrapper.getPropertyType(name).isPrimitive();
+    }
 
 	protected Object translateValue(String name, String value) {
 		return beanWrapper.convertIfNecessary(value, beanWrapper.getPropertyType(name));
 	}
-	
-	protected abstract Collection<R> translateAllDataObjects(Collection<T> dataObjects);
-	
-	@RequestMapping(method=RequestMethod.GET, params={SCHEMA_PARM})
-	public @ResponseBody Map<String, Object> getSchema() {
-		assertUserHasReadAccess();
 
-		final Map<String, Object> schema = new HashMap<>();
-		schema.put("primaryKey", getPrimaryKeyColumn());
-		schema.put("columns", getExposedProperties());
-		return schema;
+	protected Collection<R> translateAllDataObjects(Collection<T> dataObjects) {
+		return dataObjects.stream()
+				.map(this::convertDataObjectToDto)
+				.collect(Collectors.toList());
 	}
-	
-	protected abstract List<String> getExposedProperties();
-	
-	@RequestMapping(value="/{code}", method=RequestMethod.GET)
-	public @ResponseBody R get(@PathVariable String code) {
-		assertUserHasReadAccess();
-
-		T dataObject = getFromDataStore(code);
-		if (dataObject == null) {
-			throw new ResourceNotFoundException("not found for key " + code);
-		}
-		return convertDataObject(dataObject);
-	}
-	
-	protected abstract R convertDataObject(T dataObject);
-	
-	@RequestMapping(value="/{code}", method=RequestMethod.PUT)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void update(@PathVariable String code, @Valid @RequestBody R dto) {
-		assertUserHasWriteAccess();
-		T dataObject = getFromDataStore(code);
-		if (dataObject == null) {
-			throw new ResourceNotFoundException("not found for key " + code);
-		}
-		RestAuditLogger logger = getAuditLogger();
-		logUpdateToObject(dataObject, dto, logger);
-		updateDataObjectFromInput(dataObject, dto);
-		
-		validateBusinessObject(dataObject);
-		validateUpdateDataObject(dataObject);
-		save(dataObject);
-		logger.saveAuditLog();
-	}
-
-	@RequestMapping(method=RequestMethod.PUT)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@SuppressWarnings("unchecked")
-	public void update(@Valid @RequestBody Object dto) {
-		assertUserHasWriteAccess();
-
-		if (dto instanceof List) {
-			((List<Object>) dto).stream().map(this::objectToDto).forEach(this::doUpdate);
-		} else {
-			doUpdate(objectToDto(dto));
-		}
-	}
-
-	protected abstract R objectToDto(Object o);
 
 	protected void doUpdate(R dto) {
 		final Object pk = getPrimaryKeyIncomingObject(dto);
@@ -252,7 +416,7 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		}
 		RestAuditLogger logger = getAuditLogger();
 		logUpdateToObject(dataObject, dto, logger);
-		updateDataObjectFromInput(dataObject, dto);
+		updateDataObjectFromDto(dataObject, dto);
 
 		validateBusinessObject(dataObject);
 		validateUpdateDataObject(dataObject);
@@ -265,52 +429,27 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 	}
 	
 	protected void logUpdateToObject(T currentObject, R newObject, RestAuditLogger logger) {
-		T newDataObject = translateInputToDataObject(newObject);
+		T newDataObject = convertDtoToDataObject(newObject);
 		logger.addModifiedItem(currentObject, newDataObject);
-	}
-	
-	protected abstract List<String> getListOfTrackedProperties();
-	
-	protected abstract T translateInputToDataObject(R input);
-	
-	protected abstract void updateDataObjectFromInput(T existingDataObject, R input);
-	
-	@RequestMapping(method=RequestMethod.POST)
-	@ResponseStatus(HttpStatus.CREATED)
-	@SuppressWarnings("unchecked")
-	public @ResponseBody Object add(@Valid @RequestBody Object dto) {
-		assertUserHasWriteAccess();
-
-		if (dto instanceof List) {
-			return ((List<Object>) dto).stream().map(this::objectToDto).map(this::doAdd).collect(Collectors.toList());
-		} else {
-			return doAdd(objectToDto(dto));
-		}
 	}
 
 	protected R doAdd(R dto) {
 		final Object code = getPrimaryKeyIncomingObject(dto);
-		T existingDataObject = getFromDataStore(code);
-		if (existingDataObject != null) {
-			throw new UnprocessableEntityException("already exists for key " + code);
-		}
-
+        if (code != null) {
+            T existingDataObject = getFromDataStore(code);
+		    if (existingDataObject != null) {
+			    throw new UnprocessableEntityException("already exists for key " + code);
+		    }
+        }
 		RestAuditLogger logger = getAuditLogger();
-		T newDataObject = translateInputToDataObject(dto);
+		T newDataObject = convertDtoToDataObject(dto);
 
 		validateBusinessObject(newDataObject);
 		validateInsertDataObject(newDataObject);
 		T savedDataObject = save(newDataObject);
 		logger.addNewItem(newDataObject);
 		logger.saveAuditLog();
-		return convertDataObject(savedDataObject);
-	}
-
-	@RequestMapping(value="/{code}", method=RequestMethod.DELETE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public @ResponseBody void delete(@PathVariable String code) {
-		assertUserHasWriteAccess();
-		doDelete(getFromDataStore(code));
+		return convertDataObjectToDto(savedDataObject);
 	}
 
 	protected void doDelete(T existingDataObject) {
@@ -324,12 +463,6 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		delete(existingDataObject);
 		logger.addDeletedItem(existingDataObject);
 		logger.saveAuditLog();
-	}
-
-	@RequestMapping(method=RequestMethod.DELETE, params={ALLOW_MULTI_PARM})
-	public @ResponseBody void deleteAll(@RequestParam(required=false) Map<String,String> parameters) {
-		assertUserHasWriteAccess();
-		doGetAll(parameters).stream().forEach(this::doDelete);
 	}
 
 	protected Collection<T> doGetAll(Map<String, String> parameters) {
@@ -430,9 +563,9 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 	}
 
 	protected T save(T dataObject) {
-		return getLegacyDataAdapter().save(dataObject);
+        return getLegacyDataAdapter().save(dataObject);
 	}
-	
+
 	protected void delete(T dataObject) {
 		getLegacyDataAdapter().delete(dataObject);
 	}
@@ -450,6 +583,91 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 			throw new UnauthorizedAccessException();
 		}
 	}
+
+	/**
+	 * Uses basic english rules to convert a singular word to plural form.  Note that only the basic rules are covered
+	 * here and many english words will not be handled correctly.
+	 * @param singular a singular word
+	 * @return a plural word
+     */
+	String toPlural(String singular) {
+
+		//some rice mapped classes end with Bo or BO.  We should remove these suffixes.
+		if (singular.endsWith("Bo") || singular.endsWith("BO")) {
+			singular = singular.substring(0, singular.length() - 2);
+		}
+
+		if (singular.endsWith("y") && !singular.endsWith("ay") && !singular.endsWith("ey") && !singular.endsWith("iy") && !singular.endsWith("oy") && !singular.endsWith("uy")) {
+			return singular.substring(0, singular.length() - 1) + "ies";
+		} else if (singular.endsWith("s") || singular.endsWith("x") || singular.endsWith("z") || singular.endsWith("ch") || singular.endsWith("sh")) {
+			return singular + "es";
+		} else {
+			return singular + "s";
+		}
+	}
+
+	//this is a very roundabout way to get module path.  A better approach is preferred.
+	private String getModuleMapping() {
+		final KcConfigurer configurer = getModuleConfigurers().stream()
+				.filter(mc -> mc instanceof KcConfigurer)
+				.map(mc -> (KcConfigurer) mc)
+				.filter(mc -> {
+					final SimpleCrudRestControllerBase<?, ?> controller = mc.getRootResourceLoader().getService(new QName(getBeanName()));
+					return controller != null && controller.getDataObjectClazz().equals(this.getDataObjectClazz());
+				})
+				.findFirst().get();
+		return configurer.getDispatchServletMappings().stream().filter(mapping -> !mapping.contains("krad")).findFirst().get();
+	}
+
+	private String getPath() {
+		return "/api/v1/" + (CaseFormat.UPPER_CAMEL.converterTo(CaseFormat.LOWER_HYPHEN).convert(this.getCamelCasePluralName()) + "/");
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (Modifier.isAbstract(dataObjectClazz.getModifiers())) {
+			throw new IllegalStateException("dataObjectClazz must not be abstract: " + dataObjectClazz.getName());
+		}
+
+		if (StringUtils.isBlank(camelCasePluralName)) {
+			setCamelCasePluralName(toPlural(dataObjectClazz.getSimpleName()));
+		}
+
+		if (StringUtils.isBlank(writePermissionTemplateName)) {
+			setWritePermissionTemplateName(PermissionConstants.WRITE_CLASS);
+		}
+
+		if (StringUtils.isBlank(writePermissionTemplateNamespace)) {
+			setWritePermissionTemplateNamespace(Constants.MODULE_NAMESPACE_SYSTEM);
+		}
+
+		if (CollectionUtils.isEmpty(writePermissionTemplateQualifiers)) {
+			setWritePermissionTemplateQualifiers(Collections.singletonMap(KcKimAttributes.CLASS_NAME, getDataObjectClazz().getName()));
+		}
+
+		if (StringUtils.isBlank(readPermissionTemplateName)) {
+			setReadPermissionTemplateName(PermissionConstants.READ_CLASS);
+		}
+
+		if (StringUtils.isBlank(readPermissionTemplateNamespace)) {
+			setReadPermissionTemplateNamespace(Constants.MODULE_NAMESPACE_SYSTEM);
+		}
+
+		if (CollectionUtils.isEmpty(readPermissionTemplateQualifiers)) {
+			setReadPermissionTemplateQualifiers(Collections.singletonMap(KcKimAttributes.CLASS_NAME, getDataObjectClazz().getName()));
+		}
+
+		if (isRegisterMapping() && autoRegisterMapping != null) {
+			final String path = getPath() + "*";
+			autoRegisterMapping.setUrlMap(Collections.singletonMap(getPath(), this));
+			autoRegisterMapping.registerHandler(path, this);
+		}
+
+		beanWrapper = new BeanWrapperImpl(dataObjectClazz);
+        beanWrapper.registerCustomEditor(java.sql.Timestamp.class, new CustomSqlTimestampEditor());
+        beanWrapper.registerCustomEditor(java.sql.Date.class, new CustomSqlDateEditor());
+
+    }
 
 	public PermissionService getPermissionService() {
 		return permissionService;
@@ -608,70 +826,28 @@ public abstract class SimpleCrudRestControllerBase<T extends PersistableBusiness
 		this.autoRegisterMapping = autoRegisterMapping;
 	}
 
-	/**
-	 * Uses basic english rules to convert a singular word to plural form.  Note that only the basic rules are covered
-	 * here and many english words will not be handled correctly.
-	 * @param singular a singular word
-	 * @return a plural word
-     */
-	String toPlural(String singular) {
+	public Collection<ModuleConfigurer> getModuleConfigurers() {
+		return (Collection<ModuleConfigurer>) moduleConfigurers;
+	}
 
-		//some rice mapped classes end with Bo or BO.  We should remove these suffixes.
-		if (singular.endsWith("Bo") || singular.endsWith("BO")) {
-			singular = singular.substring(0, singular.length() - 2);
-		}
+	public void setModuleConfigurers(Collection<ModuleConfigurer> moduleConfigurers) {
+		this.moduleConfigurers = moduleConfigurers;
+	}
 
-		if (singular.endsWith("y") && !singular.endsWith("ay") && !singular.endsWith("ey") && !singular.endsWith("iy") && !singular.endsWith("oy") && !singular.endsWith("uy")) {
-			return singular.substring(0, singular.length() - 1) + "ies";
-		} else if (singular.endsWith("s") || singular.endsWith("x") || singular.endsWith("z") || singular.endsWith("ch") || singular.endsWith("sh")) {
-			return singular + "es";
-		} else {
-			return singular + "s";
-		}
+	public String getBeanName() {
+		return beanName;
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (Modifier.isAbstract(dataObjectClazz.getModifiers())) {
-			throw new IllegalStateException("dataObjectClazz must not be abstract: " + dataObjectClazz.getName());
-		}
+	public void setBeanName(String beanName) {
+		this.beanName = beanName;
+	}
 
-		if (StringUtils.isBlank(camelCasePluralName)) {
-			setCamelCasePluralName(toPlural(dataObjectClazz.getSimpleName()));
-		}
+	public DataDictionaryService getDataDictionaryService() {
+		return dataDictionaryService;
+	}
 
-		if (StringUtils.isBlank(writePermissionTemplateName)) {
-			setWritePermissionTemplateName(PermissionConstants.WRITE_CLASS);
-		}
-
-		if (StringUtils.isBlank(writePermissionTemplateNamespace)) {
-			setWritePermissionTemplateNamespace(Constants.MODULE_NAMESPACE_SYSTEM);
-		}
-
-		if (CollectionUtils.isEmpty(writePermissionTemplateQualifiers)) {
-			setWritePermissionTemplateQualifiers(Collections.singletonMap(KcKimAttributes.CLASS_NAME, getDataObjectClazz().getName()));
-		}
-
-		if (StringUtils.isBlank(readPermissionTemplateName)) {
-			setReadPermissionTemplateName(PermissionConstants.READ_CLASS);
-		}
-
-		if (StringUtils.isBlank(readPermissionTemplateNamespace)) {
-			setReadPermissionTemplateNamespace(Constants.MODULE_NAMESPACE_SYSTEM);
-		}
-
-		if (CollectionUtils.isEmpty(readPermissionTemplateQualifiers)) {
-			setReadPermissionTemplateQualifiers(Collections.singletonMap(KcKimAttributes.CLASS_NAME, getDataObjectClazz().getName()));
-		}
-
-		if (isRegisterMapping() && autoRegisterMapping != null) {
-			final String path = "/api/v1/" + (CaseFormat.UPPER_CAMEL.converterTo(CaseFormat.LOWER_HYPHEN).convert(this.getCamelCasePluralName()) + "/*");
-
-			autoRegisterMapping.setUrlMap(Collections.singletonMap(path, this));
-			autoRegisterMapping.registerHandler(path, this);
-		}
-
-		beanWrapper = new BeanWrapperImpl(dataObjectClazz);
-
+	public void setDataDictionaryService(DataDictionaryService dataDictionaryService) {
+		this.dataDictionaryService = dataDictionaryService;
 	}
 }

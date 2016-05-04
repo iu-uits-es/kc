@@ -87,8 +87,9 @@ public class SimpleCrudMapBasedRestControllerDeadlineTypeTest extends KcIntegrat
         deadlineTypeController.delete("P");
     }
 
-    @Test(expected = UnauthorizedAccessException.class)
+    @Test
     public void test_unauthorized_schema() {
+        //there is no authorization around _schema
         GlobalVariables.setUserSession(new UserSession(UNAUTHORIZED_USER));
         deadlineTypeController.getSchema();
     }
@@ -208,7 +209,7 @@ public class SimpleCrudMapBasedRestControllerDeadlineTypeTest extends KcIntegrat
         deadlineTypeController.add(object);
     }
 
-    @Test(expected = ResourceNotFoundException.class)
+    @Test(expected = DataDictionaryValidationException.class)
     public void test_missing_user_supplied_pk() {
         GlobalVariables.setUserSession(new UserSession(AUTHORIZED_USER));
 
