@@ -613,7 +613,7 @@ public class MedusaServiceImpl implements MedusaService {
         }
         return currentSubAward == null ? subAward : currentSubAward;
     }
-    
+
     protected SubAward getSubAwardBySubawardCode(Long subAwardCode) {
         Map<String, Object> values = new HashMap<>();
         values.put(Constants.SUB_AWARD_CODE, subAwardCode);
