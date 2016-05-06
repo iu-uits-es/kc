@@ -1870,3 +1870,58 @@ VALUES ('KC-GEN','All','ARG_VALUE_VALUES_FINDER_PREFER_DESCRIPTION',sys_guid(),1
 -----------------------------------------------------------------------------------------
 -- 1604 Rice DML
 -----------------------------------------------------------------------------------------
+-- V1604_004__RESKC-1048.sql
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-IACUC','Document','ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE',SYS_GUID(),1,'CONFG','N','When enabled, this parameter displays the disclosure status from the COI module.','A','KC');
+
+-- V1604_005__RESKC-1165.sql
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-PROTOCOL','Document','ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE',SYS_GUID(),1,'CONFG','N','When enabled, this parameter displays the disclosure status from the COI module.','A','KC');
+
+-- V1604_002__RemoveSuperuserQualifier.sql
+update krim_role_t set kim_typ_id = '1' where nmspc_cd = 'KC-SYS' and role_nm = 'KC Superuser';
+
+delete from krim_role_mbr_attr_data_t 
+	where kim_typ_id = (select kim_typ_id from krim_typ_t where nm = 'UnitHierarchy' and nmspc_cd = 'KC-SYS') 
+	and role_mbr_id in (select role_mbr_id from krim_role_mbr_t where role_id = (select role_id from krim_role_t where nmspc_cd = 'KC-SYS' and role_nm = 'KC Superuser'));
+	
+-- V1604_003__Update_Parm_Desc.sql
+update krcr_parm_t set PARM_DESC_TXT = 'Flag to turn on/off COI disclosure status on proposal development. This is different from KC-PD ENABLE_DISCLOSURE_STATUS_FROM_COI_MODULE and both should not be enabled at the same time.' where parm_nm = 'PROP_PERSON_COI_STATUS_FLAG' and nmspc_cd = 'KC-GEN';
+
+-- V1604_007__Generic_Unit_Admin_Derived_Role.sql
+INSERT INTO KRIM_TYP_T (KIM_TYP_ID, OBJ_ID, VER_NBR, NM, SRVC_NM, ACTV_IND, NMSPC_CD)
+VALUES( 'RESBOOT1000', SYS_GUID(), 1, 'Derived Role: Generic Unit Administrators', 'genericUnitAdminDerivedRoleTypeService', 'Y', 'KC-PD');
+
+-- V1604_012__add_citizen_type_params.sql
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-S2S','All','NOT_RESIDING_IN_US',SYS_GUID(),1,'CONFG','15','Not Residing in the U.S','A','KC');
+
+INSERT INTO krcr_parm_t(NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+VALUES ('KC-S2S','All','TEMP_VISA_ALSO_APPLIED_FOR_PERM_RESIDENT_STATUS',SYS_GUID(),1,'CONFG','16','Temporary Visa also applied for permanent resident status','A','KC');
+
+-- V1604_014__unit_specific_peopleflow_type.sql
+insert into KREW_TYP_T (TYP_ID, NM, NMSPC_CD, SRVC_NM, ACTV, VER_NBR) 
+	values ('RESBOOT1000', 'Unit Specific Development Proposal Peopleflow', 'KC-WKFLW', '{http://kc.kuali.org/core/v5_0}unitSpecificProposalPeopleFlowTypeService', 'Y', 1);
+	
+insert into KREW_ATTR_DEFN_T (ATTR_DEFN_ID, NM, NMSPC_CD, LBL, ACTV, CMPNT_NM, VER_NBR, DESC_TXT)
+	values ('RESBOOT1000', 'unitNumber', 'KC-WKFLW', 'Unit Number', 'Y', null, 1, null);
+	
+insert into KREW_TYP_ATTR_T (TYP_ATTR_ID, SEQ_NO, TYP_ID, ATTR_DEFN_ID, ACTV, VER_NBR)
+	values ('RESBOOT1000', 1, 'RESBOOT1000', 'RESBOOT1000', 'Y', 1);
+
+-- V1604_015__irb_pi_workflow_param.sql
+insert into KRCR_PARM_T (NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+values ('KC-PROTOCOL','Document','ASSIGN_PRINCIPAL_INVESTIGATOR_TO_WORKFLOW',SYS_GUID(),1,'CONFG','Y',
+  'Determines whether the PI of the IRB Protocol is assigned to the IRB Approvers role for the individual document to accomodate appropriate KEW actions, such as delete, cancel and disapprove. Disabling may cause the PI to receive errors when performing these actions.','A','KC');
+
+insert into KRCR_PARM_T (NMSPC_CD,CMPNT_CD,PARM_NM,OBJ_ID,VER_NBR,PARM_TYP_CD,VAL,PARM_DESC_TXT,EVAL_OPRTR_CD,APPL_ID)
+values ('KC-IACUC','Document','ASSIGN_PRINCIPAL_INVESTIGATOR_TO_WORKFLOW',SYS_GUID(),1,'CONFG','Y',
+  'Determines whether the PI of the IACUC Protocol is assigned to the IACUC Protocol Approvers role for the individual document to accomodate appropriate KEW actions, such as delete, cancel and disapprove. Disabling may cause the PI to receive errors when performing these actions.','A','KC');
+
+-- V1604_017__budget_BO_permissions2.sql
+update krim_perm_attr_data_t set perm_id = (SELECT PERM_ID FROM KRIM_PERM_T WHERE NMSPC_CD = 'KC-B' AND NM = 'Read RateClass') 
+	where perm_id is null and attr_val = 'org.kuali.coeus.common.budget.framework.rate.RateClass';
+
+-----------------------------------------------------------------------------------------
+-- 1605 Rice DML
+-----------------------------------------------------------------------------------------
