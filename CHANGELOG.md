@@ -1,6 +1,72 @@
 
 
 ##CURRENT
+* making the java melody storage directory configurable.
+  * Travis Schneeberger on Wed, 4 May 2016 09:38:21 -0400 [View Commit](../../commit/36c4958861f9b74e372e6eb9a5f8920c5aacd470)
+
+##coeus-1605.8
+* No Changes
+
+
+##coeus-1605.7
+* RESKC-1281: Change Project push to use awardNumber for award, protocolNumber for irb and iacuc and proposalNumber for institutional proposal for the source identifier.  Only push the latest version according to sequence status number on award, irb, iacuc, and institutional proposal.  Do not push special versions for iacuc and irb (Amendment, Renewal, FYI, Continuation).  Do not push parent proposal development documents when in a hierarchy.  Added metadata to the json payload containing system specific information.  This information can be use for logging or auditing of projects being pushed.  So far the actual primary keys for the projects being pushed is the only metadata being included.
+  * Travis Schneeberger on Tue, 3 May 2016 09:55:01 -0400 [View Commit](../../commit/5b09fd79bcaad66175831f5b02334f697e65f4fa)
+
+##coeus-1605.6
+* RESKC-1298:Fix spring mappings for award lookup dao
+
+  * Due to a recent change to how the award lookup worked, it exposed incorrect spring mappings for the lookup doa. This corrects that and adds test to confirm.
+  * blackcathacker on Tue, 3 May 2016 11:46:08 -0700 [View Commit](../../commit/930e6d6472e2d561a0a57f5b4845b70942a1e1d9)
+
+##coeus-1605.5
+* RESKC-1292: Fixing award and protocol disclosure status display.
+  * Gayathri Athreya on Fri, 29 Apr 2016 15:14:39 -0700 [View Commit](../../commit/bfe6f73ce5688e6a644b977570a1e6779ee56e7f)
+
+##coeus-1605.4
+* Make fields required for CGB not required all the time.
+  * Gayathri Athreya on Mon, 2 May 2016 15:40:01 -0700 [View Commit](../../commit/9f86b93e2123d9c4d0a332484da417a96981da29)
+
+##coeus-1605.3
+* Added ability to edit top most unit in hierarchy. (#1713)  * Gayathri Athreya on Mon, 2 May 2016 15:54:12 -0700 [View Commit](../../commit/76fd6076bf65166e15f4c84d19c768401b5d29dc)
+
+##coeus-1605.2
+* fixes error when adding a sponsor code that is substring of a sponsor code already in a sponsor hierarchy
+  * Joe Williams on Mon, 2 May 2016 10:01:28 -0500 [View Commit](../../commit/f3c0313c13baca6417018164d0217d7d33f08156)
+
+##coeus-1605.1
+* RESKC-1283: Open protocol in edit mode.
+  * Gayathri Athreya on Fri, 29 Apr 2016 14:14:52 -0700 [View Commit](../../commit/b0ac4cd93e463f74bb479d69dd1f4a4045050e0d)
+
+##coeus-1604.51
+* RESKC-1188: Creating a values finder that only retrieve active negotiation activity types. (#1708)
+
+  * As a Negotiation Administrator, I only want active values to appear in the drop-down lists when I create or edit a negotiation so that I don't incorrectly select an inactive value.
+  * 
+  * Steps to recreate issue:
+  * 1. System Admin Portal > Negotiations > Negotiation Activity Type (or Negotiation Location)
+  * 2. Click to open the Lookup window
+  * 3. Click on "Both" for the Active field to locate all values (active & inactive)
+  * 4. Click search
+  * 5. Note any that are Inactive (Active column = "No") and if all are Active, edit one to make it Inactive
+  * 6. KRAD Porgal > Central Admin > Preaward > Negotations
+  * 7. When in the Negotiation Document, click show on Activities & Attachments panel.
+  * 8. Click Show to open the Add Activity.
+  * 9. Click on the drop down for Activity Type (or Location)
+  * RESULT: Inactive value is appearing in the drop-down list for Activity Type (or Location).
+  * EXPECTED RESULT: Only active values should appear in drop-down lists.  * Travis Schneeberger on Fri, 29 Apr 2016 21:43:21 -0400 [View Commit](../../commit/067b4a8a8d1f30ccddb65154200fc62ba5dc1edb)
+* RESKC-1211: IRB and IACUC FYI process enhancement
+
+  * Problem: IRB was not always easily able to keep track of all notify IRB (FYI) actions, because admin only needs to acknowledge. This does not support a process where IRB admins often need to go back and forth with PI/Dept Admin to get needed documentation.
+  * Contributed Solution:
+  * -Model a special routing for the FYI/ Notify IRB process to be similar to the amendment protocol process, except does not allow modification of the protocol itself other than notes and attachments.
+  * -IRB can now obtain more information and even approve/disapprove action.
+  * -Upon approve the attachments role into the notes and attachments history for tracking.
+  * -Parameterized.
+  * -IACUC is also addressed.
+  * This enhancement was discussed and approved by the KCC IRB subcommittee in 05/2014. Foundation Jira is KRAFDBCK-10691. Also, was shared with the IACUC Subcommittee.
+  * Travis Schneeberger on Thu, 28 Apr 2016 17:28:40 -0400 [View Commit](../../commit/6dbd3f39cab45655dfb4a33fc01f7884c6b5960a)
+
+##coeus-1604.50
 * No Changes
 
 
