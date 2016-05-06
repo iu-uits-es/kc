@@ -49,6 +49,7 @@ public class NegotiationActivityHelper implements Serializable {
     private ActivitySortingType activitySortingType;
     private AttachmentSortingType attachmentSortingType;
     private List<NegotiationActivityAttachment> allAttachments;
+    private String defaultActivitySortCode = "ST";
     private String defaultAttachmentSortCode = "POST";
     
     /**
@@ -229,7 +230,7 @@ public class NegotiationActivityHelper implements Serializable {
         sortAttachments();
         return allAttachments;
     }
-    
+
     public void generateAllAttachments() {
         allAttachments = new CopyOnWriteArrayList<NegotiationActivityAttachment>();
 
@@ -249,8 +250,12 @@ public class NegotiationActivityHelper implements Serializable {
 
     public void sortActivities() {
         if (getActivitySortingType() != null) {
-            Collections.sort(getForm().getNegotiationDocument().getNegotiation().getActivities(), 
+            Collections.sort(getForm().getNegotiationDocument().getNegotiation().getActivities(),
                     getActivitySortingType().getComparator());
         }
+        else {
+            setActivitySortingTypeName(defaultActivitySortCode);
+        }
     }
+
 }

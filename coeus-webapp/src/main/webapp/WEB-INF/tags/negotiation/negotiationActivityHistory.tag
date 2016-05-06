@@ -34,8 +34,7 @@
   <display:column property="startDate" title="Start Date"/>
   <display:column property="endDate" title="End Date"/>
   <display:column property="activityDays" title="Activity Days"/>
-  <display:column property="efectiveLocationStartDate" title="Effective Location Start Date"/>
-  <display:column property="efectiveLocationEndDate" title="Effective Location End Date"/>
+  <display:column property="activityDescription" title="Activity Description"/>
   <display:column property="locationDays" title="Location Days"/>
 </display:table>
 <c:if test="${empty KualiForm.negotiationDocument.negotiation.objectId}">
