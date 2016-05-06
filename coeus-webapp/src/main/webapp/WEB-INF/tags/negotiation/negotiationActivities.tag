@@ -152,6 +152,15 @@ $jq(document).ready(function() {
       </tr>
       </c:if>
     </c:forEach>
+    <tr id="negotiation-attachment-download-all">
+        <td colspan="6" class="infoline">
+            <div align="center">
+                <html:image property="methodToCall.downloadAllNegotiationAttachments"
+                            src='${ConfigProperties.kra.externalizable.images.url}tinybutton-save-all.gif' styleClass="tinybutton"
+                            alt="Save All Negotiation Attachments" onclick="excludeSubmitRestriction = true;" />
+            </div>
+        </td>
+    </tr>
     </tbody>
   </table>
 </kul:innerTab>

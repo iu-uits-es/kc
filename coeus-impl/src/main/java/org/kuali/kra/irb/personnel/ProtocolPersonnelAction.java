@@ -399,14 +399,6 @@ public class ProtocolPersonnelAction extends ProtocolAction {
         protocolForm.getNotesAttachmentsHelper().setFilesToDelete(filesToDelete);
         
     }
-
-    
-    private ProtocolAttachmentService getProtocolAttachmentService() {
-        if (protocolAttachmentService == null) {
-            protocolAttachmentService = KcServiceLocator.getService(ProtocolAttachmentService.class);
-        }
-        return protocolAttachmentService;
-    }
     
     @Override
     public void postSave(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
