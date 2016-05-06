@@ -31,8 +31,9 @@ public enum AttachmentSortingType {
     FILE("File", new FilenameAttachmentComparator()),
     DESC("Attachment Description", new DescriptionAttachmentComparator()),
     LOC("Location", new LocationAttachmentComparator()),
-    TYPE("Activity Type", new ActivityTypeAttachmentComparator());
-    
+    TYPE("Activity Type", new ActivityTypeAttachmentComparator()),
+    POST("Posted Timestamp", new PostedTimestampAttachmentComparator());
+
     private String desc;
     private Comparator<NegotiationActivityAttachment> comparator;
     
@@ -78,5 +79,14 @@ class ActivityTypeAttachmentComparator implements Comparator<NegotiationActivity
     @Override
     public int compare(NegotiationActivityAttachment o1, NegotiationActivityAttachment o2) {
         return o1.getActivity().getActivityType().getDescription().compareTo(o2.getActivity().getActivityType().getDescription());
+    }
+}
+class PostedTimestampAttachmentComparator implements Comparator<NegotiationActivityAttachment> {
+    @Override
+    public int compare(NegotiationActivityAttachment o1, NegotiationActivityAttachment o2) {
+        if (o1.getUpdateTimestamp() != null && o2.getUpdateTimestamp() != null) {
+            return o1.getUpdateTimestamp().compareTo(o2.getUpdateTimestamp());
+        }
+        return 0;
     }
 }
